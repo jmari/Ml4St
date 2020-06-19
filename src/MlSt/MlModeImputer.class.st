@@ -1,0 +1,21 @@
+Class {
+	#name : #MlModeImputer,
+	#superclass : #MlImputer,
+	#instVars : [
+		'uMatrix'
+	],
+	#category : #'MlSt-Preprocessing'
+}
+
+{ #category : #'protected-abstract' }
+MlModeImputer >> fitParameters: aMlArray [
+
+	uMatrix := aMlArray mode: 0 exclude:self missingValue.
+	
+]
+
+{ #category : #'protected-abstract' }
+MlModeImputer >> transform: aMlArray [
+
+	^  aMlArray  replace: self missingValue by: uMatrix 
+]
