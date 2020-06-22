@@ -283,6 +283,12 @@ MlArray >> < aNumber [
 ]
 
 { #category : #piping }
+MlArray >> <- aMlArray [
+	self shape = aMlArray shape ifFalse:[MlShapeError signal].
+	self internalArray replaceFrom: 1 to: self size with: aMlArray internalArray  startingAt: 1 
+]
+
+{ #category : #piping }
 MlArray >> << aTransformer [
 	^ aTransformer inverseTransform: self.
 ]
@@ -781,13 +787,6 @@ MlArray >> dType: anObject [
 						dType = anObject 
 							ifTrue:[dType]
 							ifFalse:[self convertTypeTo:anObject]].
-]
-
-{ #category : #accessing }
-MlArray >> dTypeAs: aBlock [
-	
-	1 to:self size do:[:i|
-		self internalArray at:i put: ( aBlock value:(self internalArray at:i))]
 ]
 
 { #category : #'math functions' }
@@ -1631,6 +1630,13 @@ MlArray >> switchShapeOrder: aShape [
 	newShape at:(newShape size) put: (newShape at:(newShape size -1)).
 	newShape at:(newShape size - 1) put: tmp.
 	^newShape
+]
+
+{ #category : #accessing }
+MlArray >> transform: aBlock [
+	
+	1 to:self size do:[:i|
+		self internalArray at:i put: ( aBlock value:(self internalArray at:i))]
 ]
 
 { #category : #converting }

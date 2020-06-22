@@ -235,9 +235,11 @@ Collection >> replaceAllBy: aCollectionOrNum [
 
 { #category : #'*MlSt' }
 Collection >> replaceBy: anArrayOfValues element: anElement [
+	| i |
 	"anArrayOfValues has the same lenght than me, it is usually a broadcasted array of modes,means,..."
 	(anElement isNumber and:[ anElement isNaN])  ifTrue:[^self replaceNanBy:anArrayOfValues ].
-	^ self doWithIndex:[:e :i| e = anElement ifTrue:[self at:i put:(anArrayOfValues at:i)]]
+	i := 0.
+	^ self collect:[:e | i:=i+1. e = anElement ifTrue:[(anArrayOfValues at:i)] ifFalse:[e]]
 	
 	 
 		
