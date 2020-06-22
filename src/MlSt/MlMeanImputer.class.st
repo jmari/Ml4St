@@ -1,3 +1,8 @@
+"
+MlImputers replaces ""missing values"" by other values like Mean of each column, in this case...
+Imputers do not create a new buffer, they use replace:  by: 
+
+"
 Class {
 	#name : #MlMeanImputer,
 	#superclass : #MlImputer,

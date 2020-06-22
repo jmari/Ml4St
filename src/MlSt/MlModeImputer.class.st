@@ -1,3 +1,7 @@
+"
+MlImputers replaces ""missing values"" by other values like the Mode of each column, in this case...
+Imputers do not create a new buffer, they use replace:  by:
+"
 Class {
 	#name : #MlModeImputer,
 	#superclass : #MlImputer,

@@ -246,13 +246,13 @@ MlArrayTest >> testMetrics [
 	
 	a := MlArray  from: {{{1.0. 4.0. 7.0}. {2.0. 5.0. 8.0}.}} order:#F dType:#Float.
 	self assert:(a mean:0) equals: (MlArray from:{{1.5. 4.5. 7.5}} order:#F dType:#Float). 
-	self assert:(a mean:1 ) equals: (MlArray from:{{4.0}. {5.0}} order:#F dType:#Float). 
-	self assert:(a mean:2 ) equals: (MlArray from:{{4.5}} order:#F dType:#Float). 		
+	self assert:(a mean:1 ) equals: (MlArray from:{{4.0. 5.0}} order:#F dType:#Float). 
+	self assert:(a mean:2 ) equals: (MlArray from:{4.5} order:#F dType:#Float). 		
 	a := MlArray  from: {{{1.0. 4.0. 7.0}. {2.0. 5.0. 8.0}}} order:#C dType:#Float.
 
 	self assert:(a mean:0 ) equals: (MlArray from:{{1.5. 4.5. 7.5}} order:#C dType:#Float). 
-	self assert:(a mean:1 ) equals: (MlArray from:{{4.0}. {5.0}}  order:#C dType:#Float). 
-	self assert:(a mean:2 ) equals: (MlArray from:{{4.5}} order:#C dType:#Float). 
+	self assert:(a mean:1 ) equals: (MlArray from:{{4.0. 5.0}}  order:#C dType:#Float). 
+	self assert:(a mean:2 ) equals: (MlArray from:{4.5} order:#C dType:#Float). 
 	
 	
 	
@@ -267,7 +267,7 @@ MlArrayTest >> testMetrics [
 	self assert:(a variance:0) equals:(MlArray from:{{1.0. 1.0. 1.0}} order:#F dType:#Float). 
 
 	"default is F (in front of python) dims are columns"
-	self assert:(a mean:2) equals: (MlArray from:{{5.0}} order:#F dType:#Float). 
+	self assert:(a mean:2) equals: (MlArray from:{5.0} order:#F dType:#Float). 
 	" try in C"
 	a := MlArray  from: {{{1.0. 4.0. 7.0}. {2.0. 5.0. 8.0}. {3.0. 6.0. 9.0}}} order:#C dType:#Float.
 

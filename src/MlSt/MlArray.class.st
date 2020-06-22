@@ -428,6 +428,7 @@ MlArray >> asCArray [
 MlArray >> asFortranArray [
 	| newInstance |
 	order = #F ifTrue:[^self].
+	self nDim = 1 ifTrue:[^ self order:#F].
 	newInstance := self newInstanceLikeMe.
 	self class initializeInFStyle: newInstance shape: self shape plainCollection: self internalArray.
 	^ newInstance
@@ -625,7 +626,7 @@ MlArray >> completeSlice: aSliceArray [
 		step :=1.
 		si isInteger 
 		ifTrue:[	si < 0 
-						ifTrue:[start := 1. end:= ((self shape at:i) + si + 1)]
+						ifTrue:[start := end := ((self shape at:i) + si + 1)]
 						ifFalse:[ start := end :=si	]]
 		ifFalse:[	
 			si isSlice ifFalse:[ MlSliceError signal].
@@ -782,10 +783,35 @@ MlArray >> dType: anObject [
 							ifFalse:[self convertTypeTo:anObject]].
 ]
 
+{ #category : #accessing }
+MlArray >> dTypeAs: aBlock [
+	
+	1 to:self size do:[:i|
+		self internalArray at:i put: ( aBlock value:(self internalArray at:i))]
+]
+
 { #category : #'math functions' }
 MlArray >> decode: aMlArray [ 
 	^ self performBinaryOp: #decode: on: aMlArray 
 
+]
+
+{ #category : #'reduce operations' }
+MlArray >> describe [
+	|describeResult meanAndVariance|
+	"It is done one by one...all except mean and variance not in one pass"
+	describeResult := MlDescribeResult new.
+	
+
+	describeResult mean:(self mean:0).
+	describeResult variance: (self variance:0).
+	describeResult max: (self max:0).
+	describeResult min: (self min:0).
+	describeResult numberOfObs: (self nDim>1 ifTrue:[self shape at: (self nDim -1)] ifFalse:[self size]).
+	describeResult skewness: (self skewness:0).
+	describeResult kurtosis: (self kurtosis:0).
+	
+	^ describeResult
 ]
 
 { #category : #'math functions' }
@@ -1022,6 +1048,16 @@ MlArray >> jumpToNextBlockInAxis: axis [
 
 ]
 
+{ #category : #'reduce operations' }
+MlArray >> kurtosis [ 
+	^ self internalArray kurtosis
+]
+
+{ #category : #'reduce operations' }
+MlArray >> kurtosis: axis [
+	^ self reduce: #kurtosis axis: axis
+]
+
 { #category : #accessing }
 MlArray >> labelsDict [ 
 	"labels dict is a dictionary axis-->labels"
@@ -1076,6 +1112,16 @@ MlArray >> meanAndStd [
 { #category : #'reduce operations' }
 MlArray >> meanAndStd: axis [
 	^ self reduce: #meanAndStd axis: axis
+]
+
+{ #category : #'reduce operations' }
+MlArray >> meanAndVariance [ 
+	^ self internalArray meanAndVariance 
+]
+
+{ #category : #'reduce operations' }
+MlArray >> meanAndVariance: axis [
+	^ self reduce: #meanAndVariance axis: axis
 ]
 
 { #category : #'reduce operations' }
@@ -1319,24 +1365,33 @@ MlArray >> reduce: aSymbol axis: anAxis arguments: args [
 	"Execute a reduce function (mean,max... all values from an axis to one) 
 	aSymbol is the operation, anAxis, the axis, args an array with the arguments for the method
 	aClass is the  "
-	| axis results newShape instance slide |
+	| axis results newShape instance realAxis|
+	realAxis := self getNumberForAxis: anAxis.
 	axis := self nDim - anAxis.
 	axis < 0 ifTrue:[ axis := self shape last + 1 - axis].
 	(axis > self nDim)|( axis < 1 )ifTrue:[ MlShapeError signal:'Axis is higher than nDim']. 
-	results := Array new: (self shape at:axis).
-	"the operation 'aSymbol' sould reduce the result to 1, mean, std..."
-	slide := (Array new: self nDim withAll:_@_).
-	1 to: (self shape at:axis)  do:[:s|
-		slide at:axis put: s.
-		results  at:s put:(( self slice: slide) internalArray perform: aSymbol withEnoughArguments: args)].
+
+	"the operation 'aSymbol' should reduce the collection to 1, i.e. mean, std..."
+	results := OrderedCollection new.
+
+	self walkOnWhile:[:l :s| axis >1 ifTrue:[l < (axis -1)] ifFalse:[false]]
+		when: [:l :s| (s at:realAxis)=1 ]  
+		do:[:l :s| 
+		| slide array|
+		slide := s deepCopy.
+		realAxis to: self nDim do:[:i| slide at:i put:_@_].
+		1 to: (self shape at:axis)  do:[:s2|
+			slide at:axis put: s2.
+			array:=  self slice: slide.
+			results  add:( array internalArray perform: aSymbol withEnoughArguments: args)]].
 	
-	newShape := ((axis = self nDim) & (self nDim > 1)) 
-						ifTrue:[Array with: 1 with:(results size)]
-						ifFalse:[Array with: (results size) with:1].
-		
-	instance := self newInstanceButEmpty.
-	instance internalArray:results;shape: newShape.
-	^ instance
+	newShape := OrderedCollection newFrom:self shape .
+	(axis < (self nDim -1)) 
+		ifTrue: [ (self nDim - axis) timesRepeat:[ newShape removeLast] ] 
+		ifFalse: [newShape removeAt: realAxis]. 
+	instance := self class new shape: newShape;order:#C.
+	instance internalArray:results asArray.
+	^ (self order = #C) ifTrue:[instance] ifFalse:[instance asFortranArray] 
 ]
 
 { #category : #enumerating }
@@ -1414,6 +1469,16 @@ MlArray >> shape: anArrayOfInt [
 { #category : #'reduce operations' }
 MlArray >> size [ 
 	^ self internalArray size
+]
+
+{ #category : #'reduce operations' }
+MlArray >> skewness [ 
+	^ self internalArray skewness 
+]
+
+{ #category : #'reduce operations' }
+MlArray >> skewness: axis [
+	^ self reduce: #skewness axis: axis
 ]
 
 { #category : #'private-slicing' }
@@ -1595,10 +1660,37 @@ MlArray >> variance [
 
 { #category : #'reduce operations' }
 MlArray >> variance: axis [
+
 	^ self reduce: #variance axis: axis
 ]
 
-{ #category : #'private-accessing' }
+{ #category : #enumerating }
+MlArray >> walkOn:l slice: s while: aWhileBlock when: aConditionBlock do: aBlock [ 
+
+
+	1 to: (self shape at: l) do:[:i| 
+		s at:l put: i.
+		(aWhileBlock value:l value:s) ifTrue:[
+			self walkOn:l+1 slice: s while: aWhileBlock when: aConditionBlock do: aBlock ].
+		(aConditionBlock value:l value:s) ifTrue:[(aBlock  value:l value:s)].
+	]
+]
+
+{ #category : #enumerating }
+MlArray >> walkOnWhen: aConditionBlock do: aBlock [ 
+	self walkOn:1 slice: (Array new: self nDim withAll:1) while: [:l :s| l < self nDim]  when: aConditionBlock do: aBlock 
+
+
+]
+
+{ #category : #enumerating }
+MlArray >> walkOnWhile: aWhileBlock when: aConditionBlock do: aBlock [ 
+	self walkOn:1 slice: (Array new: self nDim withAll:1) while: aWhileBlock when: aConditionBlock do: aBlock 
+
+
+]
+
+{ #category : #enumerating }
 MlArray >> weightForAxis: anAxis [
 	| w tempShape axis|
 	axis := anAxis.

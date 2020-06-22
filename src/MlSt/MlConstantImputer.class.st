@@ -1,3 +1,8 @@
+"
+MlImputers replaces ""missing values"" by other values like Constants, in this case...
+Imputers do not create a new buffer, they use replace:  by: 
+
+"
 Class {
 	#name : #MlConstantImputer,
 	#superclass : #MlImputer,

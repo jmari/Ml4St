@@ -58,6 +58,17 @@ Collection >> encode: anArrayOfEncoders [
 ]
 
 { #category : #'*MlSt' }
+Collection >> kurtosis [
+	| meanAndStd  kurtosis n m4|
+	n:= self size.
+	meanAndStd := self meanAndStd.
+	m4 := self inject:0 into:[:sum :e| sum + ((e - meanAndStd first) **4)].
+	kurtosis := 1/n * m4 / (meanAndStd second **4).
+	^ kurtosis - 3
+		
+]
+
+{ #category : #'*MlSt' }
 Collection >> mean [
 	^ self sum / self size 
 		
@@ -72,7 +83,7 @@ Collection >> meanAndStd [
    self do:[:x|
         ex := ex + x - k.
         ex2 := ex2 + ((x - k) * (x - k))].
-   	^ Array with: ((ex + (k * self size))/self size) with:(ex2 - (ex squared / self size))/(self size - 1) sqrt
+   	^ Array with: ((ex + (k * self size))/self size) with:((ex2 - (ex squared / self size))/(self size - 1)) sqrt
 		
 ]
 
@@ -130,7 +141,7 @@ Collection >> medianFrom: start to: stop [
 Collection >> mode [ 
 	| mode |
 	mode := Dictionary new.
-	self do:[:e| (e isNumber and:[ e isNaN])  ifFalse:[ mode at:e incrementBy:1] ].
+	self do:[:e| (e isNumber and:[ e isNaN]) ifFalse:[ mode at:e incrementBy:1] ].
 	^ mode keyAtValue: (mode max)
 ]
 
@@ -224,10 +235,9 @@ Collection >> replaceAllBy: aCollectionOrNum [
 
 { #category : #'*MlSt' }
 Collection >> replaceBy: anArrayOfValues element: anElement [
-	| i |
+	"anArrayOfValues has the same lenght than me, it is usually a broadcasted array of modes,means,..."
 	(anElement isNumber and:[ anElement isNaN])  ifTrue:[^self replaceNanBy:anArrayOfValues ].
-	i := 0.
-	^ self collect:[:e | i:=i+1. e = anElement ifTrue:[(anArrayOfValues at:i)] ifFalse:[e]]
+	^ self doWithIndex:[:e :i| e = anElement ifTrue:[self at:i put:(anArrayOfValues at:i)]]
 	
 	 
 		
@@ -235,11 +245,19 @@ Collection >> replaceBy: anArrayOfValues element: anElement [
 
 { #category : #'*MlSt' }
 Collection >> replaceNanBy: anArrayOfValues [
-	| i |
-	i := 0.
-	^ self collect:[:e | i:=i+1. (e isNumber and:[ e isNaN])  ifTrue:[(anArrayOfValues at:i)] ifFalse:[e]]
-	
-	 
+
+	^ self doWithIndex:[:e :i | (e isNumber and:[ e isNaN])  
+			ifTrue:[self at:i put:(anArrayOfValues at:i)]]
+]
+
+{ #category : #'*MlSt' }
+Collection >> skewness [ 
+	| meanAndStd m3 skewness n |
+	n := self size.
+	meanAndStd := self meanAndStd.
+	m3 := self inject:0 into:[:sum :e| sum + ((e - meanAndStd first) **3)].
+	skewness := 1/n * m3 /  (meanAndStd second ** 3).
+	^ skewness  
 		
 ]
 

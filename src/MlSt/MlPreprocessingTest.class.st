@@ -11,11 +11,11 @@ MlPreprocessingTest >> testConstantImputer [
 	imputer := MlConstantImputer new.
 	imputer constant:{ 1. 2. 3. 4}.
 	imputer fit:a.
-	imputed := imputer transform.
+	imputer transform.
 "[[	[   1,   4,   7,   4]	
 	[   2,   2,   8,  11]	
 	[   1,   6,   9,  12]	]]"
-	self assert: (imputed anySatisfy:[:e | e isNaN]) not. 
+	self assert: (a anySatisfy:[:e | e isNaN]) not. 
 	
 	 
 
@@ -81,7 +81,7 @@ MlPreprocessingTest >> testModeImputer [
 "[[	[   1,   4,   7,  11]	
 	[   2,   6,   8,  11]	
 	[   1,   6,   9,  12]	]]"
-	self assert: (imputed anySatisfy:[:e | e isNaN]) not. 
+	self assert: (a anySatisfy:[:e | e isNaN]) not. 
 	
 	 
 
