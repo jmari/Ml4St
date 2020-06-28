@@ -38,26 +38,6 @@ Collection >> confusionMatrix: aCollection [
 ]
 
 { #category : #'*MlSt' }
-Collection >> decode: anArrayOfEncoders [ 
-	| i |
-	i := 0.
-	^ self collect:[:e | i:=i+1. (anArrayOfEncoders at:i) decode:e]
-	
-	 
-		
-]
-
-{ #category : #'*MlSt' }
-Collection >> encode: anArrayOfEncoders [ 
-	| i |
-	i := 0.
-	^ self collect:[:e | i:=i+1. (anArrayOfEncoders at:i) encode:e]
-	
-	 
-		
-]
-
-{ #category : #'*MlSt' }
 Collection >> kurtosis [
 	| meanAndStd  kurtosis n m4|
 	n:= self size.
@@ -182,26 +162,6 @@ Collection >> mse: aCollection [
 	^ { #mse -> mse.
 		 #scc -> scc } as: SmallDictionary
 		
-		
-]
-
-{ #category : #'*MlSt' }
-Collection >> oneHotDecode: anArrayOfEncoders [ 
-	| i |
-	i := 0.
-	^ self collect:[:e | i:=i+1. (anArrayOfEncoders at:i) oneHotDecode:e]
-	
-	 
-		
-]
-
-{ #category : #'*MlSt' }
-Collection >> oneHotEncode: anArrayOfEncoders [ 
-	| i |
-	i := 0.
-	^ self collect:[:e | i:=i+1. (anArrayOfEncoders at:i) oneHotEncode:e]
-	
-	 
 		
 ]
 

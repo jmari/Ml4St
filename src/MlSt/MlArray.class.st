@@ -282,7 +282,7 @@ MlArray >> < aNumber [
 	^ self select:[:e| e< aNumber]
 ]
 
-{ #category : #piping }
+{ #category : #accessing }
 MlArray >> <- aMlArray [
 	self shape = aMlArray shape ifFalse:[MlShapeError signal].
 	self internalArray replaceFrom: 1 to: self size with: aMlArray internalArray  startingAt: 1 
@@ -378,6 +378,11 @@ MlArray >> adaptSizeOfArray: anArray [
 ]
 
 { #category : #converting }
+MlArray >> adaptToNumber: rcvr andSend: selector [
+	^ self perform:selector with: rcvr
+]
+
+{ #category : #converting }
 MlArray >> addDimension [
 	self shape: ({1} , self shape) 
 
@@ -389,6 +394,36 @@ MlArray >> addDimensionAtEnd [
 	self shape: (self shape,{1}) 
 
 
+]
+
+{ #category : #'as yet unclassified' }
+MlArray >> aggragate: anAssociation by: aBlock [
+	"an association shoud be"
+	| agKeys agValues  values sum  r valueRows  keyRows |
+	agKeys := anAssociation key isInteger 
+					ifTrue:[{anAssociation key}]
+					ifFalse:[anAssociation key].
+	agKeys :=  agKeys collect:[:v|(self labelsDictAt: (self nDim -1)) at:v].
+	agValues := anAssociation value isInteger 
+					ifTrue:[{anAssociation value}]
+					ifFalse:[anAssociation value].
+					
+	agValues := agValues collect:[:v|(self labelsDictAt: (self nDim -1)) at:v].
+
+
+	sum := Dictionary new.
+	(1 to: (self shape at: self nDim -1)) doWithIndex:[:k :i|
+		values := self at:{i. agValues}.	
+		sum at: (self at:{i. agKeys}) as1DArray add: values].
+	
+	r := OrderedCollection new.
+	sum keysAndValuesDo:[:k :v| r add: ((aBlock value:k value:v) as1DArray)].
+
+	keyRows := self class from: sum keys order: self order dType:#Object.
+	valueRows := self class from: r  order: self order dType:#Object.	
+	^ keyRows  concat:valueRows axis:1
+
+	
 ]
 
 { #category : #enumerating }
@@ -572,12 +607,14 @@ MlArray >> byteSize [
 
 { #category : #'private-labeling' }
 MlArray >> changeLabelsByIndexes: anArrayOfInt [
-	"@TODO change labels  "
+	|result|
+	
+	result:= Array new: anArrayOfInt size.
 	anArrayOfInt doWithIndex:[:o :i| 
-		anArrayOfInt at:i put: 
+		result at:i put: 
 		(o isArray ifTrue:[ o collect:[:e| (self labelsDictAt:i) at:e]]
 					 ifFalse:[(self labelsDictAt:i) at:o])].
-	^ anArrayOfInt
+	^ result
 ]
 
 { #category : #'private-accessing' }
@@ -741,9 +778,14 @@ MlArray >> copyUpToLast: aMlArray [
 
 ]
 
-{ #category : #enumerating }
+{ #category : #'reduce operations' }
 MlArray >> count: aBlock [ 
-	^ self internalArray count:aBlock.
+	^ self count: aBlock onAxis: 0
+]
+
+{ #category : #'reduce operations' }
+MlArray >> count: aBlock onAxis: axis [
+	^ self reduce: #count: axis: axis arguments:{aBlock}
 ]
 
 { #category : #'private-slicing' }
@@ -761,10 +803,11 @@ MlArray >> createNewSlicedInstance: indexes shape: newShape [
 
 { #category : #'private-slicing' }
 MlArray >> createNewSlicedReference:indexes shape: newShape [
-
+	
 	| newInstance  |
+	self flag: #todo. "column labels are not replicated in the new instance"
 	newInstance := self newInstanceButEmpty. 
-	newInstance internalArray: (MlNonContinuousArray newFromArray: self internalArray). 
+	newInstance internalArray: self internalArray. 
 	newInstance internalArray validRanges: (indexes sort:[:a :b| a first < b first]).
 	newInstance shape: newShape.
 	^ newInstance
@@ -915,6 +958,7 @@ MlArray >> getIndexesSortingBy: aBlock [
 	array:= Array new: self size .
 	(1 to: self size  by: steps + 1) do:[:e |
 		buffer := self internalArray copyFrom:e  to: (e + steps ).
+		"we sort each element of the axis"
 		array replaceFrom: e to: (e + steps ) with: ((buffer getIndexesSortingBy: aBlock) + (e-1)) startingAt: 1  ].
 	
 	^ array  
@@ -1437,6 +1481,37 @@ MlArray >> reshape: anArrayOfInt [
 	self shape: newShape								
 ]
 
+{ #category : #sorting }
+MlArray >> resortBy: anIndexArray onAxis: axis [
+	
+	| b  realAxis  slice |
+	realAxis := self getNumberForAxis: axis.
+	slice := Array new: self nDim withAll: _@_.
+	1 to: (self shape at: realAxis) do:[:a|	
+				slice at: realAxis put: a.
+				b := self at: slice.
+				b performBinaryOp: #applyNewIndexOrder: on: anIndexArray]
+
+]
+
+{ #category : #sorting }
+MlArray >> resortByColumn: indexOrNameOfColumn [ 
+	self resortByColumn: indexOrNameOfColumn where: [ :a :b | a < b ] 
+]
+
+{ #category : #sorting }
+MlArray >> resortByColumn: indexOrNameOfColumn where: aBlock [ 
+	|columns slide z si |
+
+	slide := Array new: self nDim withAll: _@_.
+	slide at: slide size put: indexOrNameOfColumn.
+	columns := self changeLabelsByIndexes: slide.
+	z := self at: columns.
+	si := z getIndexesSortingBy: aBlock.
+	self resortBy: si onAxis:1
+	
+]
+
 { #category : #enumerating }
 MlArray >> select: aBlock [ 
 	| nc i |
@@ -1540,37 +1615,6 @@ MlArray >> sliceUsingBooleanFilter: aSliceArray [
 
 ]
 
-{ #category : #sorting }
-MlArray >> sortBy: anIndexArray onAxis: axis [
-	
-	| b  realAxis  slide |
-	realAxis := self getNumberForAxis: axis.
-	slide := Array new: self nDim withAll: _@_.
-	1 to: (self shape at: realAxis) do:[:a|	
-				slide at: realAxis put: a.
-				b := self at: slide.
-				b performBinaryOp: #applyNewIndexOrder: on: anIndexArray]
-
-]
-
-{ #category : #sorting }
-MlArray >> sortByColumn: indexOrNameOfColumn [ 
-	self sortByColumn: indexOrNameOfColumn where: [ :a :b | a < b ] 
-]
-
-{ #category : #sorting }
-MlArray >> sortByColumn: indexOrNameOfColumn where: aBlock [ 
-	|columns slide z si |
-
-	slide := Array new: self nDim withAll: _@_.
-	slide at: slide size put: indexOrNameOfColumn.
-	columns := self changeLabelsByIndexes: slide.
-	z := self at: columns.
-	si := z getIndexesSortingBy: aBlock.
-	self sortBy: si onAxis:1
-	
-]
-
 { #category : #'math functions' }
 MlArray >> sparsity [
 	^ 1- (self count:[:e| e ~= 0] / self size)
@@ -1644,7 +1688,10 @@ MlArray >> transposed [
 	|instance|
 	self order = #C ifTrue:[instance := self asFortranArray order:#C].
 	self order = #F ifTrue:[instance := self asCArray order:#F].
-	instance shape: (self switchShapeOrder: self shape).
+	self nDim >1 
+		ifTrue:[instance shape: (self switchShapeOrder: self shape)]
+		ifFalse:[instance reshape: {instance size. 1}].
+	
 	^ instance
 
 ]

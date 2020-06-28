@@ -6,24 +6,33 @@ Class {
 
 { #category : #tests }
 MlFromCSVTest >> testLoadCSV [
-	| fs titanic work neo headers imputer imputed |
+	| fs titanic work neo headers imputer iTitanic nilValues emptyStringValues |
+	"load the file in a MlArray"
 	work := FileSystem disk workingDirectory. 
 	fs := (work / 'Titanic_train.csv') readStream.
 	neo := (NeoCSVReader on: fs).
+	"we first load the column labels and then the data"
 	headers := neo readHeader.
 	titanic := MlArray from: neo upToEnd.
 	titanic setLabels: headers onAxis: 1. 
+	nilValues := titanic count:[:v | v isNil].
+	titanic inspect. 
+	emptyStringValues := titanic count:[:v | v =''].
+	emptyStringValues inspect. 
+	"we will change nil values by the mode"
 	imputer := MlModeImputer new missingValue: nil.
 	
 	imputer fit: titanic.
-	imputed := imputer transform.
+	iTitanic := imputer transform.
 	"imputers do not create a new buffer, they use replace:  by: "
 	"convert column types to integer and float"
-	(imputed at:{_@_. {1@3. 6@8}}) <- (imputed at:{_@_. {1@3. 6@8}}) transform:[:v| v asInteger].
-	(imputed at:{_@_. -3})<- (imputed at:{_@_. -3}) transform:[:v| v asNumber ].
-	imputed inspect.
-	(imputed at:{_@_. {1@3. 6@8}}) describe inspect.
-	self assert: (imputed anySatisfy:[:e | e isNil]) not. 
+	(iTitanic at:{_@_. {1@3. 6@8}}) <- (iTitanic at:{_@_. {1@3. 6@8}}) transform:[:v| v asInteger].
+	(iTitanic at:{_@_. -3})<- (iTitanic at:{_@_. -3}) transform:[:v| v asNumber ].
+	(iTitanic at:{_@_. {1@3. 6@8}}) describe.
+	
+	
+	
+	self assert: (iTitanic anySatisfy:[:e | e isNil]) not. 
 	
 	
  	

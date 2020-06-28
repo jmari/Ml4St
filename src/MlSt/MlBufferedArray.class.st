@@ -12,6 +12,13 @@ Class {
 	#category : #'MlSt-Core'
 }
 
+{ #category : #comparing }
+MlBufferedArray >> = anArray [
+	anArray size = self size ifFalse:[^false].
+	1 to:self size do:[:i| (self at:i) ~= (anArray at:i) ifTrue:[^false]].
+	^ true
+]
+
 { #category : #accessing }
 MlBufferedArray >> at: anObject [
 	self subclassResponsibility 
@@ -55,6 +62,46 @@ MlBufferedArray >> bufferSpecies [
 { #category : #accessing }
 MlBufferedArray >> byteSize [
 	^ self buffer byteSize
+]
+
+{ #category : #'*MlSt' }
+MlBufferedArray >> decode: anArrayOfEncoders [ 
+	| i |
+	i := 0.
+	^ self collect:[:e | i:=i+1. (anArrayOfEncoders at:i) decode:e]
+	
+	 
+		
+]
+
+{ #category : #'*MlSt' }
+MlBufferedArray >> encode: anArrayOfEncoders [ 
+	| i |
+	i := 0.
+	^ self collect:[:e | i:=i+1. (anArrayOfEncoders at:i) encode:e]
+	
+	 
+		
+]
+
+{ #category : #'*MlSt' }
+MlBufferedArray >> oneHotDecode: anArrayOfEncoders [ 
+	| i |
+	i := 0.
+	^ self collect:[:e | i:=i+1. (anArrayOfEncoders at:i) oneHotDecode:e]
+	
+	 
+		
+]
+
+{ #category : #'*MlSt' }
+MlBufferedArray >> oneHotEncode: anArrayOfEncoders [ 
+	| i |
+	i := 0.
+	^ self collect:[:e | i:=i+1. (anArrayOfEncoders at:i) oneHotEncode:e]
+	
+	 
+		
 ]
 
 { #category : #accessing }
