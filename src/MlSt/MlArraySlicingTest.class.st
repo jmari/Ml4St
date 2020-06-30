@@ -265,14 +265,14 @@ MlArraySlicingTest >> testSliceFByReference [
 	self assert: b equals: s.
 	self assert: b shape equals:#(2 4 1).
 	
-	b := a at:{1@_. 1@_. 1@_}.
+	b := a at:{_. _. _}.
 	
 	self assert: b shape equals:#(2 4 3).
 	self assert: b equals: a.
 	self deny:( b == a).
 	self deny:( b internalArray buffer == a internalArray buffer).
 	
-	b := a at:{1@_. 1@_. 1@1} put:0.
+	b := a at:{_. _. 1@1} put:0.
 
 	s := MlArray from: #(
 								#(
@@ -348,13 +348,13 @@ MlArraySlicingTest >> testSliceFCopy [
 	self assert: b equals: s.
 	self assert: b shape equals:#(2 4 1).
 	
-	b := a slice:{1@_. 1@_. 1@_} copy:true.
+	b := a slice:{_. _. _} copy:true.
 	
 	self assert: b shape equals:#(2 4 3).
 	self assert: b equals: a.
 	self deny:( b == a).
 	
-	b := a at:{1@_. 1@_. 1@1} put:0.
+	b := a at:{_. _. 1} put:0.
 
 	s := MlArray from: #(
 								#(

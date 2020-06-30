@@ -17,7 +17,6 @@ MlStridesTest >> testBooleanFilters1D [
 	b := a at:[:v| v>=10].	
 	d := a at:b.
 	sol :=  MlArray from: #( 10 10 11 12 11 10 11 12 20 10 11 12 56).
-	self assert:d equals: (a >=10).
 	self assert:d equals: sol.
 	
 							

@@ -83,10 +83,9 @@ MlArrayTest >> testComparing [
 
 	| a b |
 	a := MlArray  from: #(#(#(1 2 3) #(4 5 6) #(7 8 9)) ).	
-	b := a > 3.
-	self assert: b shape equals: {6.}.
-	b := a < 3.
-	self assert: b shape equals: {2.}
+	b := a at:{_. _. ((a at:{_. _. 1}) > 3)}.
+	self assert: b shape equals: {1. 3. 2}.
+
 
 	
 
@@ -181,7 +180,7 @@ MlArrayTest >> testEquality [
 	self assert: (a = d) .
 	
 	b := a > 2.
-	self assert: b nDim equals: 1
+	self assert: b nDim equals: 3
 	
 
 ]

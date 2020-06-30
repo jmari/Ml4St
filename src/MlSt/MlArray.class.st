@@ -12,8 +12,7 @@ Class {
 		'order',
 		'dType',
 		'labelsDict',
-		'maxElementsToPrint',
-		'index'
+		'maxElementsToPrint'
 	],
 	#classInstVars : [
 		'shape',
@@ -279,12 +278,12 @@ MlArray >> /= aMlArray [
 
 { #category : #comparing }
 MlArray >> < aNumber [
-	^ self select:[:e| e< aNumber]
+	^ self eval:[:e| e< aNumber]
 ]
 
 { #category : #accessing }
 MlArray >> <- aMlArray [
-	self shape = aMlArray shape ifFalse:[MlShapeError signal].
+	self shape = aMlArray shape ifFalse:[MlShapeError signal:'Both Arrays should have the same shape' ].
 	self internalArray replaceFrom: 1 to: self size with: aMlArray internalArray  startingAt: 1 
 ]
 
@@ -295,24 +294,24 @@ MlArray >> << aTransformer [
 
 { #category : #comparing }
 MlArray >> <= aNumber [
-	^ self select:[:e| e<= aNumber]
+	^ self eval:[:e| e<= aNumber]
 ]
 
 { #category : #comparing }
 MlArray >> = aMlArrayOrNumber [
-	^ aMlArrayOrNumber isNumber| (aMlArrayOrNumber isKindOf:Boolean)|(aMlArrayOrNumber isString) 
-		ifTrue:[self select:[:e| e = aMlArrayOrNumber] ]
+	^ aMlArrayOrNumber isNumber| (aMlArrayOrNumber isKindOf:Boolean)|(aMlArrayOrNumber isString)|(aMlArrayOrNumber isNil) 
+		ifTrue:[self eval:[:e| e = aMlArrayOrNumber] ]
 		ifFalse:[self internalArray = aMlArrayOrNumber internalArray and:[self order = aMlArrayOrNumber order and:[self shape= aMlArrayOrNumber shape]] ]
 ]
 
 { #category : #comparing }
 MlArray >> > aNumber [
-	^ self select:[:e| e> aNumber]
+	^ self eval: [:e| e> aNumber]
 ]
 
 { #category : #comparing }
 MlArray >> >= aNumber [
-	^ self select:[:e| e>= aNumber]
+	^ self eval:[:e| e>= aNumber]
 ]
 
 { #category : #piping }
@@ -365,7 +364,7 @@ MlArray >> adaptSizeOfArray: anArray [
 							ifFalse:[self size = anArray size].
 	sameColumns := self shape last = anArray shape last.
 	
-	(sameRows | sameColumns) ifFalse:[MlShapeError signal].
+	(sameRows | sameColumns) ifFalse:[MlShapeError signal:('Array ' ,anArray asString ,' could not be broadcasted')].
 	self order = #F 
 		ifTrue:[ 
 			(sameColumns) ifTrue:[newArray:=MlElementRepeatedVector newFrom:anArray internalArray timesRepeat:tr ].
@@ -394,36 +393,6 @@ MlArray >> addDimensionAtEnd [
 	self shape: (self shape,{1}) 
 
 
-]
-
-{ #category : #'as yet unclassified' }
-MlArray >> aggragate: anAssociation by: aBlock [
-	"an association shoud be"
-	| agKeys agValues  values sum  r valueRows  keyRows |
-	agKeys := anAssociation key isInteger 
-					ifTrue:[{anAssociation key}]
-					ifFalse:[anAssociation key].
-	agKeys :=  agKeys collect:[:v|(self labelsDictAt: (self nDim -1)) at:v].
-	agValues := anAssociation value isInteger 
-					ifTrue:[{anAssociation value}]
-					ifFalse:[anAssociation value].
-					
-	agValues := agValues collect:[:v|(self labelsDictAt: (self nDim -1)) at:v].
-
-
-	sum := Dictionary new.
-	(1 to: (self shape at: self nDim -1)) doWithIndex:[:k :i|
-		values := self at:{i. agValues}.	
-		sum at: (self at:{i. agKeys}) as1DArray add: values].
-	
-	r := OrderedCollection new.
-	sum keysAndValuesDo:[:k :v| r add: ((aBlock value:k value:v) as1DArray)].
-
-	keyRows := self class from: sum keys order: self order dType:#Object.
-	valueRows := self class from: r  order: self order dType:#Object.	
-	^ keyRows  concat:valueRows axis:1
-
-	
 ]
 
 { #category : #enumerating }
@@ -608,12 +577,12 @@ MlArray >> byteSize [
 { #category : #'private-labeling' }
 MlArray >> changeLabelsByIndexes: anArrayOfInt [
 	|result|
-	
+
 	result:= Array new: anArrayOfInt size.
 	anArrayOfInt doWithIndex:[:o :i| 
 		result at:i put: 
-		(o isArray ifTrue:[ o collect:[:e| (self labelsDictAt:i) at:e]]
-					 ifFalse:[(self labelsDictAt:i) at:o])].
+		(o isArray ifTrue:[ o collect:[:e| (self labelsDictAt:i) translate: e]]
+					 ifFalse:[(self labelsDictAt:i) translate: o])].
 	^ result
 ]
 
@@ -692,7 +661,7 @@ MlArray >> completeSlice: aSliceArray [
 				collectionOfSlices add:subcollection asArray
 				]
 			ifFalse:[
-				sliceForDim isMlArray 
+				sliceForDim isMlArray | (sliceForDim isNil)
 				ifTrue:[completeSlice value: _@_ value: dimIndex value: collectionOfSlices]
 				ifFalse:[	completeSlice value: sliceForDim value: dimIndex value: collectionOfSlices]]
 	].
@@ -708,7 +677,7 @@ MlArray >> concat: aMlArray axis: standarAxisNumber [
 	
 	axis := self getNumberForAxis: standarAxisNumber.
 
-	(self isShapeOf: aMlArray concatenableAlongAxis: axis) ifFalse:[MlShapeError signal].
+	(self isShapeOf: aMlArray concatenableAlongAxis: axis) ifFalse:[MlShapeError signal:(aMlArray asString,' is not concatenable on axis:', axis)].
 	
 	instance := self newInstanceButShaped: (self shape deepCopy 
 															at: axis 
@@ -1028,6 +997,41 @@ MlArray >> getNumberForAxis: anAxis [
 
 ]
 
+{ #category : #'reduce operations' }
+MlArray >> groupBy: anAssociation aggregate: aBlock [
+	"an association shoud be {keys}->{aggregated values}"
+	| agKeys agValues  values sum  r valueRows  keyRows labelsForGroup |
+	self nDim ~=2 ifTrue:[MlShapeError signal: (self asString,' should be a 2D Array')].
+	labelsForGroup :=	OrderedCollection new.
+	agKeys := anAssociation key isInteger | (anAssociation key isString)
+					ifTrue:[{anAssociation key}]
+					ifFalse:[anAssociation key].
+	
+	labelsForGroup addAll:agKeys.
+	agKeys :=  agKeys collect:[:v|(self labelsDictAt: (self nDim )) translate:v].
+	agValues := anAssociation value isInteger | (anAssociation value isString )
+					ifTrue:[{anAssociation value}]
+					ifFalse:[anAssociation value].
+	labelsForGroup addAll:agValues.
+	agValues := agValues collect:[:v|(self labelsDictAt: (self nDim )) translate:v].
+
+
+	sum := Dictionary new.
+	(1 to: (self shape at: self nDim -1)) doWithIndex:[:k :i|
+		values := self at:{i. agValues}.	
+		sum at: (self at:{i. agKeys}) as1DArray add: values].
+	
+	r := OrderedCollection new.
+	sum keysAndValuesDo:[:k :v| r add: ((aBlock value:k value:v) as1DArray)].
+	keyRows := self class from: sum keys order: self order dType:#Object.
+	valueRows := self class from: r  order: self order dType:#Object.	
+
+	
+	^ (keyRows  concat:valueRows axis:1) setLabels: labelsForGroup onAxis:1. 
+
+	
+]
+
 { #category : #enumerating }
 MlArray >> inject: aValue into: aBlock [ 
 	^ self internalArray inject: aValue into:aBlock
@@ -1056,8 +1060,9 @@ MlArray >> isAnArrayOfSlices: arrayOfPoints [
 	| n |
 	arrayOfPoints isNumber ifTrue:[MlShapeError signal].
 	arrayOfPoints ifNil:[MlIndexTypeError signal].
-	n := arrayOfPoints detect:[:e | e isPoint | e isSlice | e isArray | e isMlArray] ifNone:[nil].
-	^ n notNil
+	n := false.
+	arrayOfPoints detect:[:e | e isPoint | e isSlice | e isArray | e isMlArray| e isNil] ifFound:[n := true].
+	^ n 
 ]
 
 { #category : #testing }
@@ -1107,9 +1112,15 @@ MlArray >> labelsDict [
 	^ labelsDict ifNil:[ labelsDict := SmallDictionary new]
 ]
 
+{ #category : #accessing }
+MlArray >> labelsDict: aSmallDictionary [ 
+	"labels dict is a dictionary axis-->labels"
+	labelsDict := aSmallDictionary
+]
+
 { #category : #labeling }
 MlArray >> labelsDictAt: anInteger [ 
-	^ self labelsDict at: anInteger ifAbsentPut:[MlLabelDict new]
+	^ self labelsDict at: anInteger ifAbsentPut:[MlLabelTranslator new]
 ]
 
 { #category : #'reduce operations' }
@@ -1242,7 +1253,10 @@ MlArray >> nDim [
 { #category : #'private-creating' }
 MlArray >> newInstanceButBool [
 
-	^ self class new: self shape deepCopy order:self order dType: #Boolean.
+	| i |
+	i:= self class new: self shape deepCopy order:self order dType: #Boolean.
+	i labelsDict: self labelsDict.
+	^i
 	
 ]
 
@@ -1251,6 +1265,7 @@ MlArray >> newInstanceButEmpty [
 	| i |
 	i := self class new.
 	i shape: self shape deepCopy; order:self order; dType: self dType.
+	i labelsDict: self labelsDict deepCopy.
 	^i
 ]
 
@@ -1266,6 +1281,7 @@ MlArray >> newInstanceButShaped: aShape [
 MlArray >> newInstanceLikeMe [
 	| i |
 	i := self class new: self shape deepCopy order:self order dType: self dType.
+	i labelsDict: self labelsDict.
 	^i
 ]
 
@@ -1527,7 +1543,7 @@ MlArray >> setLabels: anArray onAxis: standarAxisNumber [
 	(axis <1 | axis > self nDim) ifTrue:[ ^ MlShapeError signal:('dimension  ', axis asString,' does not exist') ].
 	(anArray size = (self shape at: axis)) ifFalse:[ ^ MlShapeError signal:('labels should have ',(self shape at: axis) asString,' elements') ].
 	
-	self labelsDict at: axis put: (MlLabelDict newFrom:anArray)
+	self labelsDict at: axis put: (MlLabelTranslator newFrom:anArray)
 ]
 
 { #category : #accessing }
@@ -1596,8 +1612,19 @@ MlArray >> slice: aSliceArray copy: makeCopy [
 	newInstance := makeCopy
 		ifTrue: [ self createNewSlicedInstance: indexes shape: newShape ]
 		ifFalse: [ self createNewSlicedReference: indexes shape: newShape ].
-	
-	^ newInstance sliceUsingBooleanFilter: aSliceArray.
+	newInstance := newInstance sliceUsingBooleanFilter: aSliceArray.
+	newInstance sliceLabels: slice.
+	^newInstance 
+]
+
+{ #category : #'private-slicing' }
+MlArray >> sliceLabels: slice [
+
+	| ld |
+	slice doWithIndex:[:s :i|
+		ld := (self labelsDictAt: i) slice:s.
+		self labelsDict at: i put: ld
+		]
 ]
 
 { #category : #'private-slicing' }
@@ -1778,7 +1805,9 @@ MlArray >> | aMlArray [
 
 { #category : #comparing }
 MlArray >> ~= aMlArrayOrNumber [
-		^ aMlArrayOrNumber isNumber| (aMlArrayOrNumber isKindOf:Boolean)|(aMlArrayOrNumber isString)
-		ifTrue:[self select:[:e| e ~= aMlArrayOrNumber] ]
+	^ aMlArrayOrNumber isNumber| (aMlArrayOrNumber isKindOf:Boolean)|(aMlArrayOrNumber isString)|(aMlArrayOrNumber isNil) 
+		ifTrue:[self eval:[:e| e ~= aMlArrayOrNumber] ]
 		ifFalse:[(self = aMlArrayOrNumber) not ] 
+		
+	
 ]

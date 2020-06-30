@@ -110,7 +110,7 @@ MlNonContinuousArray >> add: newObject [
 MlNonContinuousArray >> applyBooleanFilter: aBooleanArray [
 	|  lastBool collectionOfStrides lastAdded newSize  instance |
 
-	aBooleanArray size = self size ifFalse:[MlShapeError signal].
+	aBooleanArray size = self size ifFalse:[MlShapeError signal: 'Both MlArrays should have the same size'].
 	collectionOfStrides := OrderedCollection new.
 	lastBool:=false.
 	lastAdded := collectionOfStrides add: 1.
