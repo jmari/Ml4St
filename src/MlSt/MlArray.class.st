@@ -1,6 +1,50 @@
 "
-I am a structure of array based on numpy Arrays.
-I can slice do a lot of usefull operations for machine learning.
+!MlArray
+MlArrays es un objeto que implementa arrays multidimensionales sobre un array lineal definido en la clase MlNonContinuousVector. 
+MlArray puede crearse de numerosas maneras, por ejemplo, partiendo de una colección existente:
+[[[
+a := #(1 2 3 4 ) asMlArray
+]]]
+
+mediante el método de clase #from:aCollection
+[[[
+a := MlArray from: #(1 2 3 4)
+]]]
+
+o bien especificando la forma del MlArray con #new: shape
+[[[
+a:= MlArray new: #(2 3)
+]]]
+Podemos comprobar la forma y orden en memoria del MlArray mediante #shape y #order. El array puede ordenarse según el orden Fortran o C.  Al contrario que en numpy arrays, el array se organiza en memoria en orden Fortran.
+[[[
+{a shape. a order}
+]]]
+
+Los elementos se almacenan en una instancia de la clase MlNonContinuousVector. Este objeto es un array continuo en memoria, en el que podemos aplicar saltos a la hora de acceder a sus elementos, de manera que si indicamos que queremos saltarnos, por ejemplo, los elementos 3,4,5, al utilizar el método #at: 3 , la posición 3, nos devolverá el 6 elemento. Esta facilidad permite laoperación de Slice del MlArray multidimendional, cálculando los fragmentos del array que deben saltarse a la hora de acceder a una determinada posición.
+[[[
+a:= MlArray from: #((1 2 3) (4 5 6)) 
+]]]
+
+Si examinamos la variable de instancia internalArray, vemos que es de clase MlNonContinuousVector y su contenido está ordenado por columnas->filas (Estilo Fortran):
+[[[
+a internalArray 
+]]]
+ Para saber el número de dimensiones del array disponemos del método nDim.
+[[[
+a nDim 
+]]]
+Cuando creamos un MlArray a partir de una colección de Smalltalk, el tipo de dato de los elementos, es reconocido automáticamente a partir de los elementos de la primera fila y primera columna. Si se encuentran clases diferentes en estas posiciones, el tipo elegido será Object.
+Dependiendo de la clase encontrada, el arreglo  interno empleada será el  que mejor se ajuste a la clase de los elementos. La estructura interna del MlNonContinuousVector puede ser 
+- FloatArray, si el tipo es #Float.
+- IntegerArray, si el tipo es #Integer
+- WordArray, si el tipo es #Word 
+- DoubleWordArray, si el tipo es #DoubleWord 
+- ByteArray, si el tipo es #Byte
+- Array, si el tipo es diferente entre columnas/filas.
+
+
+
+ 
 
 "
 Class {
