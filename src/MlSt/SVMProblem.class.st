@@ -20,7 +20,7 @@ SVMProblem class >> fieldsDesc [
 	^ #(
 		int l;
 		double *y;
-		LNSVMFeatureNode  **x;
+		SVMNode  **x;
 		)
 ]
 

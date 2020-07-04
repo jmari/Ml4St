@@ -12,7 +12,7 @@ Public API and Key Messages
 
 "
 Class {
-	#name : #MlNonContinuousArray,
+	#name : #MlNonContinuousVector,
 	#superclass : #MlBufferedArray,
 	#type : #variable,
 	#instVars : [
@@ -22,7 +22,7 @@ Class {
 }
 
 { #category : #'instance creation' }
-MlNonContinuousArray class >> new: size [
+MlNonContinuousVector class >> new: size [
 	"buffer in a nonContinuousArray could be a nonContinuousArray when MlArray comes 
 	from a slice operation.
 	Normally this constructor is called by the 2on arg in a bynary operation so that
@@ -44,7 +44,7 @@ MlNonContinuousArray class >> new: size [
 ]
 
 { #category : #'instance creation' }
-MlNonContinuousArray class >> newFromArray: bufferObject [
+MlNonContinuousVector class >> newFromArray: bufferObject [
 	| instance |
 
 	instance := self basicNew.
@@ -54,7 +54,7 @@ MlNonContinuousArray class >> newFromArray: bufferObject [
 ]
 
 { #category : #'accumulator ops' }
-MlNonContinuousArray >> *= anArray [
+MlNonContinuousVector >> *= anArray [
 	self isSliced not & (self buffer respondsTo: #*=)
 	ifTrue:[self buffer *= anArray]
 	ifFalse:[ 1 to:self size do:[:i| self at:i put:((self at:i) * anArray at:i)]]
@@ -62,14 +62,14 @@ MlNonContinuousArray >> *= anArray [
 ]
 
 { #category : #'accumulator ops' }
-MlNonContinuousArray >> += anArray [
+MlNonContinuousVector >> += anArray [
 	self isSliced not & (self buffer respondsTo: #+=)
 	ifTrue:[self buffer += anArray]
 	ifFalse:[ 1 to:self size do:[:i| self at:i put:((self at:i) + anArray at:i)]]
 ]
 
 { #category : #'accumulator ops' }
-MlNonContinuousArray >> , anArray [
+MlNonContinuousVector >> , anArray [
 	^ self isSliced not & (self buffer respondsTo: #,)
 		ifTrue:[self class newFromArray:(self buffer , anArray)]
 		ifFalse:[
@@ -81,33 +81,33 @@ MlNonContinuousArray >> , anArray [
 ]
 
 { #category : #'accumulator ops' }
-MlNonContinuousArray >> -= anArray [
+MlNonContinuousVector >> -= anArray [
 	self isSliced not & (self buffer respondsTo: #-=)
 	ifTrue:[self buffer -= anArray]
 	ifFalse:[ 1 to:self size do:[:i| self at:i put:((self at:i) - anArray at:i)]]
 ]
 
 { #category : #'accumulator ops' }
-MlNonContinuousArray >> /= anArray [
+MlNonContinuousVector >> /= anArray [
 	self isSliced not & (self buffer respondsTo: #/=)
 	ifTrue:[self buffer /= anArray]
 	ifFalse:[ 1 to:self size do:[:i| self at:i put:((self at:i) / anArray at:i)]]
 ]
 
 { #category : #'accumulator ops' }
-MlNonContinuousArray >> \\= anArray [
+MlNonContinuousVector >> \\= anArray [
 	self isSliced not & (self buffer respondsTo: #\\=)
 	ifTrue:[self buffer \\= anArray]
 	ifFalse:[ 1 to:self size do:[:i| self at:i put:((self at:i) \\ anArray at:i)]]
 ]
 
 { #category : #adding }
-MlNonContinuousArray >> add: newObject [
+MlNonContinuousVector >> add: newObject [
 	self shouldNotImplement
 ]
 
 { #category : #'sorting and filtering' }
-MlNonContinuousArray >> applyBooleanFilter: aBooleanArray [
+MlNonContinuousVector >> applyBooleanFilter: aBooleanArray [
 	|  lastBool collectionOfStrides lastAdded newSize  instance |
 
 	aBooleanArray size = self size ifFalse:[MlShapeError signal: 'Both MlArrays should have the same size'].
@@ -133,7 +133,7 @@ MlNonContinuousArray >> applyBooleanFilter: aBooleanArray [
 ]
 
 { #category : #'sorting and filtering' }
-MlNonContinuousArray >> applyNewIndexOrder: anArrayOfIndexes [ 
+MlNonContinuousVector >> applyNewIndexOrder: anArrayOfIndexes [ 
 	| copy |
 	copy := self deepCopy.
 	anArrayOfIndexes doWithIndex:[:i :j| self at:j put: (copy at:i)].
@@ -141,7 +141,7 @@ MlNonContinuousArray >> applyNewIndexOrder: anArrayOfIndexes [
 ]
 
 { #category : #accessing }
-MlNonContinuousArray >> at: aPos [
+MlNonContinuousVector >> at: aPos [
 	^ self buffer at: (self fakeAt: aPos)
 
 	
@@ -150,7 +150,7 @@ MlNonContinuousArray >> at: aPos [
 ]
 
 { #category : #accessing }
-MlNonContinuousArray >> at: aPos put: aValue [
+MlNonContinuousVector >> at: aPos put: aValue [
 	^ self buffer at: (self fakeAt: aPos) put:aValue
 
 	
@@ -159,7 +159,7 @@ MlNonContinuousArray >> at: aPos put: aValue [
 ]
 
 { #category : #'sorting and filtering' }
-MlNonContinuousArray >> bubbleSort: conditionBlock [
+MlNonContinuousVector >> bubbleSort: conditionBlock [
  | tmp |
 ^ [ |swaped i sortedIndexes|
 		swaped := true.
@@ -183,13 +183,13 @@ MlNonContinuousArray >> bubbleSort: conditionBlock [
 ]
 
 { #category : #enumerating }
-MlNonContinuousArray >> do: aBlock [ 
+MlNonContinuousVector >> do: aBlock [ 
 	"Evaluate aBlock with each of the receiver's elements as the argument."
 	1 to: self size do:[:i| aBlock value: (self at: i)]
 ]
 
 { #category : #accessing }
-MlNonContinuousArray >> fakeAt: aPos [
+MlNonContinuousVector >> fakeAt: aPos [
 	| address currentPos j|
 	
 	aPos > self size ifTrue:[ SubscriptOutOfBounds signal: aPos asString].
@@ -208,7 +208,7 @@ MlNonContinuousArray >> fakeAt: aPos [
 ]
 
 { #category : #'sorting and filtering' }
-MlNonContinuousArray >> getIndexesSortingBy: aBlock [ 
+MlNonContinuousVector >> getIndexesSortingBy: aBlock [ 
 	| algorithm copyOfSelf|
 	copyOfSelf := self deepCopy.
 	algorithm := copyOfSelf bubbleSort: aBlock.
@@ -216,7 +216,7 @@ MlNonContinuousArray >> getIndexesSortingBy: aBlock [
 ]
 
 { #category : #testing }
-MlNonContinuousArray >> isSliced [
+MlNonContinuousVector >> isSliced [
 	| myBuffer |
 	myBuffer := self buffer.
 	[myBuffer isKindOf: MlBufferedArray  ] whileTrue:[ 
@@ -225,7 +225,7 @@ MlNonContinuousArray >> isSliced [
 ]
 
 { #category : #'accumulator ops' }
-MlNonContinuousArray >> replaceFrom: start to: stop with: replacement startingAt: repStart [ 
+MlNonContinuousVector >> replaceFrom: start to: stop with: replacement startingAt: repStart [ 
 
 	self isSliced not & (self buffer respondsTo: #replaceFrom:to:with:startingAt: )
 	ifTrue:[self buffer replaceFrom: start to: stop with: replacement startingAt: repStart ]
@@ -234,18 +234,18 @@ MlNonContinuousArray >> replaceFrom: start to: stop with: replacement startingAt
 ]
 
 { #category : #accessing }
-MlNonContinuousArray >> strides [
+MlNonContinuousVector >> strides [
 	^ strides
 ]
 
 { #category : #accessing }
-MlNonContinuousArray >> strides: aColectionOfStrides [
+MlNonContinuousVector >> strides: aColectionOfStrides [
 	strides := aColectionOfStrides
 	
 ]
 
 { #category : #'sorting and filtering' }
-MlNonContinuousArray >> swap: j by: k [
+MlNonContinuousVector >> swap: j by: k [
 	| temp |
 	temp := self at:j.
 	self at:j put:(self at:k).
@@ -253,7 +253,7 @@ MlNonContinuousArray >> swap: j by: k [
 ]
 
 { #category : #accessing }
-MlNonContinuousArray >> validRanges: anArrayOfValidIntervals [
+MlNonContinuousVector >> validRanges: anArrayOfValidIntervals [
 
 	| newStrides|
 

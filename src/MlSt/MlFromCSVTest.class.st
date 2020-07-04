@@ -6,7 +6,7 @@ Class {
 
 { #category : #tests }
 MlFromCSVTest >> testLoadCSV [
-	| fs titanic work neo headers imputer iTitanic emptyStringValues nilValues pclassXfare |
+	| fs titanic work neo headers imputer iTitanic emptyStringValues nilValues pclassXfare t |
 	"load the file in a MlArray"
 	work := FileSystem disk workingDirectory. 
 	fs := (work / 'Titanic_train.csv') readStream.
@@ -16,25 +16,36 @@ MlFromCSVTest >> testLoadCSV [
 	titanic := MlArray from: neo upToEnd.
 	titanic setLabels: headers onAxis: 1. 
 	nilValues := titanic count:[:v | v isNil].
-	titanic inspect. 
+	self assert: (titanic anySatisfy:[:e | e isNil]).
 	emptyStringValues := titanic count:[:v | v =''].
-	"first we will assing nil values on fare using the mode depending on the Pclass"
+	"FARE: first we will assing nil values on fare using the mode depending on the Pclass"
 	pclassXfare := titanic groupBy:'Pclass'->'Fare' aggregate:[:k :v| v mode].
 
-	(titanic at:{((titanic at:{_@_. 'Fare'}) = nil). 'Fare'})<- 
-	(titanic at:{((titanic at:{_@_. 'Fare'}) = nil). 'Pclass'})  transform:[:v| 
-														pclassXfare at: {((pclassXfare at:{_@_. 'Pclass'}) = v). 'Fare'}].	
+	(titanic at:{((titanic at:{_. 'Fare'}) = nil). 'Fare'})<- 
+	(titanic at:{((titanic at:{_. 'Fare'}) = nil). 'Pclass'})  transform:[:v| 
+														pclassXfare at: {((pclassXfare at:{_. 'Pclass'}) = v). 'Fare'}].	
+	self assert: ((titanic  at:{_. 'Fare'}) anySatisfy:[:e | e isNil]) not. 
+	
+	"CABIN assign NO to all nil values in column Cabin "
+	(titanic at:{((titanic at:{_. 'Cabin'}) = nil). 'Cabin'})  <- 'NO'. 
+	self assert: ((titanic  at:{_. 'Cabin'}) anySatisfy:[:e | e isNil]) not. 
+	self assert: ((titanic  at:{_. 'Cabin'}) anySatisfy:[:e | e = 'NO']). 
+	
+	"[	[62,1,1,Icard, Miss. Amelie,female,38,0,0,113572,80,B28,nil]	
+	   [830,1,1,Stone, Mrs. George Nelson (Martha Evelyn),female,62,0,0,113572,80,B28,nil]	]"
+	t:=titanic at:{((titanic at:{_. 'Embarked'}) = nil). _}.
+	t:= titanic at:{((titanic at:{_. 'Ticket'}) eval:[:v| v ifNil:[false] ifNotNil:[v matchesRegex: '113.*']] ). _}.   
+	(titanic at:{((titanic at:{_. 'Embarked'}) = nil). 'Embarked'})<-'S'.
 
-	"we will change nil values by the mode"
+	"changes nil values by the mode the other columns"
 	imputer := MlModeImputer new missingValue: nil.	
 	imputer fit: titanic.
 	iTitanic := imputer transform.
-
-	(iTitanic at:{_@_. {1@3. 6@8}}) <- (iTitanic at:{_@_. {1@3. 6@8}}) transform:[:v| v asInteger].
-	(iTitanic at:{_@_. -3})<- (iTitanic at:{_@_. -3}) transform:[:v| v asNumber ].
-	(iTitanic at:{_@_. {1@3. 6@8}}) describe.
-	
-		
+	"converts numerical columns to integer or number"
+	(iTitanic at:{_. {1@3. 6@8}}) <- (iTitanic at:{_. {1@3. 6@8}}) transform:[:v| v asInteger].
+	(iTitanic at:{_. -3})<- (iTitanic at:{_. -3}) transform:[:v| v asNumber ].
+	(iTitanic at:{_. {1@3. 6@8}}) describe inspect.
+	iTitanic summary inspect.	
 	self assert: (iTitanic anySatisfy:[:e | e isNil]) not. 
 	
 	

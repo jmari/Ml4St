@@ -33,6 +33,7 @@ MlArray class >> checkClassForAllElementsIn: aCollection [
 { #category : #'instance creation' }
 MlArray class >> detectTypeOf:aCollection [ 
 	|col parent firstRowIsSameKind  firstCol firstColIsSameKind |
+	aCollection isCollection not | aCollection isString ifTrue:[^Object].
 	aCollection isEmpty ifTrue:[^Float].
 	parent := col := aCollection.
 	[ self isNotACollection: col first ] whileFalse:[
@@ -70,8 +71,10 @@ MlArray class >> from: aCollection order: CorF [
 ]
 
 { #category : #'instance creation' }
-MlArray class >> from: aCollection order: CorF dType: dType [
-	| shapeAndPlainCollection instance |
+MlArray class >> from: aCollectionOrObject order: CorF dType: dType [
+	| shapeAndPlainCollection instance aCollection |
+	aCollection := aCollectionOrObject.
+	aCollection isCollection not | (aCollection isString) ifTrue:[ aCollection := { aCollection} ].
 	aCollection isEmpty ifTrue:[ ^ self new:#()].
 	shapeAndPlainCollection := self getShapeAndPlainCollectionOf: aCollection.
 	instance := self new: (shapeAndPlainCollection at:1) order:CorF dType:dType.
@@ -219,7 +222,9 @@ MlArray class >> zeros: aShape [
 
 { #category : #'math functions' }
 MlArray >> & aMlArray [
+	"Logical and operation"
 	| newInstance zip |
+	(aMlArray isMlArray and:[aMlArray size  > (self size )]) ifTrue:[^ aMlArray & self].
 	newInstance := self newInstanceButEmpty.
 	^ aMlArray isMlArray  
 		ifTrue:[
@@ -233,21 +238,25 @@ MlArray >> & aMlArray [
 
 { #category : #'math functions' }
 MlArray >> * aMlArray [
+	(aMlArray isMlArray and:[aMlArray size  > (self size )]) ifTrue:[^ aMlArray * self].
 	^ self performBinaryOp: #* on: aMlArray  
 ]
 
 { #category : #'math functions' }
 MlArray >> *= aMlArray [
+	(aMlArray isMlArray and:[aMlArray size  > (self size )]) ifTrue:[^ aMlArray *= self].
 	^ self performBinaryOp: #*= on: aMlArray  
 ]
 
 { #category : #'math functions' }
 MlArray >> + aMlArray [
+	(aMlArray isMlArray and:[aMlArray size  > (self size )]) ifTrue:[^ aMlArray + self].
 	^ self performBinaryOp: #+ on: aMlArray  
 ]
 
 { #category : #'math functions' }
 MlArray >> += aMlArray [
+	(aMlArray isMlArray and:[aMlArray size  > (self size )]) ifTrue:[^ aMlArray += self].
 	^ self performBinaryOp: #+= on: aMlArray  
 ]
 
@@ -258,21 +267,25 @@ MlArray >> , aMlArray [
 
 { #category : #'math functions' }
 MlArray >> - aMlArray [
+	(aMlArray isMlArray and:[aMlArray size  > (self size )]) ifTrue:[^ (aMlArray * -1)  performBinaryOp: #+ on: self].
 	^ self performBinaryOp: #- on: aMlArray  
 ]
 
 { #category : #'math functions' }
 MlArray >> -= aMlArray [
+	(aMlArray isMlArray and:[aMlArray size  > (self size )]) ifTrue:[^ (aMlArray * -1)  performBinaryOp: #+= on: self].
 	^ self performBinaryOp: #-= on: aMlArray  
 ]
 
 { #category : #'math functions' }
 MlArray >> / aMlArray [
+	(aMlArray isMlArray and:[aMlArray size  > (self size )]) ifTrue:[^ aMlArray * ( self transform:[:v| 1/v])].
 	^ self performBinaryOp: #/ on: aMlArray  
 ]
 
 { #category : #'math functions' }
 MlArray >> /= aMlArray [
+	(aMlArray isMlArray and:[aMlArray size  > (self size )]) ifTrue:[^ aMlArray *= ( self transform:[:v| 1/v])].
 	^ self performBinaryOp: #/= on: aMlArray  
 ]
 
@@ -283,8 +296,11 @@ MlArray >> < aNumber [
 
 { #category : #accessing }
 MlArray >> <- aMlArray [
-	self shape = aMlArray shape ifFalse:[MlShapeError signal:'Both Arrays should have the same shape' ].
-	self internalArray replaceFrom: 1 to: self size with: aMlArray internalArray  startingAt: 1 
+	| mla |
+	mla := aMlArray isMlArray 
+				ifTrue:[aMlArray internalArray]
+				ifFalse:[self adaptSizeOfArray: ( self class from:aMlArray order: self order)].
+	self internalArray replaceFrom: 1 to: self size with: mla startingAt: 1 
 ]
 
 { #category : #piping }
@@ -321,6 +337,7 @@ MlArray >> >> aTransformer [
 
 { #category : #'math functions' }
 MlArray >> \\= aMlArray [
+	"module operation and assign"
 	| newInstance |
 	newInstance := self newInstanceButEmpty.
 	^ aMlArray isMlArray   
@@ -362,7 +379,7 @@ MlArray >> adaptSizeOfArray: anArray [
 	sameRows := self nDim >1 & (anArray nDim > 1)
 							ifTrue:[(self shape at:( self nDim-1)) = (anArray shape at:( anArray nDim-1))  ] 
 							ifFalse:[self size = anArray size].
-	sameColumns := self shape last = anArray shape last.
+	sameColumns := (self shape last = (anArray shape last)) | (anArray size = 1).
 	
 	(sameRows | sameColumns) ifFalse:[MlShapeError signal:('Array ' ,anArray asString ,' could not be broadcasted')].
 	self order = #F 
@@ -623,12 +640,20 @@ MlArray >> collect: aBlock [
 
 { #category : #'private-slicing' }
 MlArray >> completeSlice: aSliceArray [
-	"the association should contain two nDim-arrays, from->to 
-	#(-1@2 2@-1 3@4)points in the right array shoud be great or equal to le left side.
-	# n@-1 means from n to the end of the dimension.
-	# -1@m means from the start to the end of the dimension"
+	" this function substitutes the _ an negative integers by its value.
+	 _@_ left _ will be replaced by 1 and right _ will be replaced by the lenght of the dimension
+	 -1@-2 negatige integers will be replaced by n + k + 1 where n is the lenght of the dimension 
+	   and k is the negative integer
+	 _ or nil means _@_                                             
+	 also a slice could be:
+	 - an array of integers
+	 - an MlArray of Booleans. will be replaced by _@_. the filter will be applied later in the slice method"
+	
 	| collectionOfSlices completeSlice sliceForDim subcollection |
-	aSliceArray size = self nDim  ifFalse:[ MlSliceError signal].
+	
+	aSliceArray size = self nDim  ifFalse:[ MlSliceError signal:'The slice should be an array with ', self nDim asString,' elements'].
+	
+	"will store all the completed slices"
 	collectionOfSlices:=OrderedCollection new.
 	
 	"BLOCK DEFINITION: EXECUTED LATER"
@@ -642,7 +667,9 @@ MlArray >> completeSlice: aSliceArray [
 						ifFalse:[ start := end :=si	]]
 		ifFalse:[	
 			si isSlice ifFalse:[ MlSliceError signal].
+			"to be sure it is not a point"
 			si:= si asSlice.
+			"remember _ is nil"
 			start := (si x notNil) ifTrue:[si x] ifFalse:[self shape at:i].
 			start < 0 ifTrue:[start := ((self shape at:i) + start +1)].
 			end := (si y notNil) ifTrue:[si y] ifFalse:[
@@ -675,7 +702,7 @@ MlArray >> completeSlice: aSliceArray [
 MlArray >> concat: aMlArray axis: standarAxisNumber [
 	| instance axis heightOfSelf heightOfOther j i  k |
 	
-	axis := self getNumberForAxis: standarAxisNumber.
+	axis := self getStandardAxisNumberFor: standarAxisNumber.
 
 	(self isShapeOf: aMlArray concatenableAlongAxis: axis) ifFalse:[MlShapeError signal:(aMlArray asString,' is not concatenable on axis:', axis)].
 	
@@ -774,7 +801,6 @@ MlArray >> createNewSlicedInstance: indexes shape: newShape [
 MlArray >> createNewSlicedReference:indexes shape: newShape [
 	
 	| newInstance  |
-	self flag: #todo. "column labels are not replicated in the new instance"
 	newInstance := self newInstanceButEmpty. 
 	newInstance internalArray: self internalArray. 
 	newInstance internalArray validRanges: (indexes sort:[:a :b| a first < b first]).
@@ -809,18 +835,24 @@ MlArray >> decode: aMlArray [
 
 { #category : #'reduce operations' }
 MlArray >> describe [
-	|describeResult meanAndVariance|
+	^ self describe: 0
+]
+
+{ #category : #'reduce operations' }
+MlArray >> describe: anAxis [
+	|describeResult |
 	"It is done one by one...all except mean and variance not in one pass"
 	describeResult := MlDescribeResult new.
 	
-
-	describeResult mean:(self mean:0).
-	describeResult variance: (self variance:0).
-	describeResult max: (self max:0).
-	describeResult min: (self min:0).
-	describeResult numberOfObs: (self nDim>1 ifTrue:[self shape at: (self nDim -1)] ifFalse:[self size]).
-	describeResult skewness: (self skewness:0).
-	describeResult kurtosis: (self kurtosis:0).
+	describeResult mean:(self mean:anAxis).
+	describeResult variance: (self variance:anAxis).
+	describeResult max: (self max:anAxis).
+	describeResult min: (self min:anAxis).
+	describeResult numberOfObs: (self nDim>1 
+										ifTrue:[self shape at: (self getStandardAxisNumberFor: anAxis)] 
+										ifFalse:[self size]).
+	describeResult skewness: (self skewness:anAxis).
+	describeResult kurtosis: (self kurtosis:anAxis).
 	
 	^ describeResult
 ]
@@ -894,30 +926,6 @@ MlArray >> getAddressForPoint:anArrayOfInt [
 	^ address 
 ]
 
-{ #category : #'private-slicing' }
-MlArray >> getIndexesForBlocks: aSliceArray onArray: aMlArray [
-	| b fullRange|
-	fullRange := (Array new: aMlArray nDim) fillWith: _@_.
-	aSliceArray collectWithIndex:[ :aSlice :i|
-
-	].
-		
-	^ aSliceArray
-			
-]
-
-{ #category : #'private-slicing' }
-MlArray >> getIndexesForBool: aSliceArray onArray: aMlArray [
-	| b fullRange|
-	fullRange := (Array new: aMlArray nDim) fillWith: _@_.
-	aSliceArray collectWithIndex:[ :aSlice :i|
-
-	].
-		
-	^ aSliceArray
-			
-]
-
 { #category : #sorting }
 MlArray >> getIndexesSortingBy: aBlock [
 	| steps array buffer |
@@ -987,8 +995,11 @@ MlArray >> getIntervalAdressesFor:slices level: l list: lklst indexes: indexes [
 	
 ]
 
-{ #category : #'math functions' }
-MlArray >> getNumberForAxis: anAxis [
+{ #category : #accessing }
+MlArray >> getStandardAxisNumberFor: anAxis [
+	"return the estandar axis number for an axis. i.e.
+	 shape #(1 2 3) axis 0 is the first, 1 rows and 2 columns
+	but the standard says axis 0 is row axis, axis 1 is column axis and 2..n are the outter next ones "
 	| data axis |
 	axis := data := (( self nDim - anAxis - 1) \\  self nDim ) + 1 .
 	axis := data = self nDim ifTrue:[self nDim -1] ifFalse:[data].
@@ -1044,7 +1055,7 @@ MlArray >> internalArray [
 
 { #category : #'private-accessing' }
 MlArray >> internalArray: aNewArray [ 	
-	internalArray := MlNonContinuousArray newFromArray: aNewArray
+	internalArray := MlNonContinuousVector newFromArray: aNewArray
 ]
 
 { #category : #'private-accessing' }
@@ -1315,6 +1326,7 @@ MlArray >> performBinaryOp: op on: aMlArray [
 { #category : #'math functions' }
 MlArray >> performBinaryOp: op on: aMlArray withArguments:args [
 	| newInstance a b  |
+
 	newInstance := self newInstanceButEmpty. 
 	aMlArray isMlArray 
 		ifTrue:[
@@ -1425,7 +1437,7 @@ MlArray >> reduce: aSymbol axis: anAxis arguments: args [
 	aSymbol is the operation, anAxis, the axis, args an array with the arguments for the method
 	aClass is the  "
 	| axis results newShape instance realAxis|
-	realAxis := self getNumberForAxis: anAxis.
+	realAxis := self getStandardAxisNumberFor: anAxis.
 	axis := self nDim - anAxis.
 	axis < 0 ifTrue:[ axis := self shape last + 1 - axis].
 	(axis > self nDim)|( axis < 1 )ifTrue:[ MlShapeError signal:'Axis is higher than nDim']. 
@@ -1450,6 +1462,7 @@ MlArray >> reduce: aSymbol axis: anAxis arguments: args [
 		ifFalse: [newShape removeAt: realAxis]. 
 	instance := self class new shape: newShape;order:#C.
 	instance internalArray:results asArray.
+	instance labelsDict: self labelsDict deepCopy.
 	^ (self order = #C) ifTrue:[instance] ifFalse:[instance asFortranArray] 
 ]
 
@@ -1501,7 +1514,7 @@ MlArray >> reshape: anArrayOfInt [
 MlArray >> resortBy: anIndexArray onAxis: axis [
 	
 	| b  realAxis  slice |
-	realAxis := self getNumberForAxis: axis.
+	realAxis := self getStandardAxisNumberFor: axis.
 	slice := Array new: self nDim withAll: _@_.
 	1 to: (self shape at: realAxis) do:[:a|	
 				slice at: realAxis put: a.
@@ -1539,7 +1552,7 @@ MlArray >> select: aBlock [
 { #category : #labeling }
 MlArray >> setLabels: anArray onAxis: standarAxisNumber [
 	| axis |
-	axis := self getNumberForAxis: standarAxisNumber.
+	axis := self getStandardAxisNumberFor: standarAxisNumber.
 	(axis <1 | axis > self nDim) ifTrue:[ ^ MlShapeError signal:('dimension  ', axis asString,' does not exist') ].
 	(anArray size = (self shape at: axis)) ifFalse:[ ^ MlShapeError signal:('labels should have ',(self shape at: axis) asString,' elements') ].
 	
@@ -1583,13 +1596,9 @@ MlArray >> slice: aSliceArray [
 
 { #category : #'private-slicing' }
 MlArray >> slice: aSliceArray copy: makeCopy [
-	"the association should contain two nDim-arrays, from->to 
-	#{1@2. 2@_. 3@4} points in the right array shoud be great or equal to le left side.
-	# n@_ means from n to the end of the dimension.
-	# _@m means from the start to the end of the dimension"
+
 
 	| slice list indexes newShape startLevel newInstance |
-	"first we ignore block slice in compete slice "
 	
 	slice := self completeSlice: aSliceArray.
 	list := Array new: self nDim.
@@ -1617,7 +1626,7 @@ MlArray >> slice: aSliceArray copy: makeCopy [
 	^newInstance 
 ]
 
-{ #category : #'private-slicing' }
+{ #category : #'private-labeling' }
 MlArray >> sliceLabels: slice [
 
 	| ld |
@@ -1652,7 +1661,7 @@ MlArray >> split: indicesOrSections axis: standarAxisNumber [
 	| axis sliceTotal ios collectionOfSlices i endSection |
 	
 	ios := indicesOrSections isInteger ifTrue:[{indicesOrSections}] ifFalse:[indicesOrSections].
-	axis := self getNumberForAxis: standarAxisNumber.
+	axis := self getStandardAxisNumberFor: standarAxisNumber.
 	collectionOfSlices := OrderedCollection new.
 	i := 1.
 	ios := ios , { (self shape at:axis)+1 }. 
@@ -1690,6 +1699,16 @@ MlArray >> sum [
 { #category : #'reduce operations' }
 MlArray >> sum: axis [
 	^ self reduce: #sum axis: axis
+]
+
+{ #category : #'reduce operations' }
+MlArray >> summary [
+	^ self summary:0
+]
+
+{ #category : #'reduce operations' }
+MlArray >> summary: anAxis [
+	^ self reduce: #summary axis: anAxis
 ]
 
 { #category : #'private-creating' }
@@ -1792,6 +1811,7 @@ MlArray >> weightForAxis: anAxis [
 { #category : #'math functions' }
 MlArray >> | aMlArray [
 	| newInstance zip |
+	(aMlArray isMlArray and:[aMlArray size  > (self size )]) ifTrue:[^ aMlArray | self].
 	newInstance := self newInstanceButEmpty.
 	^ aMlArray isMlArray  
 		ifTrue:[

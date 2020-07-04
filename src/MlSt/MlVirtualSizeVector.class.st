@@ -3,7 +3,7 @@ I am a false n-times repeated lenght vector, I am used for Maths operations betw
 
 "
 Class {
-	#name : #MlRedimensionableArray,
+	#name : #MlVirtualSizeVector,
 	#superclass : #MlBufferedArray,
 	#type : #variable,
 	#instVars : [
@@ -13,7 +13,7 @@ Class {
 }
 
 { #category : #'instance creation' }
-MlRedimensionableArray class >> new: size [
+MlVirtualSizeVector class >> new: size [
 	| hisBuffer myClass i |
 	
 	myClass := Array.
@@ -33,7 +33,7 @@ MlRedimensionableArray class >> new: size [
 ]
 
 { #category : #'instance creation' }
-MlRedimensionableArray class >> newFrom: anArray timesRepeat:tr [ 
+MlVirtualSizeVector class >> newFrom: anArray timesRepeat:tr [ 
 	| i |
 	i := self basicNew.
 	i buffer: (anArray class newFrom:anArray).
@@ -43,16 +43,16 @@ MlRedimensionableArray class >> newFrom: anArray timesRepeat:tr [
 ]
 
 { #category : #accessing }
-MlRedimensionableArray >> at: anObject [
+MlVirtualSizeVector >> at: anObject [
 	self subclassResponsibility 
 ]
 
 { #category : #accessing }
-MlRedimensionableArray >> at: anObject put: aValue [
+MlVirtualSizeVector >> at: anObject put: aValue [
 	MlNonWritableObject signal
 ]
 
 { #category : #accessing }
-MlRedimensionableArray >> ntimes: tr [ 
+MlVirtualSizeVector >> ntimes: tr [ 
 	timesRepeat:= tr
 ]

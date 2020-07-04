@@ -75,6 +75,26 @@ MlBufferedArray >> decode: anArrayOfEncoders [
 ]
 
 { #category : #'*MlSt' }
+MlBufferedArray >> describe [
+	|describeResult |
+	"It is done one by one...all except mean and variance not in one pass"
+	describeResult := MlDescribeResult new.
+
+	describeResult mean:self mean.
+	describeResult variance: self variance.
+	describeResult max: self max.
+	describeResult min: self min.
+	describeResult numberOfObs: self size.
+	describeResult skewness: self skewness.
+	describeResult kurtosis: self kurtosis.
+	
+	^ describeResult
+	
+	 
+		
+]
+
+{ #category : #'*MlSt' }
 MlBufferedArray >> encode: anArrayOfEncoders [ 
 	| i |
 	i := 0.
@@ -113,4 +133,19 @@ MlBufferedArray >> size [
 { #category : #accessing }
 MlBufferedArray >> size: anObject [
 	size := anObject
+]
+
+{ #category : #'*MlSt' }
+MlBufferedArray >> summary [ 
+	| summary |
+	self size = 0 ifTrue:[^ MlDescribeResult new].
+	self first isNumber ifTrue:[ ^ self describe ].
+	
+	summary := Dictionary new.
+	self do:[:each|
+		summary at: each incrementBy:1].
+	^ summary
+	
+	 
+		
 ]

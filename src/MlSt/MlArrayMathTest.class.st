@@ -9,13 +9,18 @@ MlArrayMathTest >> testBooleanOperations [
 	| a b c d e |
 	a := MlArray  from: {{{true. true. true}. {false. false. false}. {true. true. true}}}.
 	b := MlArray  from: {{{false. false. false}. {true. true. true}. {true. true. true}}}.
+	c := MlArray  from: {{{false. false. false}}}.
 	self assert: (a | b) equals: (MlArray  from: {{{true. true. true}. {true. true. true}. {true. true. true}}}).
 	self assert: (a & b) equals: (MlArray  from: {{{false. false. false}. {false. false. false}. {true. true. true}}}).
-	
+	self assert: (a | c) equals: (MlArray  from: {{{true. true. true}. {false. false. false}. {true. true. true}}}).
+	self assert: (c | a) equals: (MlArray  from: {{{true. true. true}. {false. false. false}. {true. true. true}}}).
+	self assert: (a & c) equals: (MlArray  from: {{{false. false. false}. {false. false. false}. {false. false. false}}}).
+	self assert: (c & a) equals: (MlArray  from: {{{false. false. false}. {false. false. false}. {false. false. false}}}).
+		
 	c := MlArray random: #(3 5 10).
 	d:= c at:[:v | v > 50].
 	self assert: d nDim equals:3.	
-	d := c at:{1@1. 1@_. 1@1}. 	
+	d := c at:{1@1. _. 1@1}. 	
 	e := d at:[:v | v > 20] put: 1000.
 	self assert: d shape equals: e shape.
 	self assert: d equals: e.

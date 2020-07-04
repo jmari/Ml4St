@@ -13,6 +13,11 @@ ManifestMlSt class >> ruleGRTemporaryVariableCapitalizationRuleV1FalsePositive [
 ]
 
 { #category : #'code-critics' }
+ManifestMlSt class >> ruleRBEqualNilRuleV1FalsePositive [
+	^ #(#(#(#RGClassDefinition #(#MlFromCSVTest)) #'2020-06-30T19:19:52.588371+02:00') )
+]
+
+{ #category : #'code-critics' }
 ManifestMlSt class >> ruleRBGlobalVariablesUsageV1FalsePositive [
 	^ #(#(#(#RGPackageDefinition #(#MlSt)) #'2020-04-30T07:44:19.123985+02:00') )
 ]

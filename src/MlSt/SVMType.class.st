@@ -2,11 +2,11 @@ Class {
 	#name : #SVMType,
 	#superclass : #FFIEnumeration,
 	#classVars : [
-		'LINEAR',
-		'POLY',
-		'PRECOMPUTED',
-		'RBF',
-		'SIGMOID'
+		'C_SVC',
+		'EPSILON_SVR',
+		'NU_SVC',
+		'NU_SVR',
+		'ONE_CLASS'
 	],
 	#category : #'MlSt-FFI-LibSVM-Uffi'
 }

@@ -12,7 +12,7 @@ the behaviour of a will be like a:= #(2 2 2 2 2 5 5 5 5 5) but internally is #(2
 "
 Class {
 	#name : #MlElementRepeatedVector,
-	#superclass : #MlRedimensionableArray,
+	#superclass : #MlVirtualSizeVector,
 	#type : #variable,
 	#category : #'MlSt-Core'
 }
