@@ -1,6 +1,7 @@
 "
 !MlArray
-MlArrays es un objeto que implementa arrays multidimensionales sobre un array lineal definido en la clase MlNonContinuousVector. 
+!!Inicializando MLArrays.
+MlArrays es un objeto que implementa arrays multidimensionales sobre un array lineal definido en la clase ${class:MlNonContinuousVector}$  
 MlArray puede crearse de numerosas maneras, por ejemplo, partiendo de una colección existente:
 [[[
 a := #(1 2 3 4 ) asMlArray
@@ -34,13 +35,42 @@ a internalArray
 a nDim 
 ]]]
 Cuando creamos un MlArray a partir de una colección de Smalltalk, el tipo de dato de los elementos, es reconocido automáticamente a partir de los elementos de la primera fila y primera columna. Si se encuentran clases diferentes en estas posiciones, el tipo elegido será Object.
-Dependiendo de la clase encontrada, el arreglo  interno empleada será el  que mejor se ajuste a la clase de los elementos. La estructura interna del MlNonContinuousVector puede ser 
+Dependiendo de la clase encontrada, el arreglo  interno empleada será el  que mejor se ajuste a la clase de los elementos. La estructura interna del MlNonContinuousVector puede ser:
+ 
 - FloatArray, si el tipo es #Float.
 - IntegerArray, si el tipo es #Integer
 - WordArray, si el tipo es #Word 
 - DoubleWordArray, si el tipo es #DoubleWord 
 - ByteArray, si el tipo es #Byte
 - Array, si el tipo es diferente entre columnas/filas.
+
+El método ==dType== nos muestra el tipo de dato de los elementos del array.
+[[[
+a dType
+]]]
+
+El método ==arrayType== nos devuelve el tipo de array elegido para almacenar los elementos.
+[[[
+a arrayType
+]]]
+
+Tenemos varios metodos para acceder al número de elementos, el número de bytes que ocupa el array y la medida ede los elementos en bytes.
+[[[
+'""a"" has ', a size asString,' elements and occupies ', a nBytes asString , ' bytes, each elements is ',  a itemSize asString, ' bytes length'
+]]]
+
+El tipo de dato se puede especificar en el momento de la creacón del ==MlArray==
+[[[
+MlArray from: {{1. 2. 3}. {4. 5. 6}} dType:#Float.
+]]]
+o crear un ==MlArray == relleno de valores.
+[[[
+a:=MlArray zeros:#( 3 4 ).
+b:=MlArray ones:#( 3 4 ).
+""random values are in [0, 1] range "" 
+c:=MlArray random:#( 3 4 )
+]]]
+!!Res
 
 
 
