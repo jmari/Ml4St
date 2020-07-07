@@ -10,7 +10,7 @@ Implements
 	 
 "
 Class {
-	#name : #MlFakeSlice,
+	#name : #MlLabeledSlice,
 	#superclass : #Array,
 	#type : #variable,
 	#instVars : [
@@ -20,47 +20,47 @@ Class {
 }
 
 { #category : #converting }
-MlFakeSlice >> @ anObject [
+MlLabeledSlice >> @ anObject [
 	self step: anObject
 ]
 
 { #category : #converting }
-MlFakeSlice >> asSlice [
+MlLabeledSlice >> asSlice [
 	^self
 ]
 
 { #category : #testing }
-MlFakeSlice >> isSlice [ 
+MlLabeledSlice >> isSlice [ 
 	^ true
 ]
 
 { #category : #accessing }
-MlFakeSlice >> step [ 	
+MlLabeledSlice >> step [ 	
 	^ self at:3 ifAbsent:[1]
 ]
 
 { #category : #accessing }
-MlFakeSlice >> step: anInteger [ 	
+MlLabeledSlice >> step: anInteger [ 	
 	self at:3 put: anInteger
 	
 ]
 
 { #category : #accessing }
-MlFakeSlice >> x [
+MlLabeledSlice >> x [
 	^ self at:1 
 ]
 
 { #category : #accessing }
-MlFakeSlice >> x: anObject [
+MlLabeledSlice >> x: anObject [
 	self at:1 put: anObject
 ]
 
 { #category : #accessing }
-MlFakeSlice >> y [
+MlLabeledSlice >> y [
 	^ self at:2
 ]
 
 { #category : #accessing }
-MlFakeSlice >> y: anObject [
+MlLabeledSlice >> y: anObject [
 	self at:2 put: anObject
 ]

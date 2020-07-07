@@ -1,41 +1,30 @@
 "
 !MlArray
-!!Inicializando MLArrays.
+!!Creación y estructura interna de MLArrays.
 MlArrays es un objeto que implementa arrays multidimensionales sobre un array lineal definido en la clase ${class:MlNonContinuousVector}$  
 MlArray puede crearse de numerosas maneras, por ejemplo, partiendo de una colección existente:
-[[[
-a := #(1 2 3 4 ) asMlArray
-]]]
+
+${example: MlArray>>gtInstanceOfMlArray}$
+
 
 mediante el método de clase #from:aCollection
-[[[
-a := MlArray from: #(1 2 3 4)
-]]]
+${example: MlArray>>gtInstanceFromClassMessageFrom}$
 
-o bien especificando la forma del MlArray con #new: shape
-[[[
-a:= MlArray new: #(2 3)
-]]]
-Podemos comprobar la forma y orden en memoria del MlArray mediante #shape y #order. El array puede ordenarse según el orden Fortran o C.  Al contrario que en numpy arrays, el array se organiza en memoria en orden Fortran.
-[[[
-{a shape. a order}
-]]]
+o bien especificando la forma del MlArray con #new: shape. Podemos comprobar la forma y orden en memoria del MlArray mediante #shape y #order. El array puede ordenarse según el orden Fortran o C.  Al contrario que en numpy arrays, el array se organiza en memoria en orden Fortran.
 
-Los elementos se almacenan en una instancia de la clase MlNonContinuousVector. Este objeto es un array continuo en memoria, en el que podemos aplicar saltos a la hora de acceder a sus elementos, de manera que si indicamos que queremos saltarnos, por ejemplo, los elementos 3,4,5, al utilizar el método #at: 3 , la posición 3, nos devolverá el 6 elemento. Esta facilidad permite laoperación de Slice del MlArray multidimendional, cálculando los fragmentos del array que deben saltarse a la hora de acceder a una determinada posición.
-[[[
-a:= MlArray from: #((1 2 3) (4 5 6)) 
-]]]
+${example: MlArray>>gtInstanceNewShape}$
 
-Si examinamos la variable de instancia internalArray, vemos que es de clase MlNonContinuousVector y su contenido está ordenado por columnas->filas (Estilo Fortran):
-[[[
-a internalArray 
-]]]
- Para saber el número de dimensiones del array disponemos del método nDim.
-[[[
-a nDim 
-]]]
+Los elementos se almacenan en una instancia de la clase ${class:MlNonContinuousVector}$. Este objeto es un array continuo en memoria, en el que podemos aplicar saltos a la hora de acceder a sus elementos, de manera que si indicamos que queremos saltarnos, por ejemplo, los elementos 3,4,5, al utilizar el método #at: 3 , la posición 3, nos devolverá el 6 elemento.
+
+Esta facilidad permite la operación de Slice del MlArray multidimensional, cálculando los fragmentos del array que deben saltarse a la hora de acceder a una determinada posición.
+${example: MlArray>>gtInternalStructure}$
+
+${class:MlNonContinuousVector}$  almacena los elementos en orden #C filas->columnas o #F contenido está ordenado por columnas->filas (Estilo Fortran). Para saber el número de dimensiones del array disponemos del método nDim.
+${example:MlArray class>>gtExampleInternalArray|noCode|previewShow=#gtItemsFor:|previewHeight=250}$
+
 Cuando creamos un MlArray a partir de una colección de Smalltalk, el tipo de dato de los elementos, es reconocido automáticamente a partir de los elementos de la primera fila y primera columna. Si se encuentran clases diferentes en estas posiciones, el tipo elegido será Object.
-Dependiendo de la clase encontrada, el arreglo  interno empleada será el  que mejor se ajuste a la clase de los elementos. La estructura interna del MlNonContinuousVector puede ser:
+${example: MlArray>>gtInternalOrder}$
+Dependiendo de la clase encontrada, el arreglo  interno empleada será el  que mejor se ajuste a la clase de los elementos. La estructura interna del ${class:MlNonContinuousVector}$ puede ser:
  
 - FloatArray, si el tipo es #Float.
 - IntegerArray, si el tipo es #Integer
@@ -44,33 +33,43 @@ Dependiendo de la clase encontrada, el arreglo  interno empleada será el  que m
 - ByteArray, si el tipo es #Byte
 - Array, si el tipo es diferente entre columnas/filas.
 
-El método ==dType== nos muestra el tipo de dato de los elementos del array.
-[[[
-a dType
-]]]
+El método ${method:MlArray>>dType}$ nos muestra el tipo de dato de los elementos del array.
+El método  ${method:MlArray>>arrayType}$ nos devuelve el tipo de array elegido para almacenar los elementos.
+Tenemos varios metodos para acceder al número de elementos, el número de bytes que ocupa el array y la medida de los elementos en bytes.
 
-El método ==arrayType== nos devuelve el tipo de array elegido para almacenar los elementos.
-[[[
-a arrayType
-]]]
-
-Tenemos varios metodos para acceder al número de elementos, el número de bytes que ocupa el array y la medida ede los elementos en bytes.
-[[[
-'""a"" has ', a size asString,' elements and occupies ', a nBytes asString , ' bytes, each elements is ',  a itemSize asString, ' bytes length'
-]]]
+${example: MlArray>>gtInternalDataType}$
 
 El tipo de dato se puede especificar en el momento de la creacón del ==MlArray==
-[[[
-MlArray from: {{1. 2. 3}. {4. 5. 6}} dType:#Float.
-]]]
-o crear un ==MlArray == relleno de valores.
-[[[
-a:=MlArray zeros:#( 3 4 ).
-b:=MlArray ones:#( 3 4 ).
-""random values are in [0, 1] range "" 
-c:=MlArray random:#( 3 4 )
-]]]
-!!Res
+${example: MlArray>>gtSetDataType}$
+
+!!Reorganizando MlArrays
+Es posible reorganizar un MlArray siempre y cuando la nueva organización pueda dar cabida al mismo número de elementos.
+
+${example: MlArray>>gtReshapeArrays}$
+
+!!Operaciones
+Un MlArray puede realizar  un gran número de operaciones matemáticas. Estas operaciones se ejecutan elemento a elemento.El resultado de la operación es una nueva instancia de MlArray.
+Un MlArray puede operarse con otro con distinta forma, extendiendo el número de filas/columnas.
+La clase ${class:MlArrayRepeatedVector}$ repite virtualmente todo el array n veces, sin necesidad de consumir  más memoria con la sobrecarga del método  ${method:MlArrayRepeatedVector>>at:}$
+La clase ${class:MlElementRepeatedVector}$ repite virtualmente los elementos del array n veces, sin necesidad de consumir  más memoria con la sobrecarga del método at: ${method:MlElementRepeatedVector>>at:}$
+
+${example: MlArray>>gtArithmeticalOperations}$
+Las operaciones lógico-matemáticas disponibles son:
+-${method:MlArray>>&}$. Ejecuta una and lógica entre dos arrays.
+-${method:MlArray>>\|}$. Ejecuta una or lógica entre dos arrays.
+-${method:MlArray>>*}$. Ejecuta el producto entre elementos de dos arrays.
+-${method:MlArray>>*\=}$. Ejecuta el producto entre elementos de dos arrays y asigna el resultado al primero si no ha sido difundido, en ese caso lo asigna al segundo.
+-${method:MlArray>>/}$. Ejecuta la división entre elementos de dos arrays.
+-${method:MlArray>>/\=}$. Ejecuta la división entre elementos de dos arrays y asigna el resultado al primero si no ha sido difundido, en ese caso lo asigna al segundo.
+-${method:MlArray>>\\\\}$. Ejecuta el producto entre elementos de dos arrays.
+-${method:MlArray>>\\\\\=}$. Ejecuta el producto entre elementos de dos arrays y asigna el resultado al primero si no ha sido difundido, en ese caso lo asigna al segundo.
+-${method:MlArray>>+}$. Ejecuta la suma entre elementos de dos arrays.
+-${method:MlArray>>+\=}$. Ejecuta la suma entre elementos de dos arrays y asigna el resultado al primero si no ha sido difundido, en ese caso lo asigna al segundo.
+-${method:MlArray>>-}$. Ejecuta la suma entre elementos de dos arrays.
+-${method:MlArray>>-\=}$. Ejecuta la suma entre elementos de dos arrays y asigna el resultado al primero si no ha sido difundido, en ese caso lo asigna al segundo.
+
+
+
 
 
 
@@ -185,6 +184,14 @@ MlArray class >> getShapeAndPlainCollectionOf: aCollection [
 	
 ]
 
+{ #category : #gtexamples }
+MlArray class >> gtExampleInternalArray [
+	<gtExample>
+	|i|
+	i:=self from:#(#(1 2 3) #(4 5 6)).
+	^ i internalArray 
+]
+
 { #category : #'instance creation' }
 MlArray class >> initialize [ 
 	Smalltalk at:#_ put: nil.
@@ -261,8 +268,17 @@ MlArray class >> new: anIntOrArray order: CorF dType: dataType [
 ]
 
 { #category : #'instance creation' }
+MlArray class >> new: aShape withAll: anObject [
+	|instance |
+
+	instance := self new: aShape dType: anObject class name.
+	instance fillWith: anObject.
+	^ instance
+]
+
+{ #category : #'instance creation' }
 MlArray class >> ones: aShape [
-	^ self shape: aShape fillWith: 1.0
+	^ self new: aShape withAll: 1.0
 ]
 
 { #category : #'instance creation' }
@@ -281,20 +297,11 @@ MlArray class >> random: aShape seed: aSeed [
 ]
 
 { #category : #'instance creation' }
-MlArray class >> shape: aShape fillWith: anObject [
-	|instance |
-
-	instance := self new: aShape dType: anObject class name.
-	instance fillWith: anObject.
-	^ instance
-]
-
-{ #category : #'instance creation' }
 MlArray class >> zeros: aShape [
-	^ self shape: aShape fillWith: 0.0
+	^ self new: aShape withAll: 0.0
 ]
 
-{ #category : #'math functions' }
+{ #category : #'binary operations' }
 MlArray >> & aMlArray [
 	"Logical and operation"
 	| newInstance zip |
@@ -310,54 +317,54 @@ MlArray >> & aMlArray [
 			newInstance]
 ]
 
-{ #category : #'math functions' }
+{ #category : #'binary operations' }
 MlArray >> * aMlArray [
 	(aMlArray isMlArray and:[aMlArray size  > (self size )]) ifTrue:[^ aMlArray * self].
 	^ self performBinaryOp: #* on: aMlArray  
 ]
 
-{ #category : #'math functions' }
+{ #category : #'binary operations' }
 MlArray >> *= aMlArray [
 	(aMlArray isMlArray and:[aMlArray size  > (self size )]) ifTrue:[^ aMlArray *= self].
 	^ self performBinaryOp: #*= on: aMlArray  
 ]
 
-{ #category : #'math functions' }
+{ #category : #'binary operations' }
 MlArray >> + aMlArray [
 	(aMlArray isMlArray and:[aMlArray size  > (self size )]) ifTrue:[^ aMlArray + self].
 	^ self performBinaryOp: #+ on: aMlArray  
 ]
 
-{ #category : #'math functions' }
+{ #category : #'binary operations' }
 MlArray >> += aMlArray [
 	(aMlArray isMlArray and:[aMlArray size  > (self size )]) ifTrue:[^ aMlArray += self].
 	^ self performBinaryOp: #+= on: aMlArray  
 ]
 
-{ #category : #'math functions' }
+{ #category : #'binary operations' }
 MlArray >> , aMlArray [
 	^ self concat: aMlArray axis: 0
 ]
 
-{ #category : #'math functions' }
+{ #category : #'binary operations' }
 MlArray >> - aMlArray [
 	(aMlArray isMlArray and:[aMlArray size  > (self size )]) ifTrue:[^ (aMlArray * -1)  performBinaryOp: #+ on: self].
 	^ self performBinaryOp: #- on: aMlArray  
 ]
 
-{ #category : #'math functions' }
+{ #category : #'binary operations' }
 MlArray >> -= aMlArray [
 	(aMlArray isMlArray and:[aMlArray size  > (self size )]) ifTrue:[^ (aMlArray * -1)  performBinaryOp: #+= on: self].
 	^ self performBinaryOp: #-= on: aMlArray  
 ]
 
-{ #category : #'math functions' }
+{ #category : #'binary operations' }
 MlArray >> / aMlArray [
 	(aMlArray isMlArray and:[aMlArray size  > (self size )]) ifTrue:[^ aMlArray * ( self transform:[:v| 1/v])].
 	^ self performBinaryOp: #/ on: aMlArray  
 ]
 
-{ #category : #'math functions' }
+{ #category : #'binary operations' }
 MlArray >> /= aMlArray [
 	(aMlArray isMlArray and:[aMlArray size  > (self size )]) ifTrue:[^ aMlArray *= ( self transform:[:v| 1/v])].
 	^ self performBinaryOp: #/= on: aMlArray  
@@ -409,7 +416,21 @@ MlArray >> >> aTransformer [
 	^ aTransformer fitAndTransform: self.
 ]
 
-{ #category : #'math functions' }
+{ #category : #'binary operations' }
+MlArray >> \\ aMlArray [
+	"module operation and assign"
+	| newInstance |
+	newInstance := self newInstanceButEmpty.
+	^ aMlArray isMlArray   
+		ifTrue:[
+			newInstance internalArray: self internalArray \\ aMlArray internalArray.
+			newInstance]
+		ifFalse:[
+			newInstance internalArray: self internalArray \\ aMlArray.
+			newInstance]
+]
+
+{ #category : #'binary operations' }
 MlArray >> \\= aMlArray [
 	"module operation and assign"
 	| newInstance |
@@ -443,7 +464,7 @@ MlArray >> adaptData: anObject for:newArrayType [
 			ifFalse:[ anObject asInteger]
 ]
 
-{ #category : #'math functions' }
+{ #category : #'binary operations' }
 MlArray >> adaptSizeOfArray: anArray [ 
 	| tr sameRows sameColumns newArray |
 	anArray size = self size ifTrue:[^ anArray internalArray].
@@ -496,7 +517,7 @@ MlArray >> anySatisfy: aBlock [
 	^ self internalArray anySatisfy:aBlock.
 ]
 
-{ #category : #'math functions' }
+{ #category : #'binary operations' }
 MlArray >> applyBooleanFilter: aBooleanMlArray on: axis [
 	| ratio instance |
 	
@@ -772,7 +793,7 @@ MlArray >> completeSlice: aSliceArray [
 
 ]
 
-{ #category : #'math functions' }
+{ #category : #'binary operations' }
 MlArray >> concat: aMlArray axis: standarAxisNumber [
 	| instance axis heightOfSelf heightOfOther j i  k |
 	
@@ -842,7 +863,7 @@ MlArray >> copyFrom: aSlice to: otherSlice [
 
 ]
 
-{ #category : #'math functions' }
+{ #category : #'binary operations' }
 MlArray >> copyUpToLast: aMlArray [ 
 	^ self performBinaryOp: #copyUpToLast: on: aMlArray 
 
@@ -901,7 +922,7 @@ MlArray >> dType: anObject [
 							ifFalse:[self convertTypeTo:anObject]].
 ]
 
-{ #category : #'math functions' }
+{ #category : #'binary operations' }
 MlArray >> decode: aMlArray [ 
 	^ self performBinaryOp: #decode: on: aMlArray 
 
@@ -931,7 +952,7 @@ MlArray >> describe: anAxis [
 	^ describeResult
 ]
 
-{ #category : #'math functions' }
+{ #category : #'binary operations' }
 MlArray >> differentiate: nSteps times:nTimes [
 	"returns a collection with the Xn - Xn-steps elements n Times"
 	| dest source  instance ljump |
@@ -970,7 +991,7 @@ MlArray >> doWithIndex: aBlock [
 	^ self internalArray doWithIndex:aBlock
 ]
 
-{ #category : #'math functions' }
+{ #category : #'binary operations' }
 MlArray >> encode: aMlArray [ 
 	^ self performBinaryOp: #encode: on: aMlArray 
 
@@ -1115,6 +1136,151 @@ MlArray >> groupBy: anAssociation aggregate: aBlock [
 	^ (keyRows  concat:valueRows axis:1) setLabels: labelsForGroup onAxis:1. 
 
 	
+]
+
+{ #category : #gtExamples }
+MlArray >> gtArithmeticalOperations [
+	<gtExample>
+	| a b c |
+	a:= MlArray from: {{1.1. 2.2. 3.3}. {4.4. 5.5. 6.6}}.
+	b := MlArray new:#(3) withAll:2.0.
+	b at:2 put: 3.
+	" b is broadcasted"
+	c := a * b.
+	"{{1.1. 2.2. 3.3}.           {{2.0. 3.0. 2.0}.
+	 {4.4. 5.5. 6.6}}      X      {2.0. 3.0. 2.0}}"
+
+	self assert: c shape equals:#(2 3).
+	"c is not modified, result is loaded in a new instance"
+	c - a.
+	self assert: c equals: a * b.
+	" -= will change c"
+	c -=a.
+	self assert: c equals: ((a * b) - a).
+	
+	
+]
+
+{ #category : #gtExamples }
+MlArray >> gtInstanceFromClassMessageFrom [
+	<gtExample>
+	|a b c d e|
+	" from an existing collection"
+	a := MlArray from: #(1 2 3 4).
+	" filled with zeros"
+	b:=MlArray zeros:#( 3 4 ).
+	"filled with ones"
+	c:=MlArray ones:#( 3 4 ).
+	"filled with any other value"
+	d:=MlArray new:#(10 10) withAll:8.
+	"filled with random values are in [0, 1] range " 
+	e:=MlArray random:#( 3 4 )
+]
+
+{ #category : #gtExamples }
+MlArray >> gtInstanceNewShape [
+	<gtExample>
+	|a|
+	a:= MlArray new: #(2 3).
+	
+	self assert: a shape equals:#(2 3). 
+	self assert: a order equals: #F
+	
+]
+
+{ #category : #gtExamples }
+MlArray >> gtInstanceOfMlArray [
+	<gtExample>
+	|a|
+	a := #(1 2 3 4 ) asMlArray
+]
+
+{ #category : #gtExamples }
+MlArray >> gtInternalDataType [
+	<gtExample>
+	|a|
+	a := MlArray from: #((1 2 3) (4 5 6)).
+
+	self assert:a dType equals:#SmallInteger.
+	self assert:a arrayType equals:#IntegerArray.
+	" a has 6 elemnts"
+	self assert:a size equals:6.
+	" and occupies "
+	self assert:a nBytes equals:24."bytes"
+	"each element is 4 bytes length"
+	self assert:a itemSize equals:4."bytes"
+	
+	
+]
+
+{ #category : #gtExamples }
+MlArray >> gtInternalOrder [
+	<gtExample>
+	|a|
+	a := MlArray from: #(#(1 2 3) #(4 5 6)).
+	"two rows and three columns"
+	self assert:a shape equals:#(2 3).
+	"two dimensions"
+	self assert:a nDim equals:2.
+	"in #F order the internal array is ..."
+	self assert:a internalArray buffer equals:#(1 4 2 5 3 6) asIntegerArray.
+	
+]
+
+{ #category : #gtExamples }
+MlArray >> gtInternalStructure [
+	<gtExample>
+	|a b|
+	a:= MlArray from: #(1 2 3 4 5 6). 
+	"Strides only contains 
+		-the first stride from 1 to:1 
+		-and the last stride size+1 to: size+1 "
+	self assert: a internalArray strides equals:#(1 1 7 7). 
+	"we want the elements from 2 to: 3 (both included) "
+	b := a at:{2@3}.
+	self assert: b internalArray strides equals:#(1 2 4 7). 
+	" the internalArray instance of a and b are different instances"
+	self assert: (a internalArray ~= (b internalArray)).
+	"but the buffer of the NonContinuousVector in b is the internal array of a"
+	self assert: a internalArray  equals: b internalArray buffer.
+	"so if we change a value on b, we change it also on a "
+	b at:1 put: 1000.
+	self assert: (a at:2) equals: 1000.
+	self assert: (b at:1) equals: (a at:2).
+	
+]
+
+{ #category : #gtExamples }
+MlArray >> gtReshapeArrays [
+	<gtExample>
+	|a|
+	"An MlArray can be reshaped to a new compatible shape, it means that the number of elements of the new shaped array should be the same than the old one."
+	a:= MlArray from: {{1.1. 2.2. 3.3}. {4.4. 5.5. 6.6}}.
+	self assert:a shape equals:#(2 3).
+	a reshape:#(3 2).
+	self assert:a shape equals:#(3 2).
+	"Setting one of the axis to -1 automatically, sets the value of the axis to the correct value for fitting the size"
+	a reshape:#(1 -1).
+	self assert:a shape equals:#(1 6).
+	a reshape:#(-1 1).
+	self assert:a shape equals:#(6 1).
+	"you can add a new dimension"
+	a addDimension.
+	self assert:a shape equals:#(1 6 1).
+	"or add a dimension at the end"
+	a addDimensionAtEnd.
+	self assert:a shape equals:#(1 6 1 1).
+]
+
+{ #category : #gtExamples }
+MlArray >> gtSetDataType [
+	<gtExample>
+	|a |
+	" from an existing collection setting the dataType as Float"
+	a := MlArray from: #(1 2 3 4) dType:#Float.
+	self assert: (a at:1) species equals:SmallFloat64.
+	a dType:#Integer.
+	self assert: (a at:1) species equals:SmallInteger
 ]
 
 { #category : #enumerating }
@@ -1370,13 +1536,13 @@ MlArray >> newInstanceLikeMe [
 	^i
 ]
 
-{ #category : #'math functions' }
+{ #category : #'binary operations' }
 MlArray >> oneHotDecode: aMlArray [ 
 	^ self performBinaryOp: #oneHotDecode: on: aMlArray 
 
 ]
 
-{ #category : #'math functions' }
+{ #category : #'binary operations' }
 MlArray >> oneHotEncode: aMlArray [ 
 	^ self performBinaryOp: #oneHotEncode: on: aMlArray 
 
@@ -1392,12 +1558,12 @@ MlArray >> order: cOrFChar [
 	order := cOrFChar
 ]
 
-{ #category : #'math functions' }
+{ #category : #'binary operations' }
 MlArray >> performBinaryOp: op on: aMlArray [
 	^ self performBinaryOp: op on: aMlArray withArguments:{}
 ]
 
-{ #category : #'math functions' }
+{ #category : #'binary operations' }
 MlArray >> performBinaryOp: op on: aMlArray withArguments:args [
 	| newInstance a b  |
 
@@ -1548,19 +1714,19 @@ MlArray >> reject: aBlock [
 	^i
 ]
 
-{ #category : #'math functions' }
+{ #category : #'binary operations' }
 MlArray >> replace: element by: aMlArray [ 
 	^ self performBinaryOp: #replaceBy:element: on:aMlArray withArguments:  element
 
 ]
 
-{ #category : #'math functions' }
+{ #category : #'binary operations' }
 MlArray >> replaceAllBy: aMlArray [ 
 	^ self performBinaryOp: #replaceAllBy: on: aMlArray 
 
 ]
 
-{ #category : #'math functions' }
+{ #category : #'binary operations' }
 MlArray >> replaceNanBy: aMlArray [ 
 	^ self performBinaryOp: #replaceNanBy: on: aMlArray 
 
@@ -1725,12 +1891,12 @@ MlArray >> sliceUsingBooleanFilter: aSliceArray [
 
 ]
 
-{ #category : #'math functions' }
+{ #category : #'binary operations' }
 MlArray >> sparsity [
 	^ 1- (self count:[:e| e ~= 0] / self size)
 ]
 
-{ #category : #'math functions' }
+{ #category : #'binary operations' }
 MlArray >> split: indicesOrSections axis: standarAxisNumber [
 	| axis sliceTotal ios collectionOfSlices i endSection |
 	
@@ -1882,7 +2048,7 @@ MlArray >> weightForAxis: anAxis [
 	^ w
 ]
 
-{ #category : #'math functions' }
+{ #category : #'binary operations' }
 MlArray >> | aMlArray [
 	| newInstance zip |
 	(aMlArray isMlArray and:[aMlArray size  > (self size )]) ifTrue:[^ aMlArray | self].
