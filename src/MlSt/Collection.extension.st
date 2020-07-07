@@ -17,6 +17,20 @@ Collection >> asMlArray [
 ]
 
 { #category : #'*MlSt' }
+Collection >> asPlainArray [
+	"converts a collection of collections (normally columns of rows) to an array one by the other"
+	
+	| collection |
+	collection := OrderedCollection new..
+	self isEmpty ifTrue:[^self].
+	self first isCollection & (self first isString not) 
+		ifTrue: [self do:[:each| collection addAll:each ]]
+		ifFalse: [ collection := self ].
+	^ collection
+		
+]
+
+{ #category : #'*MlSt' }
 Collection >> buildEncoder [ 
 	| i encoder |
 	i := 0.
@@ -34,6 +48,20 @@ Collection >> confusionMatrix: aCollection [
 	1 to:self size do:[:i|
 		confusionMatrix at: (self at:i ) at:(aCollection at:i) incrementBy:1].
 	^ confusionMatrix. 
+		
+]
+
+{ #category : #'*MlSt' }
+Collection >> differentiate: step times: times [
+	| dest source |
+	dest:= self class new:self size.
+	source := self.
+	times timesRepeat:[ 
+		1 to: self size do:[:j|
+			dest at:j put: ( (source at:j) - (source at:j - step ifAbsent:[Float nan]))].
+		source := dest.
+		dest := self class new: self size].
+	^ source	
 		
 ]
 

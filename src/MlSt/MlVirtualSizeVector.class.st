@@ -17,7 +17,7 @@ MlVirtualSizeVector class >> new: size [
 	| hisBuffer myClass i |
 	
 	myClass := Array.
-	hisBuffer := thisContext sender at:1.
+	hisBuffer := thisContext sender at:1 ifAbsent:[nil].
 
 	[hisBuffer isKindOf: MlBufferedArray] whileTrue:[ 
 		hisBuffer := hisBuffer buffer.

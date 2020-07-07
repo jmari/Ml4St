@@ -4,48 +4,48 @@
 MlArrays es un objeto que implementa arrays multidimensionales sobre un array lineal definido en la clase ${class:MlNonContinuousVector}$  
 MlArray puede crearse de numerosas maneras, por ejemplo, partiendo de una colección existente:
 
-${example: MlArray>>gtInstanceOfMlArray}$
+${example: MlArray class>>gtInstanceOfMlArray}$
 
 
 mediante el método de clase #from:aCollection
-${example: MlArray>>gtInstanceFromClassMessageFrom}$
+${example: MlArray class>>gtInstanceFromClassMessageFrom}$
 
 o bien especificando la forma del MlArray con #new: shape. Podemos comprobar la forma y orden en memoria del MlArray mediante #shape y #order. El array puede ordenarse según el orden Fortran o C.  Al contrario que en numpy arrays, el array se organiza en memoria en orden Fortran.
 
-${example: MlArray>>gtInstanceNewShape}$
+${example: MlArray class>>gtInstanceNewShape}$
 
 Los elementos se almacenan en una instancia de la clase ${class:MlNonContinuousVector}$. Este objeto es un array continuo en memoria, en el que podemos aplicar saltos a la hora de acceder a sus elementos, de manera que si indicamos que queremos saltarnos, por ejemplo, los elementos 3,4,5, al utilizar el método #at: 3 , la posición 3, nos devolverá el 6 elemento.
 
 Esta facilidad permite la operación de Slice del MlArray multidimensional, cálculando los fragmentos del array que deben saltarse a la hora de acceder a una determinada posición.
-${example: MlArray>>gtInternalStructure}$
+${example: MlArray class>>gtInternalStructure}$
 
 ${class:MlNonContinuousVector}$  almacena los elementos en orden #C filas->columnas o #F contenido está ordenado por columnas->filas (Estilo Fortran). Para saber el número de dimensiones del array disponemos del método nDim.
-${example:MlArray class>>gtExampleInternalArray|noCode|previewShow=#gtItemsFor:|previewHeight=250}$
+${example:MlArray class>>gtExampleInternalArray |noCode|previewShow=#gtItemsFor:|previewHeight=250}$
 
 Cuando creamos un MlArray a partir de una colección de Smalltalk, el tipo de dato de los elementos, es reconocido automáticamente a partir de los elementos de la primera fila y primera columna. Si se encuentran clases diferentes en estas posiciones, el tipo elegido será Object.
-${example: MlArray>>gtInternalOrder}$
+${example: MlArray class>>gtInternalOrder}$
 Dependiendo de la clase encontrada, el arreglo  interno empleada será el  que mejor se ajuste a la clase de los elementos. La estructura interna del ${class:MlNonContinuousVector}$ puede ser:
  
-- FloatArray, si el tipo es #Float.
-- IntegerArray, si el tipo es #Integer
-- WordArray, si el tipo es #Word 
-- DoubleWordArray, si el tipo es #DoubleWord 
-- ByteArray, si el tipo es #Byte
-- Array, si el tipo es diferente entre columnas/filas.
+FloatArray, si el tipo es #Float.
+IntegerArray, si el tipo es #Integer
+WordArray, si el tipo es #Word 
+DoubleWordArray, si el tipo es #DoubleWord 
+ByteArray, si el tipo es #Byte
+Array, si el tipo es diferente entre columnas/filas.
 
 El método ${method:MlArray>>dType}$ nos muestra el tipo de dato de los elementos del array.
 El método  ${method:MlArray>>arrayType}$ nos devuelve el tipo de array elegido para almacenar los elementos.
 Tenemos varios metodos para acceder al número de elementos, el número de bytes que ocupa el array y la medida de los elementos en bytes.
 
-${example: MlArray>>gtInternalDataType}$
+${example: MlArray class>>gtInternalDataType}$
 
 El tipo de dato se puede especificar en el momento de la creacón del ==MlArray==
-${example: MlArray>>gtSetDataType}$
+${example: MlArray class>>gtSetDataType}$
 
 !!Reorganizando MlArrays
 Es posible reorganizar un MlArray siempre y cuando la nueva organización pueda dar cabida al mismo número de elementos.
 
-${example: MlArray>>gtReshapeArrays}$
+${example: MlArray class>>gtReshapeArrays}$
 
 !!Operaciones
 Un MlArray puede realizar  un gran número de operaciones matemáticas. Estas operaciones se ejecutan elemento a elemento.El resultado de la operación es una nueva instancia de MlArray.
@@ -53,20 +53,22 @@ Un MlArray puede operarse con otro con distinta forma, extendiendo el número de
 La clase ${class:MlArrayRepeatedVector}$ repite virtualmente todo el array n veces, sin necesidad de consumir  más memoria con la sobrecarga del método  ${method:MlArrayRepeatedVector>>at:}$
 La clase ${class:MlElementRepeatedVector}$ repite virtualmente los elementos del array n veces, sin necesidad de consumir  más memoria con la sobrecarga del método at: ${method:MlElementRepeatedVector>>at:}$
 
-${example: MlArray>>gtArithmeticalOperations}$
-Las operaciones lógico-matemáticas disponibles son:
--${method:MlArray>>&}$. Ejecuta una and lógica entre dos arrays.
--${method:MlArray>>\|}$. Ejecuta una or lógica entre dos arrays.
--${method:MlArray>>*}$. Ejecuta el producto entre elementos de dos arrays.
--${method:MlArray>>*\=}$. Ejecuta el producto entre elementos de dos arrays y asigna el resultado al primero si no ha sido difundido, en ese caso lo asigna al segundo.
--${method:MlArray>>/}$. Ejecuta la división entre elementos de dos arrays.
--${method:MlArray>>/\=}$. Ejecuta la división entre elementos de dos arrays y asigna el resultado al primero si no ha sido difundido, en ese caso lo asigna al segundo.
--${method:MlArray>>\\\\}$. Ejecuta el producto entre elementos de dos arrays.
--${method:MlArray>>\\\\\=}$. Ejecuta el producto entre elementos de dos arrays y asigna el resultado al primero si no ha sido difundido, en ese caso lo asigna al segundo.
--${method:MlArray>>+}$. Ejecuta la suma entre elementos de dos arrays.
--${method:MlArray>>+\=}$. Ejecuta la suma entre elementos de dos arrays y asigna el resultado al primero si no ha sido difundido, en ese caso lo asigna al segundo.
--${method:MlArray>>-}$. Ejecuta la suma entre elementos de dos arrays.
--${method:MlArray>>-\=}$. Ejecuta la suma entre elementos de dos arrays y asigna el resultado al primero si no ha sido difundido, en ese caso lo asigna al segundo.
+${example: MlArray class>>gtArithmeticalOperations}$
+Las operaciones matemáticas disponibles son:
+${method:MlArray>>&}$. Ejecuta una and lógica entre dos arrays.
+${method:MlArray>>\|}$. Ejecuta una or lógica entre dos arrays.
+${method:MlArray>>*}$. Ejecuta el producto entre elementos de dos arrays.
+${method:MlArray>>*\=}$. Ejecuta el producto entre elementos de dos arrays y asigna el resultado al primero si no ha sido difundido, en ese caso lo asigna al segundo.
+${method:MlArray>>/}$. Ejecuta la división entre elementos de dos arrays.
+${method:MlArray>>/\=}$. Ejecuta la división entre elementos de dos arrays y asigna el resultado al primero si no ha sido difundido, en ese caso lo asigna al segundo.
+${method:MlArray>>\\\\}$. Ejecuta el producto entre elementos de dos arrays.
+${method:MlArray>>\\\\\=}$. Ejecuta el producto entre elementos de dos arrays y asigna el resultado al primero si no ha sido difundido, en ese caso lo asigna al segundo.
+${method:MlArray>>+}$. Ejecuta la suma entre elementos de dos arrays.
+${method:MlArray>>+\=}$. Ejecuta la suma entre elementos de dos arrays y asigna el resultado al primero si no ha sido difundido, en ese caso lo asigna al segundo.
+${method:MlArray>>-}$. Ejecuta la suma entre elementos de dos arrays.
+${method:MlArray>>-\=}$. Ejecuta la suma entre elementos de dos arrays y asigna el resultado al primero si no ha sido difundido, en ese caso lo asigna al segundo.
+
+
 
 
 
@@ -184,12 +186,172 @@ MlArray class >> getShapeAndPlainCollectionOf: aCollection [
 	
 ]
 
-{ #category : #gtexamples }
+{ #category : #gtExamples }
+MlArray class >> gtArithmeticalOperations [
+	<gtExample>
+	| a b c |
+	a:= MlArray from: {{1.1. 2.2. 3.3}. {4.4. 5.5. 6.6}}.
+	b := MlArray new:#(3) withAll:2.0.
+	b at:2 put: 3.
+	" b is broadcasted"
+	c := a * b.
+	"{{1.1. 2.2. 3.3}.           {{2.0. 3.0. 2.0}.
+	 {4.4. 5.5. 6.6}}      X      {2.0. 3.0. 2.0}}"
+
+	self assert: c shape equals:#(2 3).
+	"c is not modified, result is loaded in a new instance"
+	c - a.
+	self assert: c equals: a * b.
+	" -= will change c"
+	c -=a.
+	self assert: c equals: ((a * b) - a).
+	
+	
+]
+
+{ #category : #gtExamples }
+MlArray class >> gtDifferentiateTimes [
+	<gtExample>
+	| a b|
+	a:= MlArray from: {{1.0. 2.0. 3.0}. {2.0. 3.0. 4.0}. {3.0. 4.0. 5.0}. {4.0. 5.0. 6.0}}.
+	" diferentiates those three series, one by one and one time"
+	b:= a differentiate: 1 times:2.
+	self assert:	(b allSatisfy: [ :v| (v closeTo: 0.0) | (v isNaN) ]).
+		
+	a:= MlArray from: {{1.0. 2.0. 3.0}. {2.0. 3.0. 4.0}. {3.0. 4.0. 5.0}. {4.0. 5.0. 6.0}} order:#C.
+	" diferentiates those three series, one by one and one time"
+	b:= a differentiate: 1 times:2.
+	self assert:	(b allSatisfy: [ :v| (v closeTo: 0.0) | (v isNaN) ])
+]
+
+{ #category : #gtExamples }
 MlArray class >> gtExampleInternalArray [
 	<gtExample>
 	|i|
 	i:=self from:#(#(1 2 3) #(4 5 6)).
 	^ i internalArray 
+]
+
+{ #category : #gtExamples }
+MlArray class >> gtInstanceFromClassMessageFrom [
+	<gtExample>
+	|a b c d e|
+	" from an existing collection"
+	a := MlArray from: #(1 2 3 4).
+	" filled with zeros"
+	b:=MlArray zeros:#( 3 4 ).
+	"filled with ones"
+	c:=MlArray ones:#( 3 4 ).
+	"filled with any other value"
+	d:=MlArray new:#(10 10) withAll:8.
+	"filled with random values are in [0, 1] range " 
+	e:=MlArray random:#( 3 4 )
+]
+
+{ #category : #gtExamples }
+MlArray class >> gtInstanceNewShape [
+	<gtExample>
+	|a|
+	a:= MlArray new: #(2 3).
+	
+	self assert: a shape equals:#(2 3). 
+	self assert: a order equals: #F
+	
+]
+
+{ #category : #gtExamples }
+MlArray class >> gtInstanceOfMlArray [
+	<gtExample>
+	|a|
+	a := #(1 2 3 4 ) asMlArray
+]
+
+{ #category : #gtExamples }
+MlArray class >> gtInternalDataType [
+	<gtExample>
+	|a|
+	a := MlArray from: #((1 2 3) (4 5 6)).
+
+	self assert:a dType equals:#SmallInteger.
+	self assert:a arrayType equals:#IntegerArray.
+	" a has 6 elemnts"
+	self assert:a size equals:6.
+	" and occupies "
+	self assert:a nBytes equals:24."bytes"
+	"each element is 4 bytes length"
+	self assert:a itemSize equals:4."bytes"
+	
+	
+]
+
+{ #category : #gtExamples }
+MlArray class >> gtInternalOrder [
+	<gtExample>
+	|a|
+	a := MlArray from: #(#(1 2 3) #(4 5 6)).
+	"two rows and three columns"
+	self assert:a shape equals:#(2 3).
+	"two dimensions"
+	self assert:a nDim equals:2.
+	"in #F order the internal array is ..."
+	self assert:a internalArray buffer equals:#(1 4 2 5 3 6) asIntegerArray.
+	
+]
+
+{ #category : #gtExamples }
+MlArray class >> gtInternalStructure [
+	<gtExample>
+	|a b|
+	a:= MlArray from: #(1 2 3 4 5 6). 
+	"Strides only contains 
+		-the first stride from 1 to:1 
+		-and the last stride size+1 to: size+1 "
+	self assert: a internalArray strides equals:#(1 1 7 7). 
+	"we want the elements from 2 to: 3 (both included) "
+	b := a at:{2@3}.
+	self assert: b internalArray strides equals:#(1 2 4 7). 
+	" the internalArray instance of a and b are different instances"
+	self assert: (a internalArray ~= (b internalArray)).
+	"but the buffer of the NonContinuousVector in b is the internal array of a"
+	self assert: a internalArray  equals: b internalArray buffer.
+	"so if we change a value on b, we change it also on a "
+	b at:1 put: 1000.
+	self assert: (a at:2) equals: 1000.
+	self assert: (b at:1) equals: (a at:2).
+	
+]
+
+{ #category : #gtExamples }
+MlArray class >> gtReshapeArrays [
+	<gtExample>
+	|a|
+	"An MlArray can be reshaped to a new compatible shape, it means that the number of elements of the new shaped array should be the same than the old one."
+	a:= MlArray from: {{1.1. 2.2. 3.3}. {4.4. 5.5. 6.6}}.
+	self assert:a shape equals:#(2 3).
+	a reshape:#(3 2).
+	self assert:a shape equals:#(3 2).
+	"Setting one of the axis to -1 automatically, sets the value of the axis to the correct value for fitting the size"
+	a reshape:#(1 -1).
+	self assert:a shape equals:#(1 6).
+	a reshape:#(-1 1).
+	self assert:a shape equals:#(6 1).
+	"you can add a new dimension"
+	a addDimension.
+	self assert:a shape equals:#(1 6 1).
+	"or add a dimension at the end"
+	a addDimensionAtEnd.
+	self assert:a shape equals:#(1 6 1 1).
+]
+
+{ #category : #gtExamples }
+MlArray class >> gtSetDataType [
+	<gtExample>
+	|a |
+	" from an existing collection setting the dataType as Float"
+	a := MlArray from: #(1 2 3 4) dType:#Float.
+	self assert: (a at:1) species equals:SmallFloat64.
+	a dType:#Integer.
+	self assert: (a at:1) species equals:SmallInteger
 ]
 
 { #category : #'instance creation' }
@@ -952,32 +1114,11 @@ MlArray >> describe: anAxis [
 	^ describeResult
 ]
 
-{ #category : #'binary operations' }
+{ #category : #'reduce operations' }
 MlArray >> differentiate: nSteps times:nTimes [
 	"returns a collection with the Xn - Xn-steps elements n Times"
-	| dest source  instance ljump |
-	self order = #C 
-		ifTrue:[
-			instance := self transposed.
-			ljump := instance shape last].
-	self order = #F 
-		ifTrue:[
-			instance := self.
-			ljump := self shape last].						
-	source := instance internalArray.
-		
-	1 to:nTimes do:[:t|
-		dest := source class new: (self internalArray size).
-		(1 to:( source size - ljump +1) by: ljump) do:[:j| 
-			j to:( j + ljump  - nSteps) do:[:i|
-				dest at: i put: (( source at:(i+nSteps-1))- ( source at:(i-1) ifAbsent:[Float nan]) )].
-			].
-		(t to:( source size - ljump +1+t) by: ljump) do:[:j| dest at: j put:Float nan].
-		source := dest].
+	^ self perform: #differentiate:times:  axis: 0 arguments:{nSteps. nTimes}
 	
-	instance := ( instance newInstanceButEmpty internalArray: dest).
-	self order = #C ifTrue:[^ instance transposed].
-	self order = #F ifTrue:[^ instance ].		
 
 ]
 
@@ -1136,151 +1277,6 @@ MlArray >> groupBy: anAssociation aggregate: aBlock [
 	^ (keyRows  concat:valueRows axis:1) setLabels: labelsForGroup onAxis:1. 
 
 	
-]
-
-{ #category : #gtExamples }
-MlArray >> gtArithmeticalOperations [
-	<gtExample>
-	| a b c |
-	a:= MlArray from: {{1.1. 2.2. 3.3}. {4.4. 5.5. 6.6}}.
-	b := MlArray new:#(3) withAll:2.0.
-	b at:2 put: 3.
-	" b is broadcasted"
-	c := a * b.
-	"{{1.1. 2.2. 3.3}.           {{2.0. 3.0. 2.0}.
-	 {4.4. 5.5. 6.6}}      X      {2.0. 3.0. 2.0}}"
-
-	self assert: c shape equals:#(2 3).
-	"c is not modified, result is loaded in a new instance"
-	c - a.
-	self assert: c equals: a * b.
-	" -= will change c"
-	c -=a.
-	self assert: c equals: ((a * b) - a).
-	
-	
-]
-
-{ #category : #gtExamples }
-MlArray >> gtInstanceFromClassMessageFrom [
-	<gtExample>
-	|a b c d e|
-	" from an existing collection"
-	a := MlArray from: #(1 2 3 4).
-	" filled with zeros"
-	b:=MlArray zeros:#( 3 4 ).
-	"filled with ones"
-	c:=MlArray ones:#( 3 4 ).
-	"filled with any other value"
-	d:=MlArray new:#(10 10) withAll:8.
-	"filled with random values are in [0, 1] range " 
-	e:=MlArray random:#( 3 4 )
-]
-
-{ #category : #gtExamples }
-MlArray >> gtInstanceNewShape [
-	<gtExample>
-	|a|
-	a:= MlArray new: #(2 3).
-	
-	self assert: a shape equals:#(2 3). 
-	self assert: a order equals: #F
-	
-]
-
-{ #category : #gtExamples }
-MlArray >> gtInstanceOfMlArray [
-	<gtExample>
-	|a|
-	a := #(1 2 3 4 ) asMlArray
-]
-
-{ #category : #gtExamples }
-MlArray >> gtInternalDataType [
-	<gtExample>
-	|a|
-	a := MlArray from: #((1 2 3) (4 5 6)).
-
-	self assert:a dType equals:#SmallInteger.
-	self assert:a arrayType equals:#IntegerArray.
-	" a has 6 elemnts"
-	self assert:a size equals:6.
-	" and occupies "
-	self assert:a nBytes equals:24."bytes"
-	"each element is 4 bytes length"
-	self assert:a itemSize equals:4."bytes"
-	
-	
-]
-
-{ #category : #gtExamples }
-MlArray >> gtInternalOrder [
-	<gtExample>
-	|a|
-	a := MlArray from: #(#(1 2 3) #(4 5 6)).
-	"two rows and three columns"
-	self assert:a shape equals:#(2 3).
-	"two dimensions"
-	self assert:a nDim equals:2.
-	"in #F order the internal array is ..."
-	self assert:a internalArray buffer equals:#(1 4 2 5 3 6) asIntegerArray.
-	
-]
-
-{ #category : #gtExamples }
-MlArray >> gtInternalStructure [
-	<gtExample>
-	|a b|
-	a:= MlArray from: #(1 2 3 4 5 6). 
-	"Strides only contains 
-		-the first stride from 1 to:1 
-		-and the last stride size+1 to: size+1 "
-	self assert: a internalArray strides equals:#(1 1 7 7). 
-	"we want the elements from 2 to: 3 (both included) "
-	b := a at:{2@3}.
-	self assert: b internalArray strides equals:#(1 2 4 7). 
-	" the internalArray instance of a and b are different instances"
-	self assert: (a internalArray ~= (b internalArray)).
-	"but the buffer of the NonContinuousVector in b is the internal array of a"
-	self assert: a internalArray  equals: b internalArray buffer.
-	"so if we change a value on b, we change it also on a "
-	b at:1 put: 1000.
-	self assert: (a at:2) equals: 1000.
-	self assert: (b at:1) equals: (a at:2).
-	
-]
-
-{ #category : #gtExamples }
-MlArray >> gtReshapeArrays [
-	<gtExample>
-	|a|
-	"An MlArray can be reshaped to a new compatible shape, it means that the number of elements of the new shaped array should be the same than the old one."
-	a:= MlArray from: {{1.1. 2.2. 3.3}. {4.4. 5.5. 6.6}}.
-	self assert:a shape equals:#(2 3).
-	a reshape:#(3 2).
-	self assert:a shape equals:#(3 2).
-	"Setting one of the axis to -1 automatically, sets the value of the axis to the correct value for fitting the size"
-	a reshape:#(1 -1).
-	self assert:a shape equals:#(1 6).
-	a reshape:#(-1 1).
-	self assert:a shape equals:#(6 1).
-	"you can add a new dimension"
-	a addDimension.
-	self assert:a shape equals:#(1 6 1).
-	"or add a dimension at the end"
-	a addDimensionAtEnd.
-	self assert:a shape equals:#(1 6 1 1).
-]
-
-{ #category : #gtExamples }
-MlArray >> gtSetDataType [
-	<gtExample>
-	|a |
-	" from an existing collection setting the dataType as Float"
-	a := MlArray from: #(1 2 3 4) dType:#Float.
-	self assert: (a at:1) species equals:SmallFloat64.
-	a dType:#Integer.
-	self assert: (a at:1) species equals:SmallInteger
 ]
 
 { #category : #enumerating }
@@ -1556,6 +1552,38 @@ MlArray >> order [
 { #category : #accessing }
 MlArray >> order: cOrFChar [
 	order := cOrFChar
+]
+
+{ #category : #'reduce operations' }
+MlArray >> perform: aSymbol axis: anAxis arguments: args [
+	"Execute a reduce function (mean,max... all values from an axis to one) 
+	aSymbol is the operation, anAxis, the axis, args an array with the arguments for the method
+	aClass is the  "
+	| axis results newShape instance realAxis|
+	realAxis := self getStandardAxisNumberFor: anAxis.
+	axis := self nDim - anAxis.
+	axis < 0 ifTrue:[ axis := self shape last + 1 - axis].
+	(axis > self nDim)|( axis < 1 )ifTrue:[ MlShapeError signal:'Axis is higher than nDim']. 
+
+	"the operation 'aSymbol' should reduce the collection to 1, i.e. mean, std..."
+	results := OrderedCollection new.
+
+	self walkOnWhile:[:l :s| axis >1 ifTrue:[l < (axis -1)] ifFalse:[false]]
+		when: [:l :s| (s at:realAxis)=1 ]  
+		do:[:l :s| 
+		| slide array|
+		slide := s deepCopy.
+		realAxis to: self nDim do:[:i| slide at:i put:_@_].
+		1 to: (self shape at:axis)  do:[:s2|
+			slide at:axis put: s2.
+			array:=  self slice: slide.
+			results  add:( array internalArray perform: aSymbol withEnoughArguments: args)]].
+	
+	newShape := self shape deepCopy.
+	instance := self newInstanceButEmpty.
+	instance internalArray:results asPlainArray.
+	instance labelsDict: self labelsDict deepCopy.
+	^ (self order = #C) ifTrue:[instance asCArray ] ifFalse:[instance] 
 ]
 
 { #category : #'binary operations' }
