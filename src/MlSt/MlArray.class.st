@@ -67,9 +67,9 @@ ${method:MlArray>>+}$. Ejecuta la suma entre elementos de dos arrays.
 ${method:MlArray>>+\=}$. Ejecuta la suma entre elementos de dos arrays y asigna el resultado al primero si no ha sido difundido, en ese caso lo asigna al segundo.
 ${method:MlArray>>-}$. Ejecuta la suma entre elementos de dos arrays.
 ${method:MlArray>>-\=}$. Ejecuta la suma entre elementos de dos arrays y asigna el resultado al primero si no ha sido difundido, en ese caso lo asigna al segundo.
+${method:MlArray>>differentiate:times:}$. Devuelve la matriz con el diferencial entre el elemento n - step y n, aplicada t veces. el primer elemento de cada columna devuelta será Float nan, al no tener un elemento anterior, si nTimes = k los k-primeros  elementos de cada columna devuelta serán Float nan.
 
-
-
+${example: MlArray class>>gtDifferentiateTimes}$
 
 
 
@@ -213,7 +213,7 @@ MlArray class >> gtArithmeticalOperations [
 MlArray class >> gtDifferentiateTimes [
 	<gtExample>
 	| a b|
-	a:= MlArray from: {{1.0. 2.0. 3.0}. {2.0. 3.0. 4.0}. {3.0. 4.0. 5.0}. {4.0. 5.0. 6.0}}.
+	a:= MlArray from: {{{1.0. 2.0. 3.0}. {2.0. 3.0. 4.0}. {3.0. 4.0. 5.0}. {4.0. 5.0. 6.0}}.{{1.0. 2.0. 3.0}. {2.0. 3.0. 4.0}. {3.0. 4.0. 5.0}. {4.0. 5.0. 6.0}}}.
 	" diferentiates those three series, one by one and one time"
 	b:= a differentiate: 1 times:2.
 	self assert:	(b allSatisfy: [ :v| (v closeTo: 0.0) | (v isNaN) ]).
@@ -1559,31 +1559,26 @@ MlArray >> perform: aSymbol axis: anAxis arguments: args [
 	"Execute a reduce function (mean,max... all values from an axis to one) 
 	aSymbol is the operation, anAxis, the axis, args an array with the arguments for the method
 	aClass is the  "
-	| axis results newShape instance realAxis|
+	| axis  newShape instance realAxis|
 	realAxis := self getStandardAxisNumberFor: anAxis.
 	axis := self nDim - anAxis.
 	axis < 0 ifTrue:[ axis := self shape last + 1 - axis].
 	(axis > self nDim)|( axis < 1 )ifTrue:[ MlShapeError signal:'Axis is higher than nDim']. 
 
-	"the operation 'aSymbol' should reduce the collection to 1, i.e. mean, std..."
-	results := OrderedCollection new.
+	"the operation 'aSymbol' should return the same number of elements"
 
+	instance := self newInstanceLikeMe.
 	self walkOnWhile:[:l :s| axis >1 ifTrue:[l < (axis -1)] ifFalse:[false]]
 		when: [:l :s| (s at:realAxis)=1 ]  
 		do:[:l :s| 
-		| slide array|
-		slide := s deepCopy.
-		realAxis to: self nDim do:[:i| slide at:i put:_@_].
+		| slice array|
+		slice := s deepCopy.
+		realAxis to: self nDim do:[:i| slice at:i put:_@_].
 		1 to: (self shape at:axis)  do:[:s2|
-			slide at:axis put: s2.
-			array:=  self slice: slide.
-			results  add:( array internalArray perform: aSymbol withEnoughArguments: args)]].
-	
-	newShape := self shape deepCopy.
-	instance := self newInstanceButEmpty.
-	instance internalArray:results asPlainArray.
-	instance labelsDict: self labelsDict deepCopy.
-	^ (self order = #C) ifTrue:[instance asCArray ] ifFalse:[instance] 
+			slice at:axis put: s2.
+			array :=  self slice: slice.
+			(instance slice:slice) <- (array internalArray perform: aSymbol withEnoughArguments: args)]].
+		^ instance
 ]
 
 { #category : #'binary operations' }

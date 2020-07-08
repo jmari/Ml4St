@@ -122,7 +122,7 @@ Collection >> meanNoNan [
 	| i |
 
 	i := 0.
-	^ (self inject:0 into:[:sum :e|  e isNaN ifTrue:[sum] ifFalse:[i := i+1. sum + e]]) / i 
+	^ (self inject:0 into:[:sum :e|  (e isNumber and:[ e isNaN]) ifTrue:[sum] ifFalse:[i := i+1. sum + e]]) / i 
 		
 ]
 

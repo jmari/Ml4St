@@ -15,7 +15,11 @@ Class {
 { #category : #comparing }
 MlBufferedArray >> = anArray [
 	anArray size = self size ifFalse:[^false].
-	1 to:self size do:[:i| (self at:i) ~= (anArray at:i) ifTrue:[^false]].
+	1 to:self size do:[:i| 
+		(((self at:i) isNumber and:[ (self at:i) isNaN]) & ((anArray at:i) isNumber and:[ (anArray at:i) isNaN])) not
+		&
+		((self at:i) ~= (anArray at:i) )
+		 ifTrue:[^false]].
 	^ true
 ]
 
