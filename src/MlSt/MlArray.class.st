@@ -68,14 +68,52 @@ ${method:MlArray>>+\=}$. Ejecuta la suma entre elementos de dos arrays y asigna 
 ${method:MlArray>>-}$. Ejecuta la suma entre elementos de dos arrays.
 ${method:MlArray>>-\=}$. Ejecuta la suma entre elementos de dos arrays y asigna el resultado al primero si no ha sido difundido, en ese caso lo asigna al segundo.
 ${method:MlArray>>differentiate:times:}$. Devuelve la matriz con el diferencial entre el elemento n - step y n, aplicada t veces. el primer elemento de cada columna devuelta será Float nan, al no tener un elemento anterior, si nTimes = k los k-primeros  elementos de cada columna devuelta serán Float nan.
-
 ${example: MlArray class>>gtDifferentiateTimes}$
 
+!!Indexado en MlArrays
+Si el lector está familiarizado con los arrays de Smalltalk y con los Arrays de Numpy, encontrará el indexado de los MlArrays muy familiar. En un Array de una dimensión, el i-esimo valor (empezando desde 1) puede accederse  especificando el índice deseado.
 
+[[[
+x1d := MlArray from: {1. 2. 3. 4. 5.}.
+x1d at:1.
 
+]]]
+Si recortamos el array de 1d, el objeto devuelto es un MlArray con un elemento
+[[[
+""if we slice the MlArray, it will return an MlArray of 1 element""
 
+x1d at:{1}
+]]]
 
+se puede indicar un índice negativo -k, lo que significa que queremos acceder al  k-ésimo  elemento empezando por el final, siendo -1 el último de los elementos, -2 el penúltimo, y así en adelante. 
+
+[[[
+1 to: x1d size do:[ :i| Transcript show: (x1d at:(-1*i))]
+]]]
+Output: 54321
+En un array multidimensional, puede accederse a los elementos usando una tupla de indice o con la sintaxis Smalltalk #at: at: at:, siendo el último eje indicado, el de las columnas y el anterior el de las filas.
+[[[
+x2d := MlArray from: {{1. 2. 3. 4. 5.}. {6. 7. 8. 9. 10. }}.
+x2d at:1 at:1.
+
+]]]
+[[[
+
+x2d at:{1. 1}
+
+]]]
  
+[[[
+ 1 to: x2d shape first do:[:i|
+    1 to: x2d shape last do:[:j|
+    Transcript cr;show: 'Element at:',i asString,' at:', j asString ,' = ', (x2d at:{i. j}) asString
+    ]
+]
+]]]
+
+
+
+
 
 "
 Class {
