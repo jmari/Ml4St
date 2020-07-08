@@ -1,5 +1,6 @@
 "
 !MlArray
+MlArrays son arrays multidimensionales basados en numpy arrays diseñados para la manipulación y analisis de conjuntos de datos para el aprendizaje de máquina.  
 !!Creación y estructura interna de MLArrays.
 MlArrays es un objeto que implementa arrays multidimensionales sobre un array lineal definido en la clase ${class:MlNonContinuousVector}$  
 MlArray puede crearse de numerosas maneras, por ejemplo, partiendo de una colección existente:
@@ -91,6 +92,7 @@ se puede indicar un índice negativo -k, lo que significa que queremos acceder a
 1 to: x1d size do:[ :i| Transcript show: (x1d at:(-1*i))]
 ]]]
 Output: 54321
+
 En un array multidimensional, puede accederse a los elementos usando una tupla de indice o con la sintaxis Smalltalk #at: at: at:, siendo el último eje indicado, el de las columnas y el anterior el de las filas.
 [[[
 x2d := MlArray from: {{1. 2. 3. 4. 5.}. {6. 7. 8. 9. 10. }}.
@@ -111,7 +113,9 @@ x2d at:{1. 1}
 ]
 ]]]
 
-
+recuerda que puedes usar indices negativos en todos los ejes para acceder a una posición
+${example: MlArray class>>gtArrayIndexExample}$
+${example:MlArray class>>gtArrayIndexExample |noCode|previewShow=#gtStringFor:|previewHeight=220}$
 
 
 
@@ -245,6 +249,21 @@ MlArray class >> gtArithmeticalOperations [
 	self assert: c equals: ((a * b) - a).
 	
 	
+]
+
+{ #category : #gtExamples }
+MlArray class >> gtArrayIndexExample [
+	<gtExample>
+	|x2d a |
+	x2d := MlArray from: {{1. 2. 3. 4. 5.}. {6. 7. 8. 9. 10. }}.
+	a:= String streamContents:[:aStream|
+	1 to: x2d shape first do:[:i|
+    	1 to: x2d shape last do:[:j|
+    	aStream print: ('Element at:',(-1*i) asString,' at:', (-1*j) asString ,' = ', (x2d at:{-1*i. -1*j}) asString);cr.
+    	self assert:(x2d at:{i. j}) equals: (x2d at:{i- x2d shape first - 1. j - x2d shape last - 1})
+    	]]].
+    	
+    ^a
 ]
 
 { #category : #gtExamples }
