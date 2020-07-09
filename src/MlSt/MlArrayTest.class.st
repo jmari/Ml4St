@@ -208,7 +208,7 @@ MlArrayTest >> testExamples [
 	"array of shape 2 2 set data type to Float of ones"
 	a := MlArray ones:#(3 6).
 	self assert: a dType equals: #SmallFloat64.	
-	a := MlArray shape:#(3 6) fillWith: 'H'.
+	a := MlArray new:#(3 6) withAll: 'H'.
 	self assert: a dType equals: #ByteString.	
 		
 		
@@ -286,7 +286,7 @@ MlArrayTest >> testMetrics [
 { #category : #tests }
 MlArrayTest >> testShape [
 
-	| a |
+	| a b|
 	a := MlArray new: #(1 2 3).
 	self assert: a shape equals:#(1 2 3).
 	a reshape:#( 3 2).
@@ -294,6 +294,10 @@ MlArrayTest >> testShape [
 	self should:[(a reshape:#(-1 2 2)) ]raise: MlShapeError. 
 	a reshape:#(-1 2 1).
 	self assert: a shape equals:#(3 2 1).
+	b := a reshaped:#(-1).
+	self assert: a shape equals:#(3 2 1).
+	self assert: b shape equals:#(6).
+	b inspect
 ]
 
 { #category : #tests }

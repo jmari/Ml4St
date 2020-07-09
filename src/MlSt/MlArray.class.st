@@ -905,6 +905,24 @@ MlArray >> byteSize [
 	^ self internalArray byteSize
 ]
 
+{ #category : #accessing }
+MlArray >> calculateNewShape: anArrayOfInt [
+	| newSize nr1 newShape |
+	nr1 := (anArrayOfInt count:[:e| e = -1]).
+	nr1 > 1 ifTrue:[MlShapeError signal:'Only one dimension could be -1' ]. 
+	
+	newShape := (nr1 = 1) 
+						ifTrue:[ |uDim|
+									uDim := (self internalArray size / 
+										(anArrayOfInt inject:1 into:[:m :e| e = -1 ifTrue:[m] ifFalse:[m*e]])).
+									uDim isInteger ifFalse:[MlShapeError signal].
+									anArrayOfInt replaceAll: -1 with:uDim.	]
+						ifFalse:[anArrayOfInt].
+ 	newSize := newShape inject: 1 into: [ :m :e | m*e].  
+	newSize = self internalArray size ifFalse:[MlShapeError signal].
+	^ newShape								
+]
+
 { #category : #'private-labeling' }
 MlArray >> changeLabelsByIndexes: anArrayOfInt [
 	|result|
@@ -1814,20 +1832,13 @@ MlArray >> replaceNanBy: aMlArray [
 
 { #category : #accessing }
 MlArray >> reshape: anArrayOfInt [
-	| newSize nr1 newShape |
-	nr1 := (anArrayOfInt count:[:e| e = -1]).
-	nr1 > 1 ifTrue:[MlShapeError signal:'Only one dimension could be -1' ]. 
-	
-	newShape := (nr1 = 1) 
-						ifTrue:[ |uDim|
-									uDim := (self internalArray size / 
-										(anArrayOfInt inject:1 into:[:m :e| e = -1 ifTrue:[m] ifFalse:[m*e]])).
-									uDim isInteger ifFalse:[MlShapeError signal].
-									anArrayOfInt replaceAll: -1 with:uDim.	]
-						ifFalse:[anArrayOfInt].
- 	newSize := newShape inject: 1 into: [ :m :e | m*e].  
-	newSize = self internalArray size ifFalse:[MlShapeError signal].
-	self shape: newShape								
+	self shape: ( self calculateNewShape: anArrayOfInt)
+]
+
+{ #category : #accessing }
+MlArray >> reshaped: anArrayOfInt [
+	^ self newInstanceButEmpty shape: ( self calculateNewShape: anArrayOfInt);internalArray: self internalArray
+
 ]
 
 { #category : #sorting }

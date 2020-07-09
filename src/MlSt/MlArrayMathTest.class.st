@@ -33,7 +33,7 @@ MlArrayMathTest >> testBooleanOperations [
 MlArrayMathTest >> testBroadCasting [
 	| a b sum s |
 	a := MlArray random: #(5 1 4).
-	b := MlArray shape: #(5 1 4) fillWith: 4.0. 
+	b := MlArray new: #(5 1 4) withAll: 4.0. 
 	sum := a + b.
 	s := MlArray from: #(#( #(4 4 4 4))
 								#(#(4 4 4 4))
