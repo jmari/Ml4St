@@ -116,6 +116,42 @@ x2d at:{1. 1}
 recuerda que puedes usar indices negativos en todos los ejes para acceder a una posición
 ${example: MlArray class>>gtArrayIndexExample}$
 ${example:MlArray class>>gtArrayIndexExample |noCode|previewShow=#gtStringFor:|previewHeight=220}$
+!!Recortando MlArrays
+Para obtener subconjuntos de los MlArrays podemos recortar (slice) el array. La sintaxis del recorte emplea los siguientes símbolos especiales:
+ _ selecciona todo el rango del eje, mismo significado que _@_.
+ _@k selecciona desde el inicio hasta elelemento k-ésimo del eje.
+ k@_ selecciona desde el element k-ésimo hasta el último elemento.
+k@l  selecciona desde el element k-ésimo hasta el l-ésimo elemento. 
+k@l@s  selecciona desde el element k-ésimo hasta el l-ésimo elemento separados por  s-pasos.
+Un enteros negativos =  k  se sustituyen por la longitud del (eje + k + 1)
+Los recortes pueden agruparse en arrays ordenados, {1@2. 5@6} seleccionarán los elementos 1, 2, 5 y 6.
+Los recortes pueden indicarse como una lista de enteros {1. 3. 7. 9} seleccionarán los elementos 1, 3, 7, 9.
+
+Empecemos por un array unidimensional.
+
+${example: MlArray class>>gtSlicingExamples1D}$
+A continuación un array  multidimensional.
+${example: MlArray class>>gtSlicingExamples3D}$
+!!Filtros en MlArrays
+Los filtros son condiciones booleanas aplicables a un eje del MlArray para la selección de los elementos que cumplen la condición definida.
+Empecemos por ver el resultado obtenido en un filtro, queremos obtener únicamente, las filas del array ==x2d== cuya columna 1 sea mayor o igual a 3.
+[[[
+	x2d := MlArray from: {  {1. 2. 3. 4. 5}. 
+							{2. 3. 4. 5. 6}. 
+							{3. 4. 5. 6. 7}.  
+							{4. 5. 6. 7. 8}}.
+	(x2d at:{_.1})>=3
+
+]]]
+Obtenemos un MlArray de booleanos con forma #(4 1) , con los valores { false false true true }.  Si aplicamos el filtro en el eje de las filas, al array original obtendremos el resultado buscado.
+[[[
+	x2d at:{((x2d at:{_.1})>=3). _}
+]]]
+El array devuelto tiene forma #(2 5) y contiene las filas 3 y 4 del array original. Si seleccionamos la solapa ==Print== veremos el resultado siguiente:
+[	[  3,  4,  5,  6,  7]	
+	 [  4,  5,  6,  7,  8]	]
+	 
+	 
 
 
 
@@ -409,6 +445,84 @@ MlArray class >> gtSetDataType [
 	self assert: (a at:1) species equals:SmallFloat64.
 	a dType:#Integer.
 	self assert: (a at:1) species equals:SmallInteger
+]
+
+{ #category : #gtExamples }
+MlArray class >> gtSlicingExamples1D [
+	<gtExample>
+	| a b d sol |
+	a := MlArray from: #(10 1 3 5 2  5 6 4  10 11 12 2 11 2 3 6 10 11 12 20 10 11 12 56).
+	"b has all the elements"
+	b := a at: {_}.
+	self assert:b equals: a.
+	"three first elements of a"
+	b := a at: {_@3}.
+	self assert:b as1DArray equals: #(10 1 3).
+	"three last elements of a"
+	b := a at: {-3@_}.
+	self assert:b as1DArray equals: #(11 12 56).
+	"three  elements in the middle"
+	b := a at: {3@5}.
+	self assert:b as1DArray equals: #(3 5 2).
+	"three elements 2 by 2"
+	b := a at: {3@7@2}.
+	self assert:b as1DArray equals: #(3 2 6).
+	"list of slices"
+	b := a at: {  1@2. 4@5. 7@9  }.
+	self assert:b as1DArray equals: #( 10 1 5 2 6 4 10).
+	"list of integers"
+	d := a at: #( 1 2 3 4 5 6 8). 
+	sol :=  MlArray from: #( 10 1 3 5 2 5 4).
+	self assert:d equals: sol.
+]
+
+{ #category : #gtExamples }
+MlArray class >> gtSlicingExamples3D [
+	<gtExample>
+	| a b d sol |
+	a := MlArray from: #(#( #(10 1 3) 
+							#(5 2 5)) 
+						#(  #(6 4 10) 
+							#(11 12 2))
+						#(  #(11 2 3) 
+						    #(6 10 11)) 
+						#(  #(12 20 10) 
+							#(11 12 56))).
+	"b has all the elements"
+	self assert: a shape equals:#(4 2 3).
+	b := a at: {_. _. _}.
+	self assert:b equals: a.
+	"three first elements of a"
+	b := a at: {1. 1. _ }.
+	self assert:b as1DArray equals: #(10 1 3).
+	"three last elements of a"
+	b := a at: {-1. -1. _}.
+	self assert:b as1DArray equals: #(11 12 56).
+	"three  elements in the middle"
+	b := a at: {-1. -1. 2@3}.
+	self assert:b as1DArray equals: #(12 56).
+	"three elements 2 by 2"
+	b := a at: {_@_@2. _. _}.
+	sol := MlArray from:#(#(#(10 1 3) 
+							#(5 2 5)) 
+						#(  #(11 2 3) 
+						    #(6 10 11)) ).
+	
+	self assert:b  equals: sol.
+	
+	"list of slices"
+	b := a at: {_. {1}. {  1@1. 3@3 }}.
+
+	sol := MlArray from: #(#( #(10 3)) 
+						#(  #(6 10) )
+						#(  #(11 3) ) 
+						#(  #(12 10))).
+							
+	self assert:b equals: sol.
+	"list of integers"
+	b := a at: {_. {1}. {  1. 3 }}.
+	self assert:b equals: sol.
+
 ]
 
 { #category : #'instance creation' }
@@ -814,7 +928,8 @@ MlArray >> at: anObject [
 	"if nDim = 1 an array is a slice"
 	
 	anArrayOfInt := (self nDim = 1 & (anObject isArray)  
-								and:[anObject notEmpty and:[anObject first isArray not]]) 
+								and:[anObject notEmpty 
+								and:[anObject first isArray not & (anObject isNotNil)]]) 
 										ifTrue:[	{anObject}]
 										ifFalse:[ anObject ].
 	"if it is not an array, enclose in an array, "									
@@ -1016,7 +1131,9 @@ MlArray >> completeSlice: aSliceArray [
 		sliceForDim isArray &  sliceForDim isSlice not
 			ifTrue:[
 				subcollection := OrderedCollection new.
-				sliceForDim do:[:each| completeSlice value: each value:dimIndex value:subcollection].
+				sliceForDim do:[:each| 
+					completeSlice value: (each ifNil:[ _@_] ifNotNil:[each]) 
+								  value:dimIndex value:subcollection].
 				collectionOfSlices add:subcollection asArray
 				]
 			ifFalse:[
