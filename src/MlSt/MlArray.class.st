@@ -1467,7 +1467,7 @@ MlArray >> groupBy: anAssociation aggregate: aBlock [
 	sum := Dictionary new.
 	(1 to: (self shape at: self nDim -1)) doWithIndex:[:k :i|
 		values := self slice:{i. agValues}.	
-		sum at: (self slice:{i. agKeys}) as1DArray hstack: values].
+		sum at: (self slice:{i. agKeys}) as1DArray vstack: values].
 		"call slice force to return alguays a MlArray"
 	r := OrderedCollection new.
 	sum keysAndValuesDo:[:k :v| 
