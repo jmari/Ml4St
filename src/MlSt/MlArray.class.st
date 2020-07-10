@@ -1168,7 +1168,7 @@ MlArray >> concat: aMlArray axis: standarAxisNumber [
 	
 	axis := self getStandardAxisNumberFor: standarAxisNumber.
 
-	(self isShapeOf: aMlArray concatenableAlongAxis: axis) ifFalse:[MlShapeError signal:(aMlArray asString,' is not concatenable on axis:', axis)].
+	(self isShapeOf: aMlArray concatenableAlongAxis: axis) ifFalse:[MlShapeError signal:('Array is not concatenable on axis:', axis asString)].
 	
 	instance := self newInstanceButShaped: (self shape deepCopy 
 															at: axis 
@@ -1467,17 +1467,17 @@ MlArray >> groupBy: anAssociation aggregate: aBlock [
 	sum := Dictionary new.
 	(1 to: (self shape at: self nDim -1)) doWithIndex:[:k :i|
 		values := self slice:{i. agValues}.	
-		sum at: (self slice:{i. agKeys}) as1DArray add: values].
+		sum at: (self slice:{i. agKeys}) as1DArray hstack: values].
 		"call slice force to return alguays a MlArray"
 	r := OrderedCollection new.
 	sum keysAndValuesDo:[:k :v| 
 		val := aBlock value:k value:v.
+
 		r add:( val isMlArray ifTrue:[val as1DArray] ifFalse:[{val}]	)]. 
 		"if there is only one column in right side it will return an Object, 
 		and it should be always an array or a MlArray, becouse r should be a 2D column stacked array"
 	keyRows := self class from: sum keys order: self order dType:#Object.
 	valueRows := self class from: r  order: self order dType:#Object.	
-
 	
 	^ (keyRows  concat:valueRows axis:1) setLabels: labelsForGroup onAxis:1. 
 
@@ -1495,8 +1495,8 @@ MlArray >> infoGain: anAssociation [
 	"|class| count|"
 	countArray := self groupBy: anAssociation aggregate: [:k :v| v size].
 	lenght := (countArray at:{_.1}) size.
-	entropyMatrix := self groupBy: anAssociation  aggregate:[:k :v| v entropy]. 
-	weightedEntropy := (countArray at:{_. 2} / lenght *  entropyMatrix) sum.
+	entropyMatrix := self groupBy: anAssociation  aggregate:[:k :v| v entropy:1]. 
+	weightedEntropy := ((countArray at:{_. 2}) / lenght *  (entropyMatrix at:{_.2})) sum.
 	^ totalEntropy - weightedEntropy
 ]
 

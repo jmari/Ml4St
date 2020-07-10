@@ -89,7 +89,8 @@ MlStridesTest >> testEntropy [
 							).
 
 	
-	b := a infoGain:1->2.
+	b := a infoGain:1->4.
+	b inspect
 
 	
 							

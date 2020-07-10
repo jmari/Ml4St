@@ -1,11 +1,12 @@
 Extension { #name : #Dictionary }
 
 { #category : #'*MlSt' }
-Dictionary >> at:e add: anObject [
+Dictionary >> at:e hstack: anObject [
 	| v popo |
-	popo :=self findElementOrNil: e.
-	v := self at:e ifAbsentPut:[OrderedCollection new].
-	^ v add:anObject
+	popo := anObject isMlArray ifTrue:[anObject] ifFalse:[anObject asMlArray].
+	v := self at:e 
+				ifPresent:[:o| self at:e put: o , popo] ifAbsentPut:[popo].
+	^ v 
 ]
 
 { #category : #'*MlSt' }
