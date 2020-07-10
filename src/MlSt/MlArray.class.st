@@ -1468,7 +1468,7 @@ MlArray >> groupBy: anAssociation aggregate: aBlock [
 	(1 to: (self shape at: self nDim -1)) doWithIndex:[:k :i|
 		values := self slice:{i. agValues}.	
 		sum at: (self slice:{i. agKeys}) as1DArray add: values].
-	
+		"call slice force to return alguays a MlArray"
 	r := OrderedCollection new.
 	sum keysAndValuesDo:[:k :v| 
 		val := aBlock value:k value:v.
@@ -1495,7 +1495,7 @@ MlArray >> infoGain: anAssociation [
 	"|class| count|"
 	countArray := self groupBy: anAssociation aggregate: [:k :v| v size].
 	lenght := (countArray at:{_.1}) size.
-	entropyMatrix := self groupBy: anAssociation  aggregate:[:k :v| v entropy: anAssociation value]. 
+	entropyMatrix := self groupBy: anAssociation  aggregate:[:k :v| v entropy]. 
 	weightedEntropy := (countArray at:{_. 2} / lenght *  entropyMatrix) sum.
 	^ totalEntropy - weightedEntropy
 ]
@@ -1566,7 +1566,7 @@ MlArray >> jumpToNextBlockInAxis: axis [
 
 { #category : #'reduce operations' }
 MlArray >> kurtosis [ 
-	^ self kurtosis:0
+	^ self internalArray kurtosis
 ]
 
 { #category : #'reduce operations' }
@@ -1601,7 +1601,7 @@ MlArray >> log [
 
 { #category : #'reduce operations' }
 MlArray >> max [ 
-	^ self max:0
+	^ self internalArray max
 ]
 
 { #category : #'reduce operations' }
@@ -1621,7 +1621,7 @@ MlArray >> maxElementsToPrint: anInteger [
 
 { #category : #'reduce operations' }
 MlArray >> mean [ 
-	^ self mean:0
+	^ self internalArray mean
 ]
 
 { #category : #'reduce operations' }
@@ -1636,7 +1636,7 @@ MlArray >> mean: axis exclude: anElement [
 
 { #category : #'reduce operations' }
 MlArray >> meanAndStd [
-	^ self meanAndStd:0
+	^ self internalArray meanAndStd 
 ]
 
 { #category : #'reduce operations' }
@@ -1646,7 +1646,7 @@ MlArray >> meanAndStd: axis [
 
 { #category : #'reduce operations' }
 MlArray >> meanAndVariance [ 
-	^ self meanAndVariance:0
+	^ self internalArray meanAndVariance 
 ]
 
 { #category : #'reduce operations' }
@@ -1656,7 +1656,7 @@ MlArray >> meanAndVariance: axis [
 
 { #category : #'reduce operations' }
 MlArray >> meanNoNan [ 
-	^ self meanNoNan:0
+	^ self internalArray meanNoNan
 ]
 
 { #category : #'reduce operations' }
@@ -1666,7 +1666,7 @@ MlArray >> meanNoNan: axis [
 
 { #category : #'reduce operations' }
 MlArray >> median [ 
-	^ self  median:0
+	^ self internalArray median
 ]
 
 { #category : #'reduce operations' }
@@ -1676,7 +1676,7 @@ MlArray >> median: axis [
 
 { #category : #'reduce operations' }
 MlArray >> min [ 
-	^ self min:0
+	^ self internalArray min
 ]
 
 { #category : #'reduce operations' }
@@ -1686,7 +1686,7 @@ MlArray >> min: axis [
 
 { #category : #'reduce operations' }
 MlArray >> mode [
-	^ self mode:0
+	^ self internalArray mode
 ]
 
 { #category : #'reduce operations' }
@@ -1701,7 +1701,7 @@ MlArray >> mode: axis exclude: anElement [
 
 { #category : #'reduce operations' }
 MlArray >> module [
-	^ self module:0
+	^ self internalArray module
 ]
 
 { #category : #'reduce operations' }
@@ -1905,7 +1905,7 @@ MlArray >> printString [
 
 { #category : #'reduce operations' }
 MlArray >> quartiles [
-	^ self quartiles:0
+	^ self internalArray quartiles
 ]
 
 { #category : #'reduce operations' }
@@ -2061,7 +2061,7 @@ MlArray >> size [
 
 { #category : #'reduce operations' }
 MlArray >> skewness [ 
-	^ self skewness:0 
+	^ self internalArray skewness 
 ]
 
 { #category : #'reduce operations' }
@@ -2168,7 +2168,7 @@ MlArray >> split: indicesOrSections axis: standarAxisNumber [
 
 { #category : #'reduce operations' }
 MlArray >> stdDev [ 
-	^ self stdDev:0
+	^ self internalArray stdDev
 ]
 
 { #category : #'reduce operations' }
@@ -2178,7 +2178,7 @@ MlArray >> stdDev: axis [
 
 { #category : #'reduce operations' }
 MlArray >> sum [ 
-	^ self sum:0
+	^ self internalArray sum
 ]
 
 { #category : #'reduce operations' }
@@ -2239,7 +2239,7 @@ MlArray >> validateAddress: anArrayOfInt [
 
 { #category : #'reduce operations' }
 MlArray >> variance [ 
-	^ self variance:0
+	^ self internalArray variance
 ]
 
 { #category : #'reduce operations' }

@@ -77,6 +77,26 @@ MlStridesTest >> testBooleanFilters3D [
 ]
 
 { #category : #tests }
+MlStridesTest >> testEntropy [
+	| a b |
+	a := MlArray from: #(
+							  #(10 1 3 5 ) 
+							  #(2  5 6 4 ) 
+							  #(10 11 12 2 )
+							  #(11 2 3 6 ) 
+							  #(10 11 12 20)
+							  #(10 11 12 56)
+							).
+
+	
+	b := a infoGain:1->2.
+
+	
+							
+		
+]
+
+{ #category : #tests }
 MlStridesTest >> testNonContinuousArrays [
 	| a b c|
 	a := MlArray  from: {1.1. 2.1. 3.1. 4.1. 5.1. 6.1. 7.1. 8.1. 9.1. 10.1. 11.1. 12.1}.
