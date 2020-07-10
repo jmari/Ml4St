@@ -140,6 +140,14 @@ MlNonContinuousVector >> applyNewIndexOrder: anArrayOfIndexes [
 	
 ]
 
+{ #category : #'sorting and filtering' }
+MlNonContinuousVector >> argSortBy: aBlock [ 
+	| algorithm copyOfSelf|
+	copyOfSelf := self deepCopy.
+	algorithm := copyOfSelf bubbleSort: aBlock.
+	^ algorithm value
+]
+
 { #category : #accessing }
 MlNonContinuousVector >> at: aPos [
 	^ self buffer at: (self fakeAt: aPos)
@@ -205,14 +213,6 @@ MlNonContinuousVector >> fakeAt: aPos [
 	
 	
 		 
-]
-
-{ #category : #'sorting and filtering' }
-MlNonContinuousVector >> getIndexesSortingBy: aBlock [ 
-	| algorithm copyOfSelf|
-	copyOfSelf := self deepCopy.
-	algorithm := copyOfSelf bubbleSort: aBlock.
-	^ algorithm value
 ]
 
 { #category : #testing }

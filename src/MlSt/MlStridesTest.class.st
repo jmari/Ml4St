@@ -43,6 +43,8 @@ MlStridesTest >> testBooleanFilters2D [
 										#(  10  11  12  56) ).
 	self assert:d equals:sol.
 	
+	b := a entropy:1.
+
 	
 							
 		

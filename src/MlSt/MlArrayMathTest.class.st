@@ -90,7 +90,11 @@ MlArrayMathTest >> testMathOperations [
 	c := a * b.
 	self assert: ((c / b) closeTo: a).
 	c := a / b.
-	self assert: ((c * b) closeTo: a).		
+	self assert: ((c * b) closeTo: a).	
+	
+
+
+		
 	
 	
 	

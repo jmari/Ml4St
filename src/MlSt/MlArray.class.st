@@ -860,6 +860,21 @@ MlArray >> applyBooleanFilter: aBooleanMlArray on: axis [
 	^ instance 
 ]
 
+{ #category : #sorting }
+MlArray >> argSortBy: aBlock [
+	| steps array buffer |
+	steps :=  self nDim > 2 
+		ifTrue:[(self shape copyFrom:1 to: (self nDim -2)) inject:1 into:[:e :mul| e* mul]]
+		ifFalse:[self size - 1].
+	array:= Array new: self size .
+	(1 to: self size  by: steps + 1) do:[:e |
+		buffer := self internalArray copyFrom:e  to: (e + steps ).
+		"we sort each element of the axis"
+		array replaceFrom: e to: (e + steps ) with: ((buffer argSortBy: aBlock) + (e-1)) startingAt: 1  ].
+	
+	^ array  
+]
+
 { #category : #accessing }
 MlArray >> arrayType [ 
 	^ self internalArray bufferSpecies name
@@ -1330,6 +1345,15 @@ MlArray >> encode: aMlArray [
 
 ]
 
+{ #category : #'as yet unclassified' }
+MlArray >> entropy: column [
+	|countArray lenghtOfArray entropy |
+	countArray := self groupBy: column->column aggregate: [:k :v| v size].
+	lenghtOfArray := (countArray at:{_. 1}) size.
+	entropy := 	(((countArray at:{_. 2}) * -1 /  lenghtOfArray) * ((countArray at:{_. 2}) /  lenghtOfArray) log) sum.
+	^ entropy
+]
+
 { #category : #enumerating }
 MlArray >> eval: aBlock [ 
 	|newInstance|
@@ -1352,21 +1376,6 @@ MlArray >> getAddressForPoint:anArrayOfInt [
 	
 	adaptedAddress  doWithIndex:[:each :i| address := address + (each * (self weightForAxis:i))].	
 	^ address 
-]
-
-{ #category : #sorting }
-MlArray >> getIndexesSortingBy: aBlock [
-	| steps array buffer |
-	steps :=  self nDim > 2 
-		ifTrue:[(self shape copyFrom:1 to: (self nDim -2)) inject:1 into:[:e :mul| e* mul]]
-		ifFalse:[self size - 1].
-	array:= Array new: self size .
-	(1 to: self size  by: steps + 1) do:[:e |
-		buffer := self internalArray copyFrom:e  to: (e + steps ).
-		"we sort each element of the axis"
-		array replaceFrom: e to: (e + steps ) with: ((buffer getIndexesSortingBy: aBlock) + (e-1)) startingAt: 1  ].
-	
-	^ array  
 ]
 
 { #category : #'private-slicing' }
@@ -1439,7 +1448,7 @@ MlArray >> getStandardAxisNumberFor: anAxis [
 { #category : #'reduce operations' }
 MlArray >> groupBy: anAssociation aggregate: aBlock [
 	"an association shoud be {keys}->{aggregated values}"
-	| agKeys agValues  values sum  r valueRows  keyRows labelsForGroup |
+	| agKeys agValues  values sum  r valueRows  keyRows labelsForGroup val |
 	self nDim ~=2 ifTrue:[MlShapeError signal: (self asString,' should be a 2D Array')].
 	labelsForGroup :=	OrderedCollection new.
 	agKeys := anAssociation key isInteger | (anAssociation key isString)
@@ -1457,11 +1466,15 @@ MlArray >> groupBy: anAssociation aggregate: aBlock [
 
 	sum := Dictionary new.
 	(1 to: (self shape at: self nDim -1)) doWithIndex:[:k :i|
-		values := self at:{i. agValues}.	
-		sum at: (self at:{i. agKeys}) as1DArray add: values].
+		values := self slice:{i. agValues}.	
+		sum at: (self slice:{i. agKeys}) as1DArray add: values].
 	
 	r := OrderedCollection new.
-	sum keysAndValuesDo:[:k :v| r add: ((aBlock value:k value:v) as1DArray)].
+	sum keysAndValuesDo:[:k :v| 
+		val := aBlock value:k value:v.
+		r add:( val isMlArray ifTrue:[val as1DArray] ifFalse:[{val}]	)]. 
+		"if there is only one column in right side it will return an Object, 
+		and it should be always an array or a MlArray, becouse r should be a 2D column stacked array"
 	keyRows := self class from: sum keys order: self order dType:#Object.
 	valueRows := self class from: r  order: self order dType:#Object.	
 
@@ -1537,7 +1550,7 @@ MlArray >> jumpToNextBlockInAxis: axis [
 
 { #category : #'reduce operations' }
 MlArray >> kurtosis [ 
-	^ self internalArray kurtosis
+	^ self kurtosis:0
 ]
 
 { #category : #'reduce operations' }
@@ -1562,9 +1575,17 @@ MlArray >> labelsDictAt: anInteger [
 	^ self labelsDict at: anInteger ifAbsentPut:[MlLabelTranslator new]
 ]
 
+{ #category : #enumerating }
+MlArray >> log [
+	| nc i |
+	nc:= self internalArray log.
+	i := self newInstanceButEmpty internalArray: nc.
+	^i
+]
+
 { #category : #'reduce operations' }
 MlArray >> max [ 
-	^ self internalArray max
+	^ self max:0
 ]
 
 { #category : #'reduce operations' }
@@ -1584,7 +1605,7 @@ MlArray >> maxElementsToPrint: anInteger [
 
 { #category : #'reduce operations' }
 MlArray >> mean [ 
-	^ self internalArray mean
+	^ self mean:0
 ]
 
 { #category : #'reduce operations' }
@@ -1599,7 +1620,7 @@ MlArray >> mean: axis exclude: anElement [
 
 { #category : #'reduce operations' }
 MlArray >> meanAndStd [
-	^ self internalArray meanAndStd 
+	^ self meanAndStd:0
 ]
 
 { #category : #'reduce operations' }
@@ -1609,7 +1630,7 @@ MlArray >> meanAndStd: axis [
 
 { #category : #'reduce operations' }
 MlArray >> meanAndVariance [ 
-	^ self internalArray meanAndVariance 
+	^ self meanAndVariance:0
 ]
 
 { #category : #'reduce operations' }
@@ -1619,7 +1640,7 @@ MlArray >> meanAndVariance: axis [
 
 { #category : #'reduce operations' }
 MlArray >> meanNoNan [ 
-	^ self internalArray meanNoNan
+	^ self meanNoNan:0
 ]
 
 { #category : #'reduce operations' }
@@ -1629,7 +1650,7 @@ MlArray >> meanNoNan: axis [
 
 { #category : #'reduce operations' }
 MlArray >> median [ 
-	^ self internalArray median
+	^ self  median:0
 ]
 
 { #category : #'reduce operations' }
@@ -1639,7 +1660,7 @@ MlArray >> median: axis [
 
 { #category : #'reduce operations' }
 MlArray >> min [ 
-	^ self internalArray min
+	^ self min:0
 ]
 
 { #category : #'reduce operations' }
@@ -1649,7 +1670,7 @@ MlArray >> min: axis [
 
 { #category : #'reduce operations' }
 MlArray >> mode [
-	^ self internalArray mode
+	^ self mode:0
 ]
 
 { #category : #'reduce operations' }
@@ -1664,7 +1685,7 @@ MlArray >> mode: axis exclude: anElement [
 
 { #category : #'reduce operations' }
 MlArray >> module [
-	^ self internalArray module
+	^ self module:0
 ]
 
 { #category : #'reduce operations' }
@@ -1868,7 +1889,7 @@ MlArray >> printString [
 
 { #category : #'reduce operations' }
 MlArray >> quartiles [
-	^ self internalArray quartiles
+	^ self quartiles:0
 ]
 
 { #category : #'reduce operations' }
@@ -1984,7 +2005,7 @@ MlArray >> resortByColumn: indexOrNameOfColumn where: aBlock [
 	slide at: slide size put: indexOrNameOfColumn.
 	columns := self changeLabelsByIndexes: slide.
 	z := self at: columns.
-	si := z getIndexesSortingBy: aBlock.
+	si := z argSortBy: aBlock.
 	self resortBy: si onAxis:1
 	
 ]
@@ -2024,7 +2045,7 @@ MlArray >> size [
 
 { #category : #'reduce operations' }
 MlArray >> skewness [ 
-	^ self internalArray skewness 
+	^ self skewness:0 
 ]
 
 { #category : #'reduce operations' }
@@ -2131,7 +2152,7 @@ MlArray >> split: indicesOrSections axis: standarAxisNumber [
 
 { #category : #'reduce operations' }
 MlArray >> stdDev [ 
-	^ self internalArray stdDev
+	^ self stdDev:0
 ]
 
 { #category : #'reduce operations' }
@@ -2141,7 +2162,7 @@ MlArray >> stdDev: axis [
 
 { #category : #'reduce operations' }
 MlArray >> sum [ 
-	^ self internalArray sum
+	^ self sum:0
 ]
 
 { #category : #'reduce operations' }
@@ -2202,7 +2223,7 @@ MlArray >> validateAddress: anArrayOfInt [
 
 { #category : #'reduce operations' }
 MlArray >> variance [ 
-	^ self internalArray variance
+	^ self variance:0
 ]
 
 { #category : #'reduce operations' }
