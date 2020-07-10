@@ -1345,7 +1345,7 @@ MlArray >> encode: aMlArray [
 
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : #utility }
 MlArray >> entropy: column [
 	|countArray lenghtOfArray entropy |
 	countArray := self groupBy: column->column aggregate: [:k :v| v size].
@@ -1449,7 +1449,7 @@ MlArray >> getStandardAxisNumberFor: anAxis [
 MlArray >> groupBy: anAssociation aggregate: aBlock [
 	"an association shoud be {keys}->{aggregated values}"
 	| agKeys agValues  values sum  r valueRows  keyRows labelsForGroup val |
-	self nDim ~=2 ifTrue:[MlShapeError signal: (self asString,' should be a 2D Array')].
+	self nDim ~=2 ifTrue:[MlShapeError signal: ('It should be a 2D Array and it has ', self nDim asString, ' Dimensions')].
 	labelsForGroup :=	OrderedCollection new.
 	agKeys := anAssociation key isInteger | (anAssociation key isString)
 					ifTrue:[{anAssociation key}]
@@ -1482,6 +1482,22 @@ MlArray >> groupBy: anAssociation aggregate: aBlock [
 	^ (keyRows  concat:valueRows axis:1) setLabels: labelsForGroup onAxis:1. 
 
 	
+]
+
+{ #category : #utility }
+MlArray >> infoGain: anAssociation [
+	"association shold be split attribute->target name (class)
+	Calculate the information gain of a dataset. This function takes two parameters:
+    1. split_attribute_name = the name of the feature for which the information gain should be calculated
+    2. target_name = the name of the target feature."
+	| totalEntropy countArray lenght entropyMatrix weightedEntropy |
+	totalEntropy := self entropy: anAssociation value.
+	"|class| count|"
+	countArray := self groupBy: anAssociation aggregate: [:k :v| v size].
+	lenght := (countArray at:{_.1}) size.
+	entropyMatrix := self groupBy: anAssociation  aggregate:[:k :v| v entropy: anAssociation value]. 
+	weightedEntropy := (countArray at:{_. 2} / lenght *  entropyMatrix) sum.
+	^ totalEntropy - weightedEntropy
 ]
 
 { #category : #enumerating }
