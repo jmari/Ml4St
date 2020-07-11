@@ -1347,10 +1347,10 @@ MlArray >> encode: aMlArray [
 
 { #category : #utility }
 MlArray >> entropy: column [
-	|countArray lenghtOfArray entropy |
+	|countArray entropy |
 	countArray := self groupBy: column->column aggregate: [:k :v| v size].
-	lenghtOfArray := (countArray at:{_. 1}) size.
-	entropy := 	(((countArray at:{_. 2}) * -1 /  lenghtOfArray) * ((countArray at:{_. 2}) /  lenghtOfArray) log) sum.
+
+	entropy := 	(((countArray at:{_. 2}) * -1 /  self length) * (((countArray at:{_. 2}) /  self length) log:2)) sum.
 	^ entropy
 ]
 
@@ -1490,13 +1490,12 @@ MlArray >> infoGain: anAssociation [
 	Calculate the information gain of a dataset. This function takes two parameters:
     1. split_attribute_name = the name of the feature for which the information gain should be calculated
     2. target_name = the name of the target feature."
-	| totalEntropy countArray lenght entropyMatrix weightedEntropy |
+	| totalEntropy countArray entropyMatrix weightedEntropy |
 	totalEntropy := self entropy: anAssociation value.
 	"|class| count|"
 	countArray := self groupBy: anAssociation aggregate: [:k :v| v size].
-	lenght := (countArray at:{_.1}) size.
 	entropyMatrix := self groupBy: anAssociation  aggregate:[:k :v| v entropy:1]. 
-	weightedEntropy := ((countArray at:{_. 2}) / lenght *  (entropyMatrix at:{_.2})) sum.
+	weightedEntropy := ((countArray at:{_. 2}) / self length *  (entropyMatrix at:{_.2})) sum.
 	^ totalEntropy - weightedEntropy
 ]
 
@@ -1591,12 +1590,26 @@ MlArray >> labelsDictAt: anInteger [
 	^ self labelsDict at: anInteger ifAbsentPut:[MlLabelTranslator new]
 ]
 
+{ #category : #accessing }
+MlArray >> length [
+	"returns the number of rows"
+	^ self shape at: (self nDim -1)
+]
+
 { #category : #enumerating }
 MlArray >> log [
 	| nc i |
 	nc:= self internalArray log.
 	i := self newInstanceButEmpty internalArray: nc.
 	^i
+]
+
+{ #category : #enumerating }
+MlArray >> log: base [
+	| nc i |
+	nc := self internalArray collect:[:v| v log: base].
+	i := self newInstanceButEmpty internalArray: nc.
+	^ i
 ]
 
 { #category : #'reduce operations' }

@@ -8,6 +8,16 @@ Class {
 	#category : #'MlSt-Core'
 }
 
+{ #category : #'instance creation' }
+MlLabelTranslator class >> newFrom: anArray [ 
+	^ super newFrom: (anArray collect:[:v| v asString])
+]
+
+{ #category : #accessing }
+MlLabelTranslator >> at: i put: anObject [
+	^ super at:i put: anObject asString
+]
+
 { #category : #accessing }
 MlLabelTranslator >> slice: aSliceInOneDimension [
 	| copy |
