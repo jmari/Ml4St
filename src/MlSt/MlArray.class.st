@@ -1461,13 +1461,13 @@ MlArray >> getStandardAxisNumberFor: anAxis [
 MlArray >> groupBy: anAssociation aggregate: aBlock [
 	"an association shoud be {keys}->{aggregated values}"
 	
-	^ self groupBy: anAssociation aggregate: aBlock includeKeyCol: false
+	^ self groupBy: anAssociation aggregate: aBlock storeValue: true
 
 	
 ]
 
 { #category : #'reduce operations' }
-MlArray >> groupBy: anAssociation aggregate: aBlock includeKeyCol: includeKeyCol [
+MlArray >> groupBy: anAssociation aggregate: aBlock storeValue: includeKeyCol [
 	"an association shoud be {keys}->{aggregated values}"
 	| agKeys agValues  values sum  r valueRows  keyRows labelsForGroup val result |
 	self nDim ~=2 ifTrue:[MlShapeError signal: ('It should be a 2D Array and it has ', self nDim asString, ' Dimensions')].
@@ -1487,21 +1487,21 @@ MlArray >> groupBy: anAssociation aggregate: aBlock includeKeyCol: includeKeyCol
 
 	sum := Dictionary new.
 	(1 to: (self shape at: self nDim -1)) doWithIndex:[:k :i|
-		values := self slice:{i. (includeKeyCol ifTrue:[agKeys,agValues] ifFalse:[agValues])}.	
+		values := self slice:{i. agValues}.	
 		sum at: (self slice:{i. agKeys}) as1DArray vstack: values].
 		"call slice force to return alguays a MlArray"
 	r := OrderedCollection new.
 	sum keysAndValuesDo:[:k :v| 
 		val := aBlock value:k value:v.
-
 		r add:( val isMlArray ifTrue:[val as1DArray] ifFalse:[{val}]	)]. 
 		"if there is only one column in right side it will return an Object, 
 		and it should be always an array or a MlArray, becouse r should be a 2D column stacked array"
-	keyRows := self class from: sum keys order: self order dType:#Object.
-	valueRows := self class from: r  order: self order dType:#Object.	
-	
-	result := (keyRows  concat:valueRows axis:1).
-	[result setLabels: labelsForGroup onAxis:1] on:MlShapeError do:[].
+	includeKeyCol ifTrue:[
+		keyRows := self class from: sum keys order: self order dType:#Object.
+		valueRows := self class from: r  order: self order dType:#Object.	
+		result := (keyRows  concat:valueRows axis:1).
+		[result setLabels: labelsForGroup onAxis:1] on:MlShapeError do:[].
+	].
 	^result 
 
 	

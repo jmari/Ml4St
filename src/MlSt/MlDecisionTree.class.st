@@ -64,7 +64,8 @@ MlDecisionTree >> id3OnData: aMlArray originalData: originalData features: featu
 			  				 features: nextFeatures 
 			  				 target: targetAttributeName
 			  				 parentNodeClass: pNodeClass.
-					tree at:bestFeature add: subtree].
+					tree at:bestFeature add: subtree]
+				storeValue:false.
 	^ tree
 ]
 
