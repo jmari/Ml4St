@@ -25,7 +25,7 @@ MlUtilityTest >> testEntropy [
 							).
 
 	b := a entropy:1.
-	b inspect
+	self assert: b closeTo: 0.940285958670631.
 
 	
 							
@@ -47,11 +47,15 @@ MlUtilityTest >> testInfoGain [
 							  #(#H9 #Windy true #Rich #Cinema )
 							  #(#H10 #Sunny false #Rich #Tennis ) 
 							).
-
+	b := a entropy:5.
+	self assert: b  closeTo: 1.571.
 	b := a infoGain:2->5.
-	b inspect
-
-	
-							
+	self assert: (b at:1)  closeTo: 0.6954618442383218.
+	b := a infoGain:3->5.
+	self assert: (b at:1) closeTo: 0.61.
+	b := a infoGain:4->5.
+	self assert: (b at:1)  closeTo: 0.28129089923069284.
+	b := a infoGain:{ 2. 3. 4}->5.
+	self assert:b closeTo: (MlArray from:{0.6954618442383218. 0.61. 0.28129089923069284}).						
 		
 ]

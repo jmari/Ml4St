@@ -1086,11 +1086,16 @@ MlArray >> classForType: aType [
 
 { #category : #comparing }
 MlArray >> closeTo: aMlArrayOrNumber [
+	^ self closeTo: aMlArrayOrNumber precision: 0.0001
+]
+
+{ #category : #comparing }
+MlArray >> closeTo: aMlArrayOrNumber precision: precission [
 	^ aMlArrayOrNumber isNumber| (aMlArrayOrNumber isKindOf:Boolean)|(aMlArrayOrNumber isKindOf:String) 
 		ifTrue:[self select:[:e| e = aMlArrayOrNumber] ]
 		ifFalse:[
 			1 to: self size do:[:i|
-				((self internalArray at:i) closeTo: (aMlArrayOrNumber internalArray at:i))
+				((self internalArray at:i) closeTo: (aMlArrayOrNumber internalArray at:i) precision: precission)
 				ifFalse:[^ false]].
 			[self order = aMlArrayOrNumber order and:[self shape= aMlArrayOrNumber shape]] ]
 ]
@@ -1346,9 +1351,9 @@ MlArray >> encode: aMlArray [
 ]
 
 { #category : #utility }
-MlArray >> entropy: column [
+MlArray >> entropy: targetColumn [
 	|countArray entropy |
-	countArray := self groupBy: column->column aggregate: [:k :v| v size].
+	countArray := self groupBy: targetColumn->targetColumn aggregate: [:k :v| v size].
 
 	entropy := 	(((countArray at:{_. 2}) * -1 /  self length) * (((countArray at:{_. 2}) /  self length) log:2)) sum.
 	^ entropy
@@ -1485,17 +1490,27 @@ MlArray >> groupBy: anAssociation aggregate: aBlock [
 ]
 
 { #category : #utility }
-MlArray >> infoGain: anAssociation [
+MlArray >> infoGain: featuresClassAssociation [
 	"association shold be split attribute->target name (class)
 	Calculate the information gain of a dataset. This function takes two parameters:
     1. split_attribute_name = the name of the feature for which the information gain should be calculated
     2. target_name = the name of the target feature."
-	| totalEntropy countArray entropyMatrix weightedEntropy |
-	totalEntropy := self entropy: anAssociation value.
+	| totalEntropy countArray entropyMatrix weightedEntropy featuresClass we |
+	totalEntropy := self class from:{self entropy: featuresClassAssociation value}.
 	"|class| count|"
-	countArray := self groupBy: anAssociation aggregate: [:k :v| v size].
-	entropyMatrix := self groupBy: anAssociation  aggregate:[:k :v| v entropy:1]. 
-	weightedEntropy := ((countArray at:{_. 2}) / self length *  (entropyMatrix at:{_.2})) sum.
+	featuresClass := (featuresClassAssociation key isArray) 
+		ifTrue:[ featuresClassAssociation]
+		ifFalse:[ { featuresClassAssociation key }->featuresClassAssociation value].
+	
+	weightedEntropy :=OrderedCollection new.
+	featuresClass key do:[:feature	|
+		countArray := self groupBy: (feature->featuresClass value) aggregate: [:k :v| v size].
+		entropyMatrix := self groupBy: (feature->featuresClass value)  aggregate:[:k :v| v entropy:1]. 
+		we := ((countArray at:{_. 2@_}) / self length *  (entropyMatrix at:{_.2@_})) sum.
+		weightedEntropy add: we
+		].
+
+	weightedEntropy := self class from:weightedEntropy.
 	^ totalEntropy - weightedEntropy
 ]
 
