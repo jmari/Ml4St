@@ -5,6 +5,26 @@ Class {
 }
 
 { #category : #tests }
+MlUtilityTest >> testDecisionTree [
+	| a b c |
+	a := MlArray from: #(
+							  #(#H1 #Sunny true #Rich #Cinema true) 
+							  #(#H2 #Sunny false #Rich #Tennis true) 
+							  #(#H3 #Windy true #Rich #Cinema true) 
+							  #(#H4 #Rainy true #Poor #Cinema true) 
+							  #(#H5 #Rainy false #Rich #Home true) 
+							  #(#H6 #Rainy true #Poor #Cinema true) 
+							  #(#H7 #Windy false #Poor #Cinema true) 
+							  #(#H8 #Windy false #Rich #Shopping true) 
+							  #(#H9 #Windy true #Rich #Cinema true)
+							  #(#H10 #Sunny false #Rich #Tennis true) 
+							).
+	b := MlDecisionTree new.
+	c := b id3OnData: a originalData: a features: { 2. 3. 4} target: 5 	parentNodeClass:nil				
+		
+]
+
+{ #category : #tests }
 MlUtilityTest >> testEntropy [
 	| a b |
 	a := MlArray from: #(
@@ -33,29 +53,52 @@ MlUtilityTest >> testEntropy [
 ]
 
 { #category : #tests }
+MlUtilityTest >> testIndexOf [
+	| a b c |
+	a := MlArray from: #(
+							  #(#H1 #Sunny true #Rich #Cinema true) 
+							  #(#H2 #Sunny false #Rich #Tennis true) 
+							  #(#H3 #Windy true #Rich #Cinema true) 
+							  #(#H4 #Rainy true #Poor #Cinema true) 
+							  #(#H5 #Rainy false #Rich #Home true) 
+							  #(#H6 #Rainy true #Poor #Cinema true) 
+							  #(#H7 #Windy false #Poor #Cinema true) 
+							  #(#H8 #Windy false #Rich #Shopping true) 
+							  #(#H9 #Windy true #Rich #Cinema true)
+							  #(#H10 #Sunny false #Rich #Tennis true) 
+							).
+	self flag:#todo. "it is not working at all"
+	c := a indexOf:#H7	
+				
+		
+]
+
+{ #category : #tests }
 MlUtilityTest >> testInfoGain [
 	| a b |
 	a := MlArray from: #(
-							  #(#H1 #Sunny true #Rich #Cinema ) 
-							  #(#H2 #Sunny false #Rich #Tennis ) 
-							  #(#H3 #Windy true #Rich #Cinema ) 
-							  #(#H4 #Rainy true #Poor #Cinema ) 
-							  #(#H5 #Rainy false #Rich #Home ) 
-							  #(#H6 #Rainy true #Poor #Cinema ) 
-							  #(#H7 #Windy false #Poor #Cinema ) 
-							  #(#H8 #Windy false #Rich #Shopping ) 
-							  #(#H9 #Windy true #Rich #Cinema )
-							  #(#H10 #Sunny false #Rich #Tennis ) 
+							  #(#H1 #Sunny true #Rich #Cinema true) 
+							  #(#H2 #Sunny false #Rich #Tennis true) 
+							  #(#H3 #Windy true #Rich #Cinema true) 
+							  #(#H4 #Rainy true #Poor #Cinema true) 
+							  #(#H5 #Rainy false #Rich #Home true) 
+							  #(#H6 #Rainy true #Poor #Cinema true) 
+							  #(#H7 #Windy false #Poor #Cinema true) 
+							  #(#H8 #Windy false #Rich #Shopping true) 
+							  #(#H9 #Windy true #Rich #Cinema true)
+							  #(#H10 #Sunny false #Rich #Tennis true) 
 							).
 	b := a entropy:5.
 	self assert: b  closeTo: 1.571.
+	b := a entropy:6.
+	self assert: b  closeTo: 0.0.
 	b := a infoGain:2->5.
-	self assert: (b at:1)  closeTo: 0.6954618442383218.
+	self assert: (b first)  closeTo: 0.6954.
 	b := a infoGain:3->5.
-	self assert: (b at:1) closeTo: 0.61.
+	self assert: (b first) closeTo: 0.61.
 	b := a infoGain:4->5.
-	self assert: (b at:1)  closeTo: 0.28129089923069284.
-	b := a infoGain:{ 2. 3. 4}->5.
-	self assert:b closeTo: (MlArray from:{0.6954618442383218. 0.61. 0.28129089923069284}).						
+	self assert: (b first)  closeTo: 0.2813.
+	b := a infoGain:{ 2. 3. 4. 6.}->5.
+	self assert:b closeTo: (MlArray from:{0.6954. 0.61. 0.2813. 0.0}).						
 		
 ]

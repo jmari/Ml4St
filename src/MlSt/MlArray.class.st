@@ -1373,6 +1373,12 @@ MlArray >> fillWith: anObject [
 		1 to:  self internalArray size  do:[:i| self internalArray at:i put: anObject].
 ]
 
+{ #category : #accessing }
+MlArray >> first [ 
+	
+	^ self internalArray first.
+]
+
 { #category : #'private-accessing' }
 MlArray >> getAddressForPoint:anArrayOfInt [
 	| address  adaptedAddress  |
@@ -1489,6 +1495,35 @@ MlArray >> groupBy: anAssociation aggregate: aBlock [
 	
 ]
 
+{ #category : #accessing }
+MlArray >> indexOf: anObject [
+	| linearIndex tmpIndex |
+	linearIndex := self internalArray indexOf: anObject.
+	
+	^ self nDim = 1 
+			ifTrue:[linearIndex] 
+			ifFalse:[
+				tmpIndex := Array new: self nDim withAll:1.
+				self indexOf: linearIndex index: tmpIndex level:1 sum:0.
+				tmpIndex]
+]
+
+{ #category : #accessing }
+MlArray >> indexOf: anAddress index: anArray level:l sum:s [
+	| axisLength i sum |
+	axisLength := self shape at:l. 
+	i :=0.
+	sum := s.
+	[ anAddress > sum ] whileTrue:[ 
+		sum := sum + axisLength.
+		anArray at:l put:i.
+		i := i+1].
+	l < (self nDim) 
+	  	ifTrue:[ self indexOf: anAddress index: anArray level: (l+1) sum: (sum - axisLength)]
+	  
+	
+]
+
 { #category : #utility }
 MlArray >> infoGain: featuresClassAssociation [
 	"association shold be split attribute->target name (class)
@@ -1509,7 +1544,6 @@ MlArray >> infoGain: featuresClassAssociation [
 		we := ((countArray at:{_. 2@_}) / self length *  (entropyMatrix at:{_.2@_})) sum.
 		weightedEntropy add: we
 		].
-
 	weightedEntropy := self class from:weightedEntropy.
 	^ totalEntropy - weightedEntropy
 ]
@@ -1603,6 +1637,12 @@ MlArray >> labelsDict: aSmallDictionary [
 { #category : #labeling }
 MlArray >> labelsDictAt: anInteger [ 
 	^ self labelsDict at: anInteger ifAbsentPut:[MlLabelTranslator new]
+]
+
+{ #category : #accessing }
+MlArray >> last [ 
+	
+	^ self internalArray last.
 ]
 
 { #category : #accessing }
