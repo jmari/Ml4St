@@ -40,22 +40,31 @@ MlDecisionTree >> findBestSplit: anInteger [
 ]
 
 { #category : #'as yet unclassified' }
-MlDecisionTree >> id3OnData: aMlArray originalData: originalData features: features target: targetAttributeName parentNodeClass: parentNodeClass [
+MlDecisionTree >> id3OnData: aMlArray originalData: originalData features: features target: targetAttributeName parentNodeClass: parentNodeClass [ 
  
-	| infoGain bestFeature tree nextFeatures subtree |
-	self flag:#todo. "condiciones no recursivas"
+	| infoGain bestFeature nextFeatures subtree uClass pNodeClass tree featuresIncluded |
+	
+	uClass := (aMlArray at:{_. targetAttributeName}) unique.
+	uClass size <= 1 
+		ifTrue:[^(aMlArray at:{_. targetAttributeName}) first].
+	aMlArray length = 0 ifTrue:[^ (originalData at:{_. targetAttributeName}) mode].
+	features isEmpty ifTrue:[^ parentNodeClass].
+	
+	pNodeClass := uClass first.
 	infoGain := aMlArray infoGain: features ->targetAttributeName.
 	bestFeature := (features at: (infoGain indexOf:infoGain max)).  
-	
-	tree := { bestFeature->nil } asDictionary. 
-	nextFeatures := features select:[:f| f ~= bestFeature].
-	aMlArray groupBy: bestFeature->nextFeatures aggregate:[:k :v|
-		subtree := self id3OnData: v 
+	nextFeatures := (features select:[:f| f ~= bestFeature] ).
+	(nextFeatures includes: targetAttributeName) 
+	ifFalse:[ featuresIncluded := nextFeatures ,{targetAttributeName}].
+	tree := Dictionary new.
+	aMlArray groupBy: bestFeature->featuresIncluded 
+				aggregate:[:k :v|
+					subtree := self id3OnData: v 
 			  				 originalData: aMlArray 
 			  				 features: nextFeatures 
-			  				 target: targetAttributeName 
-			  				 parentNodeClass: parentNodeClass.
-		tree at:bestFeature put: subtree].
+			  				 target: targetAttributeName
+			  				 parentNodeClass: pNodeClass.
+					tree at:bestFeature add: subtree].
 	^ tree
 ]
 

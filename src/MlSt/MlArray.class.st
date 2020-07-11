@@ -226,6 +226,7 @@ MlArray class >> from: aCollection order: CorF [
 { #category : #'instance creation' }
 MlArray class >> from: aCollectionOrObject order: CorF dType: dType [
 	| shapeAndPlainCollection instance aCollection |
+	aCollectionOrObject isMlArray ifTrue:[^aCollectionOrObject].
 	aCollection := aCollectionOrObject.
 	aCollection isCollection not | (aCollection isString) ifTrue:[ aCollection := { aCollection} ].
 	aCollection isEmpty ifTrue:[ ^ self new:#()].
@@ -1459,7 +1460,16 @@ MlArray >> getStandardAxisNumberFor: anAxis [
 { #category : #'reduce operations' }
 MlArray >> groupBy: anAssociation aggregate: aBlock [
 	"an association shoud be {keys}->{aggregated values}"
-	| agKeys agValues  values sum  r valueRows  keyRows labelsForGroup val |
+	
+	^ self groupBy: anAssociation aggregate: aBlock includeKeyCol: false
+
+	
+]
+
+{ #category : #'reduce operations' }
+MlArray >> groupBy: anAssociation aggregate: aBlock includeKeyCol: includeKeyCol [
+	"an association shoud be {keys}->{aggregated values}"
+	| agKeys agValues  values sum  r valueRows  keyRows labelsForGroup val result |
 	self nDim ~=2 ifTrue:[MlShapeError signal: ('It should be a 2D Array and it has ', self nDim asString, ' Dimensions')].
 	labelsForGroup :=	OrderedCollection new.
 	agKeys := anAssociation key isInteger | (anAssociation key isString)
@@ -1477,7 +1487,7 @@ MlArray >> groupBy: anAssociation aggregate: aBlock [
 
 	sum := Dictionary new.
 	(1 to: (self shape at: self nDim -1)) doWithIndex:[:k :i|
-		values := self slice:{i. agValues}.	
+		values := self slice:{i. (includeKeyCol ifTrue:[agKeys,agValues] ifFalse:[agValues])}.	
 		sum at: (self slice:{i. agKeys}) as1DArray vstack: values].
 		"call slice force to return alguays a MlArray"
 	r := OrderedCollection new.
@@ -1490,7 +1500,9 @@ MlArray >> groupBy: anAssociation aggregate: aBlock [
 	keyRows := self class from: sum keys order: self order dType:#Object.
 	valueRows := self class from: r  order: self order dType:#Object.	
 	
-	^ (keyRows  concat:valueRows axis:1) setLabels: labelsForGroup onAxis:1. 
+	result := (keyRows  concat:valueRows axis:1).
+	[result setLabels: labelsForGroup onAxis:1] on:MlShapeError do:[].
+	^result 
 
 	
 ]
@@ -1636,7 +1648,8 @@ MlArray >> labelsDict: aSmallDictionary [
 
 { #category : #labeling }
 MlArray >> labelsDictAt: anInteger [ 
-	^ self labelsDict at: anInteger ifAbsentPut:[MlLabelTranslator new]
+	^ self labelsDict at: anInteger 
+	 					   ifAbsentPut:[MlLabelTranslator new]
 ]
 
 { #category : #accessing }
@@ -1799,7 +1812,7 @@ MlArray >> newInstanceButBool [
 
 	| i |
 	i:= self class new: self shape deepCopy order:self order dType: #Boolean.
-	i labelsDict: self labelsDict.
+	i labelsDict: self labelsDict deepCopy.
 	^i
 	
 ]
@@ -1818,6 +1831,7 @@ MlArray >> newInstanceButShaped: aShape [
 	| i |
 	
 	i := self class new: aShape order:self order dType: self dType.
+	i labelsDict: self labelsDict deepCopy.
 	^i
 ]
 
@@ -1825,7 +1839,7 @@ MlArray >> newInstanceButShaped: aShape [
 MlArray >> newInstanceLikeMe [
 	| i |
 	i := self class new: self shape deepCopy order:self order dType: self dType.
-	i labelsDict: self labelsDict.
+	i labelsDict: self labelsDict deepCopy.
 	^i
 ]
 
@@ -2293,6 +2307,15 @@ MlArray >> transposed [
 	
 	^ instance
 
+]
+
+{ #category : #'reduce operations' }
+MlArray >> unique [
+	|unique|
+	unique := Set new.
+	self internalArray do:[:each| unique add: each ].
+	^ self class from:unique asArray order:self order
+	
 ]
 
 { #category : #'private-accessing' }
