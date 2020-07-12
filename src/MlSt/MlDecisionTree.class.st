@@ -1,27 +1,16 @@
 Class {
 	#name : #MlDecisionTree,
 	#superclass : #MlRegressorMixin,
-	#instVars : [
-		'x',
-		'y',
-		'idxs',
-		'minSamplesLeaf',
-		'n',
-		'c',
-		'val',
-		'score'
-	],
 	#category : #'MlSt-Ensemble-RandomForestClassifier'
 }
 
 { #category : #'fit-predict' }
-MlDecisionTree >> fit: aMlArray target: aColumnLabel sampleWeight: sw [
+MlDecisionTree >> fit: aMlArray target: tMlArray sampleWeight: sw [
 	| features target |
 	aMlArray nDim = 2 ifFalse:[ MlShapeError signal: ('It should be a 2D Array and it has ', aMlArray nDim asString, ' Dimensions')].
-	features := (aMlArray getLabelsOnAxis:1) asOrderedCollection.
-	target := aColumnLabel.
-	features remove: target.
-	model := self id3OnData: aMlArray features: features asArray  target:target 
+	features := (aMlArray getLabelsOnAxis:1).
+	target := (tMlArray getLabelsOnAxis:1) first.
+	self model: (self id3OnData: (aMlArray concat: tMlArray axis:1)  features: features asArray  target:target)
 	
 	
 	

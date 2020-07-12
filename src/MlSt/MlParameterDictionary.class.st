@@ -7,7 +7,7 @@ Class {
 	#category : #'MlSt-Core'
 }
 
-{ #category : #'as yet unclassified' }
+{ #category : #access }
 MlParameterDictionary >> at: aKey [ 
 	^ (self nativeParameters respondsTo: aKey asSymbol) 
 		ifTrue:[
@@ -16,7 +16,7 @@ MlParameterDictionary >> at: aKey [
 		ifFalse:[ self errorKeyNotFound: aKey ]
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : #access }
 MlParameterDictionary >> at: aKey put: anObject [
 	(self nativeParameters respondsTo: (aKey, ':') asSymbol) 
 		ifTrue:[
@@ -25,7 +25,7 @@ MlParameterDictionary >> at: aKey put: anObject [
 		ifFalse:[ self errorKeyNotFound: aKey ,':']
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : #access }
 MlParameterDictionary >> nativeParameters [
 	self subclassResponsibility 
 ]

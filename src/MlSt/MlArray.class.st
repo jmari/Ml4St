@@ -854,7 +854,7 @@ MlArray >> anySatisfy: aBlock [
 { #category : #'binary operations' }
 MlArray >> applyBooleanFilter: aBooleanMlArray on: axis [
 	| ratio instance |
-	
+	self flag:#todo. "filter axis labels"
 	instance := self performBinaryOp: #applyBooleanFilter: on: aBooleanMlArray.
 	ratio := instance size / self size.
 	instance shape at:axis put:( (self shape at:axis) * ratio).
@@ -1180,7 +1180,8 @@ MlArray >> concat: aMlArray axis: standarAxisNumber [
 															at: axis 
 															put: (self shape at:axis) + (aMlArray shape at:axis);
 															yourself) .
-											
+	(instance labelsDictAt: axis) addAll:(aMlArray labelsDictAt: axis).
+		 									
 	heightOfSelf :=self jumpToNextBlockInAxis: axis.
 	heightOfOther := aMlArray jumpToNextBlockInAxis: axis.
 

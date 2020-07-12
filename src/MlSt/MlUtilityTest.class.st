@@ -21,7 +21,8 @@ MlUtilityTest >> testDecisionTree [
 							).
 	a setLabels:#(#Weekend #Weather #ParentalAvaliability #Wealthy #Decision) onAxis:1. 
 	b := MlDecisionTree new.
-	c := b fit:(a at:{_. {#Weather. #ParentalAvaliability.  #Wealthy. #Decision}}) target: #Decision. 	
+	c := b fit:(a at:{_. {#Weather. #ParentalAvaliability.  #Wealthy}}) 
+			 target: (a at:{_. #Decision}). 	
 	c inspect
 		
 ]
