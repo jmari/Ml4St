@@ -14,32 +14,20 @@ Class {
 	#category : #'MlSt-Ensemble-RandomForestClassifier'
 }
 
-{ #category : #accessing }
-MlDecisionTree >> asString [ 	
+{ #category : #'fit-predict' }
+MlDecisionTree >> fit: aMlArray target: aColumnLabel sampleWeight: sw [
+	| features target |
+	aMlArray nDim = 2 ifFalse:[ MlShapeError signal: ('It should be a 2D Array and it has ', aMlArray nDim asString, ' Dimensions')].
+	features := (aMlArray getLabelsOnAxis:1) asOrderedCollection.
+	target := aColumnLabel.
+	features remove: target.
+	model := self id3OnData: aMlArray features: features asArray  target:target 
+	
+	
 	
 ]
 
-{ #category : #accessing }
-MlDecisionTree >> c [
-	^ c
-]
-
-{ #category : #accessing }
-MlDecisionTree >> c: anObject [
-	c := anObject
-]
-
-{ #category : #accessing }
-MlDecisionTree >> checkFeatures [
-	1 to:self c do:[:i| self findBestSplit:i]
-]
-
-{ #category : #accessing }
-MlDecisionTree >> findBestSplit: anInteger [ 
-
-]
-
-{ #category : #'as yet unclassified' }
+{ #category : #'tree-algoritm' }
 MlDecisionTree >> id3OnData: aMlArray features: features target: targetAttributeName [
 	
 	^ self id3OnData: aMlArray originalData: aMlArray features: features target: targetAttributeName parentNodeClass: nil 
@@ -47,7 +35,7 @@ MlDecisionTree >> id3OnData: aMlArray features: features target: targetAttribute
 
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : #'tree-algoritm' }
 MlDecisionTree >> id3OnData: aMlArray originalData: originalData features: features target: targetAttributeName parentNodeClass: parentNodeClass [ 
  
 	| infoGain bestFeature nextFeatures subtree uClass pNodeClass tree featuresIncluded infoGainMax |
@@ -78,80 +66,4 @@ MlDecisionTree >> id3OnData: aMlArray originalData: originalData features: featu
 					tree add:( k first->subtree)]
 				storeCallbackValue:false.
 	^ tree
-]
-
-{ #category : #accessing }
-MlDecisionTree >> idxs [
-	^ idxs ifNil:[ idxs := Array new: self y size]
-]
-
-{ #category : #accessing }
-MlDecisionTree >> idxs: anObject [
-	idxs := anObject
-]
-
-{ #category : #testing }
-MlDecisionTree >> isLeaf [
-	self score = Float infinity. 
-	
-]
-
-{ #category : #accessing }
-MlDecisionTree >> minSamplesLeaf [
-	^ minSamplesLeaf
-]
-
-{ #category : #accessing }
-MlDecisionTree >> minSamplesLeaf: anObject [
-	minSamplesLeaf := anObject
-]
-
-{ #category : #accessing }
-MlDecisionTree >> n [
-	^ n
-]
-
-{ #category : #accessing }
-MlDecisionTree >> n: anObject [
-	n := anObject
-]
-
-{ #category : #accessing }
-MlDecisionTree >> score [
-	^ score ifNil:[ score :=  Float infinity]
-]
-
-{ #category : #accessing }
-MlDecisionTree >> score: anObject [
-	score := anObject
-]
-
-{ #category : #accessing }
-MlDecisionTree >> val [
-	^ val
-]
-
-{ #category : #accessing }
-MlDecisionTree >> val: anObject [
-	val := anObject
-]
-
-{ #category : #accessing }
-MlDecisionTree >> x [
-	^ x
-]
-
-{ #category : #accessing }
-MlDecisionTree >> x: anObject [
-	x := anObject
-]
-
-{ #category : #accessing }
-MlDecisionTree >> y [
-	^ y
-]
-
-{ #category : #accessing }
-MlDecisionTree >> y: anObject [
-	y := anObject
 ]

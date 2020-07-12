@@ -8,22 +8,20 @@ Class {
 MlUtilityTest >> testDecisionTree [
 	| a b c tree mt |
 	a := MlArray from: #(
-							  #(#H1 #Sunny true #Rich #Cinema true) 
-							  #(#H2 #Sunny false #Rich #Tennis true) 
-							  #(#H3 #Windy true #Rich #Cinema true) 
-							  #(#H4 #Rainy true #Poor #Cinema true) 
-							  #(#H5 #Rainy false #Rich #Home true) 
-							  #(#H6 #Rainy true #Poor #Cinema true) 
-							  #(#H7 #Windy false #Poor #Cinema true) 
-							  #(#H8 #Windy false #Rich #Shopping true) 
-							  #(#H9 #Windy true #Rich #Cinema true)
-							  #(#H10 #Sunny false #Rich #Tennis true) 
+							  #(#H1 #Sunny true #Rich #Cinema ) 
+							  #(#H2 #Sunny false #Rich #Tennis ) 
+							  #(#H3 #Windy true #Rich #Cinema ) 
+							  #(#H4 #Rainy true #Poor #Cinema ) 
+							  #(#H5 #Rainy false #Rich #Home ) 
+							  #(#H6 #Rainy true #Poor #Cinema ) 
+							  #(#H7 #Windy false #Poor #Cinema ) 
+							  #(#H8 #Windy false #Rich #Shopping ) 
+							  #(#H9 #Windy true #Rich #Cinema )
+							  #(#H10 #Sunny false #Rich #Tennis ) 
 							).
-	a setLabels:#(#Weekend #Weather #ParentalAvaliability #Wealthy #Decision #nothing) onAxis:1. 
+	a setLabels:#(#Weekend #Weather #ParentalAvaliability #Wealthy #Decision) onAxis:1. 
 	b := MlDecisionTree new.
-	tree := Dictionary new.
-	
-	c := b id3OnData: a features: #(#Weather #ParentalAvaliability #Wealthy) target: #Decision. 	
+	c := b fit:(a at:{_. {#Weather. #ParentalAvaliability.  #Wealthy. #Decision}}) target: #Decision. 	
 	c inspect
 		
 ]

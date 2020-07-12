@@ -1149,7 +1149,7 @@ MlArray >> completeSlice: aSliceArray [
 	
 	1 to: aSliceArray size do:[:dimIndex|
 		sliceForDim := (aSliceArray at: dimIndex).
-		sliceForDim isArray &  sliceForDim isSlice not
+		sliceForDim isCollection &  (sliceForDim isString not ) &  (sliceForDim isSlice not)
 			ifTrue:[
 				subcollection := OrderedCollection new.
 				sliceForDim do:[:each| 
@@ -1442,6 +1442,15 @@ MlArray >> getIntervalAdressesFor:slices level: l list: lklst indexes: indexes [
 			]
 		
 	
+]
+
+{ #category : #labeling }
+MlArray >> getLabelsOnAxis: standarAxisNumber [
+	| axis |
+	axis := self getStandardAxisNumberFor: standarAxisNumber.
+	(axis <1 | axis > self nDim) ifTrue:[ ^ MlShapeError signal:('dimension  ', axis asString,' does not exist') ].
+	
+	^ self labelsDict at: axis 
 ]
 
 { #category : #accessing }
