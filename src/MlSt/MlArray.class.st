@@ -1461,13 +1461,13 @@ MlArray >> getStandardAxisNumberFor: anAxis [
 MlArray >> groupBy: anAssociation aggregate: aBlock [
 	"an association shoud be {keys}->{aggregated values}"
 	
-	^ self groupBy: anAssociation aggregate: aBlock storeValue: true
+	^ self groupBy: anAssociation aggregate: aBlock storeCallbackValue: true
 
 	
 ]
 
 { #category : #'reduce operations' }
-MlArray >> groupBy: anAssociation aggregate: aBlock storeValue: includeKeyCol [
+MlArray >> groupBy: anAssociation aggregate: aBlock storeCallbackValue: includeKeyCol [
 	"an association shoud be {keys}->{aggregated values}"
 	| agKeys agValues  values sum  r valueRows  keyRows labelsForGroup val result |
 	self nDim ~=2 ifTrue:[MlShapeError signal: ('It should be a 2D Array and it has ', self nDim asString, ' Dimensions')].

@@ -6,7 +6,7 @@ Class {
 
 { #category : #tests }
 MlUtilityTest >> testDecisionTree [
-	| a b c tree |
+	| a b c tree mt |
 	a := MlArray from: #(
 							  #(#H1 #Sunny true #Rich #Cinema true) 
 							  #(#H2 #Sunny false #Rich #Tennis true) 
@@ -22,7 +22,9 @@ MlUtilityTest >> testDecisionTree [
 	a setLabels:#(#Weekend #Weather #ParentalAvaliability #Wealthy #Decision #nothing) onAxis:1. 
 	b := MlDecisionTree new.
 	tree := Dictionary new.
-	c := b id3OnData: a originalData: a features: #(#Weather #ParentalAvaliability #Wealthy) target: #Decision parentNodeClass:nil				
+	
+	c := b id3OnData: a features: #(#Weather #ParentalAvaliability #Wealthy) target: #Decision. 	
+	c inspect
 		
 ]
 

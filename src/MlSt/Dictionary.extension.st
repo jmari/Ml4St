@@ -1,14 +1,6 @@
 Extension { #name : #Dictionary }
 
 { #category : #'*MlSt' }
-Dictionary >> at:e add: anObject [
-	| v  |
-	
-	v := self at:e ifAbsentPut:[OrderedCollection new].
-	^ v add: anObject
-]
-
-{ #category : #'*MlSt' }
 Dictionary >> at:e incrementBy: incr [
 	| v |
 	v := self at:e ifAbsent:0.

@@ -40,23 +40,34 @@ MlDecisionTree >> findBestSplit: anInteger [
 ]
 
 { #category : #'as yet unclassified' }
+MlDecisionTree >> id3OnData: aMlArray features: features target: targetAttributeName [
+	
+	^ self id3OnData: aMlArray originalData: aMlArray features: features target: targetAttributeName parentNodeClass: nil 
+ 
+
+]
+
+{ #category : #'as yet unclassified' }
 MlDecisionTree >> id3OnData: aMlArray originalData: originalData features: features target: targetAttributeName parentNodeClass: parentNodeClass [ 
  
-	| infoGain bestFeature nextFeatures subtree uClass pNodeClass tree featuresIncluded |
-	
+	| infoGain bestFeature nextFeatures subtree uClass pNodeClass tree featuresIncluded infoGainMax |
+	"Define the stopping criteria --> If one of this is satisfied, we want to return a leaf node"
 	uClass := (aMlArray at:{_. targetAttributeName}) unique.
-	uClass size <= 1 
-		ifTrue:[^(aMlArray at:{_. targetAttributeName}) first].
+	uClass size <= 1 ifTrue:   [^ (aMlArray at:{_. targetAttributeName}) first].
 	aMlArray length = 0 ifTrue:[^ (originalData at:{_. targetAttributeName}) mode].
-	features isEmpty ifTrue:[^ parentNodeClass].
-	
+	features isEmpty ifTrue:   [^ parentNodeClass].
+	"no stopping criteria"
 	pNodeClass := uClass first.
-	infoGain := aMlArray infoGain: features ->targetAttributeName.
-	bestFeature := (features at: (infoGain indexOf:infoGain max)).  
+	infoGain     := aMlArray infoGain: features ->targetAttributeName.
+	infoGainMax  := infoGain max.
+	bestFeature  := (features at: (infoGain indexOf: infoGainMax)).  
 	nextFeatures := (features select:[:f| f ~= bestFeature] ).
+	
 	(nextFeatures includes: targetAttributeName) 
-	ifFalse:[ featuresIncluded := nextFeatures ,{targetAttributeName}].
-	tree := Dictionary new.
+		ifFalse:[ featuresIncluded := nextFeatures ,{targetAttributeName}].
+	tree := (MlTreeNode 
+						newFeatureName:bestFeature
+						infoGain:infoGainMax) .
 	aMlArray groupBy: bestFeature->featuresIncluded 
 				aggregate:[:k :v|
 					subtree := self id3OnData: v 
@@ -64,8 +75,8 @@ MlDecisionTree >> id3OnData: aMlArray originalData: originalData features: featu
 			  				 features: nextFeatures 
 			  				 target: targetAttributeName
 			  				 parentNodeClass: pNodeClass.
-					tree at:bestFeature add: subtree]
-				storeValue:false.
+					tree add:( k first->subtree)]
+				storeCallbackValue:false.
 	^ tree
 ]
 
