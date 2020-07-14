@@ -658,6 +658,11 @@ MlArray >> * aMlArray [
 ]
 
 { #category : #'binary operations' }
+MlArray >> ** aMlArray [
+	^ self performBinaryOp: #** on: aMlArray  
+]
+
+{ #category : #'binary operations' }
 MlArray >> *= aMlArray [
 	(aMlArray isMlArray and:[aMlArray size  > (self size )]) ifTrue:[^ aMlArray *= self].
 	^ self performBinaryOp: #*= on: aMlArray  
@@ -1465,6 +1470,39 @@ MlArray >> getStandardAxisNumberFor: anAxis [
 	axis := (data = (self nDim -1)) ifTrue:[self nDim] ifFalse:[axis].
 	^ axis := axis >0 ifTrue:[axis] ifFalse:[1].
 
+]
+
+{ #category : #utility }
+MlArray >> gini: featuresClassAssociation [
+	"association shold be split attribute->target name (class)
+	Calculate the gini index of a dataset. This function takes two parameters:
+    1. split_attribute_name = the name of the feature for which the information gain should be calculated
+    2. target_name = the name of the target feature."
+	|  countArray  giniIndices featuresClass we  p ifab length sum |
+
+	featuresClass := (featuresClassAssociation key isArray) 
+		ifTrue:[ featuresClassAssociation]
+		ifFalse:[ { featuresClassAssociation key }->featuresClassAssociation value].
+	
+	giniIndices :=OrderedCollection new.
+	p:= (self at:{_. featuresClassAssociation value}) uniqueAndCount.
+	length := self length.
+	sum := 0.
+	featuresClass key do:[:feature	|
+			
+		self groupBy: featuresClassAssociation value->feature
+			  aggregate:[:k :v| 
+				"probability of k"
+				|prob giniIndex|
+				prob:=(p at:{ 2. ((p at:{1. _}) = k first)}) first / length.
+				giniIndex := 1 - (((v uniqueAndCount at:{2. _})/ v length)**2) sum.
+				sum:= sum + (prob * giniIndex)
+				]
+			  storeCallbackValue: false.
+		giniIndices add: sum.
+		sum:=0].
+	giniIndices := self class from: giniIndices.
+	^ giniIndices
 ]
 
 { #category : #'reduce operations' }
@@ -2325,6 +2363,15 @@ MlArray >> unique [
 	unique := Set new.
 	self internalArray do:[:each| unique add: each ].
 	^ self class from:unique asArray order:self order
+	
+]
+
+{ #category : #'reduce operations' }
+MlArray >> uniqueAndCount [
+	|unique|
+	unique := Dictionary new.
+	self internalArray do:[:each| unique at:each incrementBy: 1 ].
+	^ self class from:(Array with:unique keys with:unique values ) order:self order
 	
 ]
 

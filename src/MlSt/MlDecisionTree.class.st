@@ -1,8 +1,22 @@
 Class {
 	#name : #MlDecisionTree,
 	#superclass : #MlRegressorMixin,
+	#instVars : [
+		'maxDepth',
+		'criterion'
+	],
 	#category : #'MlSt-Ensemble-RandomForestClassifier'
 }
+
+{ #category : #'as yet unclassified' }
+MlDecisionTree >> criterionEntropy [
+	criterion := #entropy
+]
+
+{ #category : #'as yet unclassified' }
+MlDecisionTree >> criterionGini [
+	criterion := #gini
+]
 
 { #category : #'fit-predict' }
 MlDecisionTree >> fit: aMlArray target: tMlArray sampleWeight: sw [
@@ -19,23 +33,26 @@ MlDecisionTree >> fit: aMlArray target: tMlArray sampleWeight: sw [
 { #category : #'tree-algoritm' }
 MlDecisionTree >> id3OnData: aMlArray features: features target: targetAttributeName [
 	
-	^ self id3OnData: aMlArray originalData: aMlArray features: features target: targetAttributeName parentNodeClass: nil 
+	^ self id3OnData: aMlArray originalData: aMlArray features: features target: targetAttributeName parentNodeClass: nil depth:1
  
 
 ]
 
 { #category : #'tree-algoritm' }
-MlDecisionTree >> id3OnData: aMlArray originalData: originalData features: features target: targetAttributeName parentNodeClass: parentNodeClass [ 
+MlDecisionTree >> id3OnData: aMlArray originalData: originalData features: features target: targetAttributeName parentNodeClass: parentNodeClass depth:depth [
  
 	| infoGain bestFeature nextFeatures subtree uClass pNodeClass tree featuresIncluded infoGainMax |
 	"Define the stopping criteria --> If one of this is satisfied, we want to return a leaf node"
 	uClass := (aMlArray at:{_. targetAttributeName}) unique.
-	uClass size <= 1 ifTrue:   [^ (aMlArray at:{_. targetAttributeName}) first].
-	aMlArray length = 0 ifTrue:[^ (originalData at:{_. targetAttributeName}) mode].
+	uClass size <= 1 	ifTrue:   [^ (aMlArray at:{_. targetAttributeName}) first].
+	aMlArray length = 0| (depth > self maxDepth ) 
+							ifTrue:[^ (originalData at:{_. targetAttributeName}) mode].
 	features isEmpty ifTrue:   [^ parentNodeClass].
 	"no stopping criteria"
 	pNodeClass := uClass first.
-	infoGain     := aMlArray infoGain: features ->targetAttributeName.
+	infoGain     := criterion = #entropy
+							ifTrue:[aMlArray infoGain: features ->targetAttributeName]
+							ifFalse:[aMlArray gini: features ->targetAttributeName].
 	infoGainMax  := infoGain max.
 	bestFeature  := (features at: (infoGain indexOf: infoGainMax)).  
 	nextFeatures := (features select:[:f| f ~= bestFeature] ).
@@ -51,8 +68,19 @@ MlDecisionTree >> id3OnData: aMlArray originalData: originalData features: featu
 			  				 originalData: aMlArray 
 			  				 features: nextFeatures 
 			  				 target: targetAttributeName
-			  				 parentNodeClass: pNodeClass.
+			  				 parentNodeClass: pNodeClass
+							 depth: (depth + 1).
 					tree add:( k first->subtree)]
 				storeCallbackValue:false.
 	^ tree
+]
+
+{ #category : #accessing }
+MlDecisionTree >> maxDepth [ 
+	^ maxDepth ifNil:[maxDepth:= 100] 
+]
+
+{ #category : #accessing }
+MlDecisionTree >> maxDepth: anInteger [
+	maxDepth:= anInteger 
 ]

@@ -54,6 +54,14 @@ MlNonContinuousVector class >> newFromArray: bufferObject [
 ]
 
 { #category : #'accumulator ops' }
+MlNonContinuousVector >> ** anIntOrArray [
+	^ self collectWithIndex:[:o :i| 
+			o ** (anIntOrArray isNumber 
+					ifTrue:[anIntOrArray]
+					ifFalse:[anIntOrArray at:i])]
+]
+
+{ #category : #'accumulator ops' }
 MlNonContinuousVector >> *= anArray [
 	self isSliced not & (self buffer respondsTo: #*=)
 	ifTrue:[self buffer *= anArray]

@@ -20,7 +20,11 @@ MlUtilityTest >> testDecisionTree [
 							  #(#H10 #Sunny false #Rich #Tennis ) 
 							).
 	a setLabels:#(#Weekend #Weather #ParentalAvaliability #Wealthy #Decision) onAxis:1. 
-	b := MlDecisionTree new.
+	b := MlDecisionTree new maxDepth:2."default gini"
+	c := b fit:(a at:{_. {#Weather. #ParentalAvaliability.  #Wealthy}}) 
+			 target: (a at:{_. #Decision}). 	
+	c inspect.
+	b := MlDecisionTree new maxDepth:2; criterionEntropy.
 	c := b fit:(a at:{_. {#Weather. #ParentalAvaliability.  #Wealthy}}) 
 			 target: (a at:{_. #Decision}). 	
 	c inspect
@@ -49,6 +53,37 @@ MlUtilityTest >> testEntropy [
 
 	b := a entropy:1.
 	self assert: b closeTo: 0.940285958670631.
+
+	
+							
+		
+]
+
+{ #category : #tests }
+MlUtilityTest >> testGiniIndex [
+	| a b |
+	a := MlArray from: #(
+							  #(true false true true ) 
+							  #(false true false false)
+							  #(true false true true ) 
+							  #(true true true true ) 
+							  #(false false true false)
+							  #(true false false false ) 
+							  #(false true true false)
+							  #(false false true false)
+							  #(true false false false ) 
+							  #(true true true true ) 
+							).
+	a setLabels:#(#pastTrend #openInterest #tradingVol #return) onAxis:1. 
+
+	b := a gini:#pastTrend->#return.
+	self assert: b first closeTo: 4/15.
+	b := a gini:#openInterest->#return.
+	self assert: b first closeTo: 7/15.
+	b := a gini:#tradingVol->#return.
+	self assert: b first  closeTo: 3/10.
+	b := a gini:#(#pastTrend #openInterest #tradingVol )->#return.
+	self assert:b closeTo: (MlArray from:{4/15. 7/15. 3/10}).	
 
 	
 							
