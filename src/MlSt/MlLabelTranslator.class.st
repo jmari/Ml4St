@@ -13,6 +13,14 @@ MlLabelTranslator class >> newFrom: anArray [
 	^ super newFrom: (anArray collect:[:v| v asString])
 ]
 
+{ #category : #'sorting and filtering' }
+MlLabelTranslator >> applyBooleanFilter: aBooleanArray [
+	| i |
+	i := 0.
+	^ self select:[:c | i:=i+1. (aBooleanArray at:i) ]
+
+]
+
 { #category : #accessing }
 MlLabelTranslator >> at: i put: anObject [
 	^ super at:i put: anObject asString

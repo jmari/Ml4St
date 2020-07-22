@@ -388,6 +388,31 @@ MlArraySlicingTest >> testSliceFCopy [
 ]
 
 { #category : #tests }
+MlArraySlicingTest >> testSliceWithBooleanCondition [
+
+	| a b s |
+	a := MlArray from: #(
+								#(
+									#(1 2 3) 
+							  		#(4 5 6) 
+							  		#(7 8 9)
+									#(10 11 12)) 
+								#(
+									#(21 22 23) 
+							  		#(24 25 26) 
+							  		#(27 28 29)
+									#(30 31 32))).
+	a setLabels: #('A' 'B' 'C') onAxis:1.
+	
+	b := a at:{_. _. (( a at:{1. 1. _}) < 3)} .	
+	self assert: b  equals: (a at:{_. _. 1@2.}).
+	self assert: (b getLabelsOnAxis:1 ) asArray equals: #('A' 'B' ).
+	
+
+
+]
+
+{ #category : #tests }
 MlArraySlicingTest >> testSliceWithStepsF [
 
 	| a b s |
@@ -422,14 +447,4 @@ MlArraySlicingTest >> testSliceWithStepsF [
 	s := MlArray from: #(10 9 8 7 6 5 4 3 2 1).
 	self assert: b equals: s.	
 
-]
-
-{ #category : #tests }
-MlArraySlicingTest >> testSplit [
-
-	| a b c|
-	a := MlArray  from: {{{1. 2. 3}. {4. 5. 6}. {7. 8. 9}}}.
-	b := a split: 2 axis:0.
-	self assert: b size equals:2.
-	
 ]

@@ -858,11 +858,15 @@ MlArray >> anySatisfy: aBlock [
 
 { #category : #'binary operations' }
 MlArray >> applyBooleanFilter: aBooleanMlArray on: axis [
-	| ratio instance |
-	self flag:#todo. "filter axis labels"
+	| ratio instance standardAxisNumber |
+	
 	instance := self performBinaryOp: #applyBooleanFilter: on: aBooleanMlArray.
 	ratio := instance size / self size.
+	
 	instance shape at:axis put:( (self shape at:axis) * ratio).
+	
+	instance labelsDict at:axis put: ((labelsDict at:axis) applyBooleanFilter: aBooleanMlArray internalArray).
+				
 	^ instance 
 ]
 
@@ -1177,7 +1181,7 @@ MlArray >> completeSlice: aSliceArray [
 MlArray >> concat: aMlArray axis: standarAxisNumber [
 	| instance axis heightOfSelf heightOfOther j i  k |
 	
-	axis := self getStandardAxisNumberFor: standarAxisNumber.
+	axis := self getAxisNumberForStandard: standarAxisNumber.
 
 	(self isShapeOf: aMlArray concatenableAlongAxis: axis) ifFalse:[MlShapeError signal:('Array is not concatenable on axis:', axis asString)].
 	
@@ -1325,7 +1329,7 @@ MlArray >> describe: anAxis [
 	describeResult max: (self max:anAxis).
 	describeResult min: (self min:anAxis).
 	describeResult numberOfObs: (self nDim>1 
-										ifTrue:[self shape at: (self getStandardAxisNumberFor: anAxis)] 
+										ifTrue:[self shape at: (self getAxisNumberForStandard: anAxis)] 
 										ifFalse:[self size]).
 	describeResult skewness: (self skewness:anAxis).
 	describeResult kurtosis: (self kurtosis:anAxis).
@@ -1396,6 +1400,19 @@ MlArray >> getAddressForPoint:anArrayOfInt [
 	^ address 
 ]
 
+{ #category : #accessing }
+MlArray >> getAxisNumberForStandard: anAxis [
+	"return the estandar axis number for an axis. i.e.
+	 shape #(1 2 3) axis 0 is the first, 1 rows and 2 columns
+	but the standard says axis 0 is row axis, axis 1 is column axis and 2..n are the outter next ones "
+	| data axis |
+	axis := data := (( self nDim - anAxis - 1) \\  self nDim ) + 1 .
+	axis := data = self nDim ifTrue:[self nDim -1] ifFalse:[data].
+	axis := (data = (self nDim -1)) ifTrue:[self nDim] ifFalse:[axis].
+	^ axis := axis >0 ifTrue:[axis] ifFalse:[1].
+
+]
+
 { #category : #'private-slicing' }
 MlArray >> getIntervalAdressesFor:slices level: l list: lklst indexes: indexes [ 
 	| si ei currentSlice nextLevel |
@@ -1453,23 +1470,10 @@ MlArray >> getIntervalAdressesFor:slices level: l list: lklst indexes: indexes [
 { #category : #labeling }
 MlArray >> getLabelsOnAxis: standarAxisNumber [
 	| axis |
-	axis := self getStandardAxisNumberFor: standarAxisNumber.
+	axis := self getAxisNumberForStandard: standarAxisNumber.
 	(axis <1 | axis > self nDim) ifTrue:[ ^ MlShapeError signal:('dimension  ', axis asString,' does not exist') ].
 	
 	^ self labelsDict at: axis 
-]
-
-{ #category : #accessing }
-MlArray >> getStandardAxisNumberFor: anAxis [
-	"return the estandar axis number for an axis. i.e.
-	 shape #(1 2 3) axis 0 is the first, 1 rows and 2 columns
-	but the standard says axis 0 is row axis, axis 1 is column axis and 2..n are the outter next ones "
-	| data axis |
-	axis := data := (( self nDim - anAxis - 1) \\  self nDim ) + 1 .
-	axis := data = self nDim ifTrue:[self nDim -1] ifFalse:[data].
-	axis := (data = (self nDim -1)) ifTrue:[self nDim] ifFalse:[axis].
-	^ axis := axis >0 ifTrue:[axis] ifFalse:[1].
-
 ]
 
 { #category : #utility }
@@ -1919,7 +1923,7 @@ MlArray >> perform: aSymbol axis: anAxis arguments: args [
 	aSymbol is the operation, anAxis, the axis, args an array with the arguments for the method
 	aClass is the  "
 	| axis  newShape instance realAxis|
-	realAxis := self getStandardAxisNumberFor: anAxis.
+	realAxis := self getAxisNumberForStandard: anAxis.
 	axis := self nDim - anAxis.
 	axis < 0 ifTrue:[ axis := self shape last + 1 - axis].
 	(axis > self nDim)|( axis < 1 )ifTrue:[ MlShapeError signal:'Axis is higher than nDim']. 
@@ -2059,7 +2063,7 @@ MlArray >> reduce: aSymbol axis: anAxis arguments: args [
 	aSymbol is the operation, anAxis, the axis, args an array with the arguments for the method
 	aClass is the  "
 	| axis results newShape instance realAxis|
-	realAxis := self getStandardAxisNumberFor: anAxis.
+	realAxis := self getAxisNumberForStandard: anAxis.
 	axis := self nDim - anAxis.
 	axis < 0 ifTrue:[ axis := self shape last + 1 - axis].
 	(axis > self nDim)|( axis < 1 )ifTrue:[ MlShapeError signal:'Axis is higher than nDim']. 
@@ -2129,7 +2133,7 @@ MlArray >> reshaped: anArrayOfInt [
 MlArray >> resortBy: anIndexArray onAxis: axis [
 	
 	| b  realAxis  slice |
-	realAxis := self getStandardAxisNumberFor: axis.
+	realAxis := self getAxisNumberForStandard: axis.
 	slice := Array new: self nDim withAll: _@_.
 	1 to: (self shape at: realAxis) do:[:a|	
 				slice at: realAxis put: a.
@@ -2167,7 +2171,7 @@ MlArray >> select: aBlock [
 { #category : #labeling }
 MlArray >> setLabels: anArray onAxis: standarAxisNumber [
 	| axis |
-	axis := self getStandardAxisNumberFor: standarAxisNumber.
+	axis := self getAxisNumberForStandard: standarAxisNumber.
 	(axis <1 | axis > self nDim) ifTrue:[ ^ MlShapeError signal:('dimension  ', axis asString,' does not exist') ].
 	(anArray size = (self shape at: axis)) ifFalse:[ ^ MlShapeError signal:('labels should have ',(self shape at: axis) asString,' elements') ].
 	
@@ -2236,8 +2240,9 @@ MlArray >> slice: aSliceArray copy: makeCopy [
 	newInstance := makeCopy
 		ifTrue: [ self createNewSlicedInstance: indexes shape: newShape ]
 		ifFalse: [ self createNewSlicedReference: indexes shape: newShape ].
-	newInstance := newInstance sliceUsingBooleanFilter: aSliceArray.
 	newInstance sliceLabels: slice.
+	newInstance := newInstance sliceUsingBooleanFilter: aSliceArray.
+
 	^newInstance 
 ]
 
@@ -2276,7 +2281,7 @@ MlArray >> split: indicesOrSections axis: standarAxisNumber [
 	| axis sliceTotal ios collectionOfSlices i endSection |
 	
 	ios := indicesOrSections isInteger ifTrue:[{indicesOrSections}] ifFalse:[indicesOrSections].
-	axis := self getStandardAxisNumberFor: standarAxisNumber.
+	axis := self getAxisNumberForStandard: standarAxisNumber.
 	collectionOfSlices := OrderedCollection new.
 	i := 1.
 	ios := ios , { (self shape at:axis)+1 }. 
