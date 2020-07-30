@@ -32,3 +32,13 @@ MlTreeNode >> infoGain [
 MlTreeNode >> infoGain: anObject [
 	infoGain := anObject
 ]
+
+{ #category : #testing }
+MlTreeNode >> isLeaf [
+	^ self isEmpty or:[ self first value isString ] 
+]
+
+{ #category : #testing }
+MlTreeNode >> isMlTreeNode [
+	^ true
+]

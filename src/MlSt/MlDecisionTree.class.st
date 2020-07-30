@@ -3,7 +3,8 @@ Class {
 	#superclass : #MlRegressorMixin,
 	#instVars : [
 		'maxDepth',
-		'criterion'
+		'criterion',
+		'decisionCode'
 	],
 	#category : #'MlSt-Ensemble-RandomForestClassifier'
 }
@@ -20,11 +21,15 @@ MlDecisionTree >> criterionGini [
 
 { #category : #'fit-predict' }
 MlDecisionTree >> fit: aMlArray target: tMlArray sampleWeight: sw [
-	| features target |
-	aMlArray nDim = 2 ifFalse:[ MlShapeError signal: ('It should be a 2D Array and it has ', aMlArray nDim asString, ' Dimensions')].
-	features := (aMlArray getLabelsOnAxis:1).
+	| features target weighedMlArray a2DMlArray |
+	a2DMlArray := aMlArray nDim = 2 
+						ifTrue:[aMlArray] 
+						ifFalse:[aMlArray reshaped: {-1.  aMlArray shape last} ].
+	weighedMlArray := sw ifNil:[a2DMlArray] ifNotNil:[a2DMlArray * sw].
+	features := (weighedMlArray getLabelsOnAxis:1).
 	target := (tMlArray getLabelsOnAxis:1) first.
-	self model: (self id3OnData: (aMlArray concat: tMlArray axis:1)  features: features asArray  target:target)
+
+	self model: (self id3OnData: (weighedMlArray concat: tMlArray axis:1)  features: features asArray  target:target)
 	
 	
 	
@@ -41,7 +46,7 @@ MlDecisionTree >> id3OnData: aMlArray features: features target: targetAttribute
 { #category : #'tree-algoritm' }
 MlDecisionTree >> id3OnData: aMlArray originalData: originalData features: features target: targetAttributeName parentNodeClass: parentNodeClass depth:depth [
  
-	| infoGain bestFeature nextFeatures subtree uClass pNodeClass tree featuresIncluded infoGainMax |
+	| infoGain bestFeature nextFeatures subtree uClass pNodeClass tree featuresIncluded infoGainMax  |
 	"Define the stopping criteria --> If one of this is satisfied, we want to return a leaf node"
 	uClass := (aMlArray at:{_. targetAttributeName}) unique.
 	uClass size <= 1 	ifTrue:   [^ (aMlArray at:{_. targetAttributeName}) first].
@@ -59,6 +64,7 @@ MlDecisionTree >> id3OnData: aMlArray originalData: originalData features: featu
 	
 	(nextFeatures includes: targetAttributeName) 
 		ifFalse:[ featuresIncluded := nextFeatures ,{targetAttributeName}].
+	
 	tree := (MlTreeNode 
 						newFeatureName:bestFeature
 						infoGain:infoGainMax) .
@@ -83,4 +89,29 @@ MlDecisionTree >> maxDepth [
 { #category : #accessing }
 MlDecisionTree >> maxDepth: anInteger [
 	maxDepth:= anInteger 
+]
+
+{ #category : #'fit-predict' }
+MlDecisionTree >> predict: aMlArray [
+	| a2DMlArray result |
+	self model ifNil:[ MlModelNotDefinedError signal].
+	a2DMlArray := aMlArray nDim = 2 
+									ifTrue:[aMlArray] 
+									ifFalse:[aMlArray reshaped: {-1.  aMlArray shape last} ].
+	result := OrderedCollection new.
+	1 to: a2DMlArray shape first do:[:i|
+		result add: (self predict:a2DMlArray row:i tree:self model)].
+	^ MlArray from:result order: a2DMlArray order
+]
+
+{ #category : #'fit-predict' }
+MlDecisionTree >> predict:a2DMlArray row:i tree: treeNode [
+
+	| nextTreeNode featureValue |
+	featureValue := (a2DMlArray at: i at: treeNode featureName).
+	nextTreeNode := treeNode at:(treeNode findFirst:[:each| each key = featureValue]).
+	
+	^ (nextTreeNode value isMlTreeNode) 
+		ifFalse:[ nextTreeNode value ]
+		ifTrue:[ self predict:a2DMlArray row:i tree:nextTreeNode value ]
 ]

@@ -216,6 +216,20 @@ MlArrayTest >> testExamples [
 ]
 
 { #category : #tests }
+MlArrayTest >> testGrouping [
+
+	| a b c |
+	a := MlArray  from: {{1. 2. 3}. {1. 5. 6}. {2. 8. 9}}.
+	b := a groupBy: 1->{2. 3} aggregate:[:k :v| v sum:0].
+	c := MlArray from:{ {1. 7. 9 }. {2. 8. 9 } }.
+	self assert: b equals:c.
+
+	b := a groupBy:[:row| (row at:1) >1] ->{2. 3} aggregate:[:k :v| v sum:0].
+	c := MlArray from:{ {	'[ :row | (row at: 1) > 1 ] not'. 7. 9 }. {'[ :row | (row at: 1) > 1 ]'. 8. 9 } . }.
+	self assert: b equals:c.	
+]
+
+{ #category : #tests }
 MlArrayTest >> testInfiniteCVector [
 	| a anArray |
 	anArray :={ 1. 2. 3. 4. 5. 6.}.

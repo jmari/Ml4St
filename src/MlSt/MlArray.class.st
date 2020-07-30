@@ -1482,7 +1482,7 @@ MlArray >> gini: featuresClassAssociation [
 	Calculate the gini index of a dataset. This function takes two parameters:
     1. split_attribute_name = the name of the feature for which the information gain should be calculated
     2. target_name = the name of the target feature."
-	|  countArray  giniIndices featuresClass we  p ifab length sum |
+	|giniIndices featuresClass p length sum |
 
 	featuresClass := (featuresClassAssociation key isArray) 
 		ifTrue:[ featuresClassAssociation]
@@ -1520,16 +1520,24 @@ MlArray >> groupBy: anAssociation aggregate: aBlock [
 
 { #category : #'reduce operations' }
 MlArray >> groupBy: anAssociation aggregate: aBlock storeCallbackValue: includeKeyCol [
-	"an association shoud be {keys}->{aggregated values}"
-	| agKeys agValues  values sum  r valueRows  keyRows labelsForGroup val result |
+	"an association shoud be 
+		{keys}->{aggregated values}
+		or [block]->[aggregated values]"
+	
+	| agKeys agValues  values sum  r valueRows  keyRows labelsForGroup val result groupingKey |
 	self nDim ~=2 ifTrue:[MlShapeError signal: ('It should be a 2D Array and it has ', self nDim asString, ' Dimensions')].
 	labelsForGroup :=	OrderedCollection new.
 	agKeys := anAssociation key isInteger | (anAssociation key isString)
 					ifTrue:[{anAssociation key}]
 					ifFalse:[anAssociation key].
 	
-	labelsForGroup addAll:agKeys.
-	agKeys :=  agKeys collect:[:v|(self labelsDictAt: (self nDim )) translate:v].
+
+	
+	agKeys :=  agKeys isBlock 
+					ifTrue: [agKeys]
+					ifFalse:[
+							labelsForGroup addAll:agKeys.
+							agKeys collect:[:v|(self labelsDictAt: (self nDim )) translate:v]].
 	agValues := anAssociation value isInteger | (anAssociation value isString )
 					ifTrue:[{anAssociation value}]
 					ifFalse:[anAssociation value].
@@ -1540,8 +1548,13 @@ MlArray >> groupBy: anAssociation aggregate: aBlock storeCallbackValue: includeK
 	sum := Dictionary new.
 	(1 to: (self shape at: self nDim -1)) doWithIndex:[:k :i|
 		values := self slice:{i. agValues}.	
-		sum at: (self slice:{i. agKeys}) as1DArray vstack: values].
-		"call slice force to return alguays a MlArray"
+		groupingKey:= agKeys isBlock 
+										ifTrue:[(agKeys value:((self slice:{i. _}) reshaped:{-1})) 
+														ifTrue:[{agKeys asString}]
+														ifFalse:[{agKeys asString,' not'}]]
+										ifFalse:[(self slice:{i. agKeys}) as1DArray ].
+		sum at: groupingKey vstack: values].
+		"call slice force to return alwuays a MlArray"
 	r := OrderedCollection new.
 	sum keysAndValuesDo:[:k :v| 
 		val := aBlock value:k value:v.
@@ -1556,7 +1569,7 @@ MlArray >> groupBy: anAssociation aggregate: aBlock storeCallbackValue: includeK
 	].
 	^result 
 
-	
+	  
 ]
 
 { #category : #accessing }

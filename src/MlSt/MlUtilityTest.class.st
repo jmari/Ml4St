@@ -6,7 +6,7 @@ Class {
 
 { #category : #tests }
 MlUtilityTest >> testDecisionTree [
-	| a b c tree mt |
+	| a b c tree mt p r |
 	a := MlArray from: #(
 							  #(#H1 #Sunny true #Rich #Cinema ) 
 							  #(#H2 #Sunny false #Rich #Tennis ) 
@@ -20,15 +20,22 @@ MlUtilityTest >> testDecisionTree [
 							  #(#H10 #Sunny false #Rich #Tennis ) 
 							).
 	a setLabels:#(#Weekend #Weather #ParentalAvaliability #Wealthy #Decision) onAxis:1. 
-	b := MlDecisionTree new maxDepth:2."default gini"
+	b := MlDecisionTree new maxDepth:10."default gini"
 	c := b fit:(a at:{_. {#Weather. #ParentalAvaliability.  #Wealthy}}) 
 			 target: (a at:{_. #Decision}). 	
-	c inspect.
-	b := MlDecisionTree new maxDepth:2; criterionEntropy.
+	p := c predict: a.
+	
+	r := (a at:_ at: #Decision) accuracy:p.
+	self assert: (r at:#accuracy) equals: 1.
+
+
+	b := MlDecisionTree new maxDepth:10; criterionEntropy.
 	c := b fit:(a at:{_. {#Weather. #ParentalAvaliability.  #Wealthy}}) 
 			 target: (a at:{_. #Decision}). 	
-	c inspect
-		
+	p := c predict: a.
+	
+	r := (a at:_ at: #Decision) accuracy:p.
+	self assert: (r at:#accuracy) equals: 1
 ]
 
 { #category : #tests }

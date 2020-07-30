@@ -6,6 +6,11 @@ Object >> isMlArray [
 ]
 
 { #category : #'*MlSt' }
+Object >> isMlTreeNode [
+	^ false
+]
+
+{ #category : #'*MlSt' }
 Object >> isSlice [ 	
 	^ false
 ]
