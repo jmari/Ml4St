@@ -1,6 +1,6 @@
 Class {
 	#name : #MlSVC,
-	#superclass : #MlClassification,
+	#superclass : #MlLinearClassifier,
 	#category : #'MlSt-LinearModel-Classification'
 }
 

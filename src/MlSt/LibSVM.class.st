@@ -4,158 +4,146 @@ Class {
 	#category : #'MlSt-FFI-LibSVM-Uffi'
 }
 
-{ #category : #'as yet unclassified' }
+{ #category : #'ffi calls' }
 LibSVM class >> checkParameter: aParameter from: aProblem [ 
-	"const char *check_parameter(const struct problem *prob, const struct parameter *param);"
-	^ self ffiCall: #(const char *check_parameter(LNProblem *aProblem, LNParameter *aParameter) ) library: LibLinear
+	
+	^ self ffiCall: #(const char *svm_check_parameter(SVMProblem *aProblem, SVMParameter *aParameter) ) library: LibSVM
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : #'ffi calls' }
 LibSVM class >> checkProbabilityModel: aModel [ 
-	"int check_probability_model(const struct model *model);"
-	^ self ffiCall: #(int check_probability_model(LNModel *aModel) ) library: LibLinear
+
+	^ self ffiCall: #(int svm_check_probability_model(SVMModel *aModel) ) library: LibSVM
 ]
 
-{ #category : #'as yet unclassified' }
-LibSVM class >> checkRegressionModel: aModel [ 
-	"int check_probability_model(const struct model *model);"
-	^ self ffiCall: #(int check_regression_model(LNModel *aModel) ) library: LibLinear
-]
-
-{ #category : #'as yet unclassified' }
+{ #category : #'ffi calls' }
 LibSVM class >> crossValidation: aProblem parameter: aParameter nrFolds: anInteger target: aDouble [
-	"void cross_validation(const struct problem *prob, const struct parameter *param, int nr_fold, double *target);"
-	^ self ffiCall: #( void cross_validation(LNProblem *aProblem, LNParameter *aParameter, int anInteger, double *aDouble) ) library: LibLinear
+
+	^ self ffiCall: #( void svm_cross_validation(SVMProblem *aProblem, SVMParameter *aParameter, int anInteger, double *aDouble) ) library: LibSVM
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : #'ffi calls' }
 LibSVM class >> destroyParameter: aParameter [ 
-	"void destroy_param(struct parameter *param);"
-	^ self ffiCall: #(void destroy_param(LNParameter *aParameter) ) library: LibLinear
+	
+	^ self ffiCall: #(void svm_destroy_param(SVMParameter *aParameter) ) library: LibSVM
 ]
 
-{ #category : #'as yet unclassified' }
-LibSVM class >> findParameters: aProblem parameter: aParameter nrFolds: anInteger startC: cAsDouble startP: pAsDouble
-bestC: bestCDouble  bestP: bestPDouble bestScore: bestScrDouble [
-	"vvoid find_parameters(const struct problem *prob, const struct parameter *param, int nr_fold, double start_C, double start_p, double *best_C, double *best_p, double *best_score);"
-	^ self ffiCall: #( void find_parameters(LNProblem *aProblem, LNParameter *aParameter, int anInteger, double cAsDouble, double pAsDouble, double * bestCDouble, double * bestPDouble, double * bestScrDouble ) ) library: LibLinear
-]
-
-{ #category : #'as yet unclassified' }
+{ #category : #'ffi calls' }
 LibSVM class >> freeAndDestroyModel: aModel [ 
 	"void free_and_destroy_model(struct model **model_ptr_ptr);"
-	^ self ffiCall: #(void free_model_content(LNModel **aModel) ) library: LibLinear
+	^ self ffiCall: #(void svm_free_and_destroy_model(SVMModel **aModel) ) library: LibSVM
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : #'ffi calls' }
 LibSVM class >> freeModelContent: aModel [ 
-	"void free_model_content(struct model *model_ptr);"
-	^ self ffiCall: #(void free_model_content(LNModel *aModel) ) library: LibLinear
+	
+	^ self ffiCall: #(void svm_free_model_content(SVMModel *aModel) ) library: LibSVM
 ]
 
-{ #category : #'as yet unclassified' }
-LibSVM class >> getDecfunBias: aModel  label: labelIdxInt [
-	"double get_decfun_bias(const struct model *model_, int label_idx);"
-	^ self ffiCall: #(double get_decfun_bias(LNModel *aModel,  int labelIdxInt) ) library: LibLinear
-]
-
-{ #category : #'as yet unclassified' }
-LibSVM class >> getDecfunCoef: aModel feature: featIdxInt label: labelIdxInt [
-	"double get_decfun_coef(const struct model *model_, int feat_idx, int label_idx);"
-	^ self ffiCall: #(double get_decfun_coef(LNModel *aModel, int featIdxInt, int labelIdxInt) ) library: LibLinear
-]
-
-{ #category : #'as yet unclassified' }
+{ #category : #'ffi calls' }
 LibSVM class >> getLabels: aModel label: anInteger [
-	"void get_labels(const struct model *model_, int* label);"
-	^ self ffiCall: #(void get_labels(LNModel *aModel, int* anInteger) ) library: LibLinear
+	
+	^ self ffiCall: #(void svm_get_labels(SVMModel *aModel, int* anInteger) ) library: LibSVM
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : #'ffi calls' }
 LibSVM class >> getNRClass: aModel [ 
-	"int get_nr_class(const struct model *model_);"
-	^ self ffiCall: #(int get_nr_class(LNModel *aModel) ) library: LibLinear
+	
+	^ self ffiCall: #(int svm_get_nr_class(SVMModel *aModel) ) library: LibSVM
 ]
 
-{ #category : #'as yet unclassified' }
-LibSVM class >> getNRFeature: aModel [ 
-	"int get_nr_feature(const struct model *model_);"
-	^ self ffiCall: #(int get_nr_feature(LNModel *aModel) ) library: LibLinear
+{ #category : #'ffi calls' }
+LibSVM class >> getNRSV: aModel [ 
+
+	^ self ffiCall: #(int svm_get_nr_sv(LNModel *aModel) ) library: LibSVM
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : #'ffi calls' }
+LibSVM class >> getSVIndices: aModel [
+	
+	^ self ffiCall: #(void svm_get_sv_indices(SVMModel *aModel) ) library: LibSVM
+]
+
+{ #category : #'ffi calls' }
+LibSVM class >> getSVMType: aModel [ 
+	
+	^ self ffiCall: #(int svm_get_svm_type(SVMModel *aModel) ) library: LibSVM
+]
+
+{ #category : #'ffi calls' }
+LibSVM class >> getSVRProbability: aModel [ 
+	
+	^ self ffiCall: #(double svm_get_svr_probability(SVMModel *aModel) ) library: LibSVM
+]
+
+{ #category : #'ffi calls' }
 LibSVM class >> loadModel: aString [ 
-	"struct model *load_model(const char *model_file_name);"
 	| model |
-	model:= self ffiCall: #(LNModel *load_model(const char *aString) ) library: LibLinear.
+	model:= self ffiCall: #(SVMModel *svm_load_model(const char *aString) ) library: LibSVM.
 	model autoRelease.
 	^ model
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : #'ffi calls' }
 LibSVM class >> predict: aModel featureNode: aFeatureNode [ 
-	"double predict(const struct model *model_, const struct feature_node *x)"
-	^ self ffiCall: #( double predict(LNModel *aModel, LNFeatureNode  *aFeatureNode) ) library: LibLinear
+	
+	^ self ffiCall: #( double svm_predict(SVMModel *aModel, SVMFeatureNode  *aFeatureNode) ) library: LibSVM
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : #'ffi calls' }
 LibSVM class >> predictProbability: aModel featureNode: aFeatureNode probEstimates: aDouble [
 	"double predict_probability(const struct model *model_, const struct feature_node *x, double* prob_estimates);"
-	^ self ffiCall: #( double predict_probability(LNModel *aModel, LNFeatureNode  *aFeatureNode, double* aDouble) ) library: LibLinear
+	^ self ffiCall: #( double svm_predict_probability(SVMModel *aModel, SVMFeatureNode  *aFeatureNode, double* aDouble) ) library: LibSVM
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : #'ffi calls' }
 LibSVM class >> predictValues: aModel featureNode: aFeatureNode decValues: aDouble [
-	"double predict_values(const struct model *model_, const struct feature_node *x, double* dec_values);"
-	^ self ffiCall: #( double predict_values(LNModel *aModel, LNFeatureNode  *aFeatureNode, double* aDouble) ) library: LibLinear
+
+	^ self ffiCall: #( double svm_predict_values(SVMModel *aModel, SVMFeatureNode  *aFeatureNode, double* aDouble) ) library: LibSVM
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : #'ffi calls' }
 LibSVM class >> saveModel: aModel filename: aString [ 
-	"int save_model(const char *model_file_name, const struct model *model_);"
-	^ self ffiCall: #(int save_model(const char *aString, LNModel *aModel) ) library: LibLinear
+
+	^ self ffiCall: #(int svm_save_model(const char *aString, SVMModel *aModel) ) library: LibSVM
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : #'ffi calls' }
 LibSVM class >> set_print_string_function: aPointerToAFunction [ 
 	"
 	I think this is not supported by UFFI
 	void set_print_string_function(void (*print_func) (const char*));"
-	^ self ffiCall: #(void set_print_string_function(void (*aPointerToAFunction) (const char*)) ) library: LibLinear
+	^ self ffiCall: #(void svn_set_print_string_function(void (*aPointerToAFunction) (const char*)) ) library: LibSVM
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : #'ffi calls' }
 LibSVM class >> train: aProblem parameter: aParameter [ 
-	"struct model* train(const struct problem *prob, const struct parameter *param);"
-	^ self ffiCall: #( LNModel* train(LNProblem *aProblem, LNParameter *aParameter) ) library: LibLinear
+	
+	^ self ffiCall: #( SVMModel* svm_train(SVMProblem *aProblem, SVMParameter *aParameter) ) library: LibSVM
 ]
 
 { #category : #'accessing platform' }
 LibSVM >> macModuleName [
-	"On different flavors of Linux, the path to the library may differ, 
-	depending on the distro and whether the system is 32- or 64-bit."
-	#(
-		'/usr/lib/i386-linux-gnu/libsvm.so.2' 
-		'/usr/lib32/libsvm.so.2' 
-		'/usr/lib/libsvm.so.2'
-		'libsvm.so.2' ) 
-	do: [ :path | 
-		path asFileReference exists ifTrue: [ ^ path ] ].
-	self error: 'Cannot locate libsvm.so.2 library. Please check that it is installed on your system.'
+	^ self unixModuleName 
 ]
 
 { #category : #'accessing platform' }
 LibSVM >> unixModuleName [
 	"On different flavors of Linux, the path to the library may differ, 
 	depending on the distro and whether the system is 32- or 64-bit."
-	#(
-		'/usr/lib/i386-linux-gnu/libsvm.so.2' 
-		'/usr/lib32/libsvm.so.2' 
-		'/usr/lib/libsvm.so.2'
-		'libsvm.so.2' ) 
+	{  
+		'/usr/lib/i386-linux-gnu/libsvm.so.', self version. 
+		'/usr/lib32/libsvm.so.', self version. 
+		'/usr/lib/libsvm.so.', self version.
+		'libsvm.so.', self version. }
 	do: [ :path | 
 		path asFileReference exists ifTrue: [ ^ path ] ].
-	self error: 'Cannot locate libsvm.so.2 library. Please check that it is installed on your system.'
+	self error: 'Cannot locate libsvm.so.', self version,' library Please check that it is installed on your system.'
+]
+
+{ #category : #versions }
+LibSVM >> version [ 
+	^ '2'
 ]
 
 { #category : #'accessing platform' }

@@ -189,6 +189,12 @@ SVMParameter >> shrinking: anObject [
 ]
 
 { #category : #'accessing structure variables' }
+SVMParameter >> solver_type [
+	"just to be compatible with liblinear"
+	^handle signedLongAt: OFFSET_SVM_TYPE
+]
+
+{ #category : #'accessing structure variables' }
 SVMParameter >> svm_type [
 	"This method was automatically generated"
 	^handle signedLongAt: OFFSET_SVM_TYPE

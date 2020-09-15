@@ -527,12 +527,6 @@ MlArray class >> gtSlicingExamples3D [
 ]
 
 { #category : #'instance creation' }
-MlArray class >> initialize [ 
-	Smalltalk at:#_ put: nil.
-
-]
-
-{ #category : #'instance creation' }
 MlArray class >> initializeFromFStyle: instance shape: aShape plainCollection: aPlainCollection [
 	|  jump i |
 	instance shape: aShape.
@@ -1477,35 +1471,54 @@ MlArray >> getLabelsOnAxis: standarAxisNumber [
 ]
 
 { #category : #utility }
-MlArray >> gini: featuresClassAssociation [
+MlArray >> gini: featuresTargetAssociation [
 	"association shold be split attribute->target name (class)
-	Calculate the gini index of a dataset. This function takes two parameters:
+	Calculate the gini index of a dataset. This function takes two parameters in an association
+	(features->target_name):
     1. split_attribute_name = the name of the feature for which the information gain should be calculated
     2. target_name = the name of the target feature."
-	|giniIndices featuresClass p length sum |
+	|giniIndices featuresTarget p length sum target featureName lengthVentor onesVector  mInverse |
 
-	featuresClass := (featuresClassAssociation key isArray) 
-		ifTrue:[ featuresClassAssociation]
-		ifFalse:[ { featuresClassAssociation key }->featuresClassAssociation value].
+	featuresTarget := (featuresTargetAssociation key isArray) 
+		ifTrue:[ featuresTargetAssociation]
+		ifFalse:[ { featuresTargetAssociation key }->featuresTargetAssociation value].
 	
-	giniIndices :=OrderedCollection new.
-	p:= (self at:{_. featuresClassAssociation value}) uniqueAndCount.
+	giniIndices :=OrderedDictionary new.
+	p:= (self at:{_. featuresTargetAssociation value}) uniqueAndCount.
 	length := self length.
 	sum := 0.
-	featuresClass key do:[:feature	|
-			
-		self groupBy: featuresClassAssociation value->feature
+	"for each feature"
+	featuresTarget key do:[:feature	|
+		target := featuresTargetAssociation value.
+		featureName := feature asString.
+		self groupBy: target ->feature
 			  aggregate:[:k :v| 
 				"probability of k"
-				|prob giniIndex|
+				|prob giniIndex m|
+				"k is a noncontinuousvector with the key (k first)"
+				"p is a MlArray containing count x category #(#(categories) #(count))"
 				prob:=(p at:{ 2. ((p at:{1. _}) = k first)}) first / length.
-				giniIndex := 1 - (((v uniqueAndCount at:{2. _})/ v length)**2) sum.
-				sum:= sum + (prob * giniIndex)
+	
+				m := v first isFloat 
+											ifTrue:[v thresholdForEach ]
+											ifFalse:[v uniqueAndCount  ].
+				"ucount := v uniqueAndCount at:{2. _}."
+				v first isFloat 
+				ifTrue:[ 
+					lengthVentor := self class new: m shape withAll:v length.
+					onesVector := self class ones: m shape.
+					mInverse := lengthVentor - m.
+					giniIndex := onesVector - (( m / v length)**2)+(( mInverse / v length)**2).
+					self halt."eso esta mal xq el vector no tiene todos los elementos"
+					sum:= (prob * giniIndex) + sum ]
+				ifFalse:[
+					giniIndex := 1 - (( m / v length)**2) sum.
+					sum:= sum + (prob * giniIndex)].
 				]
 			  storeCallbackValue: false.
-		giniIndices add: sum.
+		giniIndices at: featureName put:sum.
 		sum:=0].
-	giniIndices := self class from: giniIndices.
+	giniIndices := self class from: giniIndices values.
 	^ giniIndices
 ]
 
@@ -1519,20 +1532,18 @@ MlArray >> groupBy: anAssociation aggregate: aBlock [
 ]
 
 { #category : #'reduce operations' }
-MlArray >> groupBy: anAssociation aggregate: aBlock storeCallbackValue: includeKeyCol [
+MlArray >> groupBy: anAssociation aggregate: aBlock storeCallbackValue: includeKeyCol [ 
 	"an association shoud be 
 		{keys}->{aggregated values}
 		or [block]->[aggregated values]"
 	
-	| agKeys agValues  values sum  r valueRows  keyRows labelsForGroup val result groupingKey |
+	| agKeys agValues  values aggregate  r valueRows  keyRows labelsForGroup val result groupingKey |
 	self nDim ~=2 ifTrue:[MlShapeError signal: ('It should be a 2D Array and it has ', self nDim asString, ' Dimensions')].
 	labelsForGroup :=	OrderedCollection new.
 	agKeys := anAssociation key isInteger | (anAssociation key isString)
 					ifTrue:[{anAssociation key}]
 					ifFalse:[anAssociation key].
-	
 
-	
 	agKeys :=  agKeys isBlock 
 					ifTrue: [agKeys]
 					ifFalse:[
@@ -1544,8 +1555,7 @@ MlArray >> groupBy: anAssociation aggregate: aBlock storeCallbackValue: includeK
 	labelsForGroup addAll:agValues.
 	agValues := agValues collect:[:v|(self labelsDictAt: (self nDim )) translate:v].
 
-
-	sum := Dictionary new.
+	aggregate := Dictionary new.
 	(1 to: (self shape at: self nDim -1)) doWithIndex:[:k :i|
 		values := self slice:{i. agValues}.	
 		groupingKey:= agKeys isBlock 
@@ -1553,16 +1563,16 @@ MlArray >> groupBy: anAssociation aggregate: aBlock storeCallbackValue: includeK
 														ifTrue:[{agKeys asString}]
 														ifFalse:[{agKeys asString,' not'}]]
 										ifFalse:[(self slice:{i. agKeys}) as1DArray ].
-		sum at: groupingKey vstack: values].
-		"call slice force to return alwuays a MlArray"
+		aggregate at: groupingKey vstack: values].
+		"call slice force to return always a MlArray"
 	r := OrderedCollection new.
-	sum keysAndValuesDo:[:k :v| 
+	aggregate keysAndValuesDo:[:k :v| 
 		val := aBlock value:k value:v.
 		r add:( val isMlArray ifTrue:[val as1DArray] ifFalse:[{val}]	)]. 
 		"if there is only one column in right side it will return an Object, 
 		and it should be always an array or a MlArray, becouse r should be a 2D column stacked array"
 	includeKeyCol ifTrue:[
-		keyRows := self class from: sum keys order: self order dType:#Object.
+		keyRows := self class from: aggregate keys order: self order dType:#Object.
 		valueRows := self class from: r  order: self order dType:#Object.	
 		result := (keyRows  concat:valueRows axis:1).
 		[result setLabels: labelsForGroup onAxis:1] on:MlShapeError do:[].
@@ -1602,22 +1612,22 @@ MlArray >> indexOf: anAddress index: anArray level:l sum:s [
 ]
 
 { #category : #utility }
-MlArray >> infoGain: featuresClassAssociation [
+MlArray >> infoGain: featuresTargetAssociation [
 	"association shold be split attribute->target name (class)
 	Calculate the information gain of a dataset. This function takes two parameters:
     1. split_attribute_name = the name of the feature for which the information gain should be calculated
     2. target_name = the name of the target feature."
-	| totalEntropy countArray entropyMatrix weightedEntropy featuresClass we |
-	totalEntropy := self class from:{self entropy: featuresClassAssociation value}.
+	| totalEntropy countArray entropyMatrix weightedEntropy featuresTarget we |
+	totalEntropy := self class from:{self entropy: featuresTargetAssociation value}.
 	"|class| count|"
-	featuresClass := (featuresClassAssociation key isArray) 
-		ifTrue:[ featuresClassAssociation]
-		ifFalse:[ { featuresClassAssociation key }->featuresClassAssociation value].
+	featuresTarget := (featuresTargetAssociation key isArray) 
+		ifTrue:[ featuresTargetAssociation]
+		ifFalse:[ { featuresTargetAssociation key }->featuresTargetAssociation value].
 	
 	weightedEntropy :=OrderedCollection new.
-	featuresClass key do:[:feature	|
-		countArray := self groupBy: (feature->featuresClass value) aggregate: [:k :v| v size].
-		entropyMatrix := self groupBy: (feature->featuresClass value)  aggregate:[:k :v| v entropy:1]. 
+	featuresTarget key do:[:feature	|
+		countArray := self groupBy: (feature->featuresTarget value) aggregate: [:k :v| v size].
+		entropyMatrix := self groupBy: (feature->featuresTarget value)  aggregate:[:k :v| v entropy:1]. 
 		we := ((countArray at:{_. 2@_}) / self length *  (entropyMatrix at:{_.2@_})) sum.
 		weightedEntropy add: we
 		].
@@ -2353,6 +2363,19 @@ MlArray >> switchShapeOrder: aShape [
 	newShape at:(newShape size) put: (newShape at:(newShape size -1)).
 	newShape at:(newShape size - 1) put: tmp.
 	^newShape
+]
+
+{ #category : #utility }
+MlArray >> thresholdForEach [
+	| categories unique |
+	categories := self unique.
+	unique := Dictionary new.
+	self internalArray do:[:each| 
+		categories do:[:cat|
+			unique at:('<=',each asString) incrementBy: (cat <= each ifTrue:[1] ifFalse:[0])]].
+
+	^ (self class from:(Array with:unique values ) order:self order) setLabels: unique keys onAxis: 1 
+	
 ]
 
 { #category : #accessing }

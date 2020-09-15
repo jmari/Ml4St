@@ -19,50 +19,6 @@ MlClassification class >> new: aDictOrCollectionOfAssociations [
 	^ instance
 ]
 
-{ #category : #tuning }
-MlClassification >> autotune: aSparseMatrix target: anArray [ 
-	^self autotune: aSparseMatrix target: anArray sampleWeight: nil
-]
-
-{ #category : #tuning }
-MlClassification >> autotune: aSparseMatrix target: anArray sampleWeight: sw [
-	|  startC  bestScore nr_fold startP   bias  bestC bestP  swDict reader | 
-	sw ifNotNil:[
-		swDict := sw as:SmallDictionary.
-		reader := SVMReader new.
-		self parameters at:#nr_weight put: sw size.
-		self parameters at:#weight_label put: ( reader targetAsSVM: swDict keys).
-		self parameters at:#weight put: (reader targetAsSVM: swDict values)].
-	
-	startC := self parameters at:#C ifAbsent:[ -1.0].
-	startP := self parameters at:#p ifAbsent:[ -1.0].
-	bias := self parameters at:#bias.
-	nr_fold := self parameters at:#n_fold.
-	bestC :=  ByteArray new: (FFIFloat64 externalTypeSize). 
-	bestP :=  ByteArray new: (FFIFloat64 externalTypeSize). 
-	bestScore :=  ByteArray new: (FFIFloat64 externalTypeSize). 
-		
-	problem := problem ifNil:[SVMReader new 
-											asLNProblemWithTarget: anArray
-											features: aSparseMatrix
-											bias: bias]. 
-	LibLinear 	findParameters: problem 
-										parameter: self parameters nativeParameters   
-										nrFolds:  nr_fold 
-										startC: startC 
-										startP: startP 
-										bestC: bestC 
-										bestP: bestP
-										bestScore:  bestScore.
-									
-	self parameters at:#C put: (bestC doubleAt:1).
-	self parameters at:#p put: (bestP doubleAt:1).
-
-	^ {#C-> (bestC doubleAt:1).
-		#p-> (bestP doubleAt:1).
-		#score-> (bestScore doubleAt:1)} as:SmallDictionary
-]
-
 { #category : #initialization }
 MlClassification >> finalize [
 	self model ifNotNil:[
@@ -85,20 +41,31 @@ MlClassification >> fit: aSparseMatrix target: anArray sampleWeight: sw [
 		self parameters at:#weight put: (reader targetAsSVM: swDict values)].
 	bias := self parameters at:#bias.
 	problem := problem ifNil:[SVMReader new asLNProblemWithTarget: anArray features: aSparseMatrix bias: bias]. 
-	self model: (LibLinear train: problem parameter: self parameters nativeParameters).
+	self model: (self library train: problem parameter: self parameters nativeParameters).
 	^  self
 ]
 
 { #category : #initialization }
 MlClassification >> initialize [ 
 	super initialize.
-	parameters := MlLibLinearParameter new.
+	super initializeParameters.
 	self initializeSolver
 	
 ]
 
 { #category : #initialization }
+MlClassification >> initializeParameters [
+	self subclassResponsibility 
+]
+
+{ #category : #initialization }
 MlClassification >> initializeSolver [
+	self subclassResponsibility 
+]
+
+{ #category : #initialization }
+MlClassification >> library [ 	
+	"return library class"
 	self subclassResponsibility 
 ]
 
@@ -110,7 +77,7 @@ MlClassification >> predict: aSparseMatrix [
 	labels := Array new: native_features size.
 	native_features doWithIndex:[:e :index|
 		labels at:index put:(
-		LibLinear predict: self model featureNode: (LNFeatureNode fromHandle: e))].
+		self library predict: self model featureNode: (LNFeatureNode fromHandle: e))].
 	^ labels
 ]
 
@@ -124,7 +91,7 @@ MlClassification >> predictProbability: aSparseMatrix [
 		|label probabilities probBuffer i|
 		probabilities := Array new: self model nr_class.
 		probBuffer := ByteArray new: FFIFloat64 externalTypeSize * self model nr_class.
-		label:= LibLinear 	predictProbability: self model 
+		label:= self library 	predictProbability: self model 
 								featureNode: (LNFeatureNode fromHandle: e)
 								probEstimates: probBuffer.
 		i := 1.

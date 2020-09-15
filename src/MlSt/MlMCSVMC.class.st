@@ -3,7 +3,7 @@ multi-class support vector classification by Crammer and Singer
 "
 Class {
 	#name : #MlMCSVMC,
-	#superclass : #MlClassification,
+	#superclass : #MlLinearClassifier,
 	#category : #'MlSt-LinearModel-Classification'
 }
 

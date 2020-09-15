@@ -44,7 +44,7 @@ bestC: bestCDouble  bestP: bestPDouble bestScore: bestScrDouble [
 { #category : #'as yet unclassified' }
 LibLinear class >> freeAndDestroyModel: aModel [ 
 	"void free_and_destroy_model(struct model **model_ptr_ptr);"
-	^ self ffiCall: #(void free_model_content(LNModel **aModel) ) library: LibLinear
+	^ self ffiCall: #(void free_and_destroy_model(LNModel **aModel) ) library: LibLinear
 ]
 
 { #category : #'as yet unclassified' }
@@ -132,30 +132,26 @@ LibLinear class >> train: aProblem parameter: aParameter [
 
 { #category : #'accessing platform' }
 LibLinear >> macModuleName [
-	"On different flavors of Linux, the path to the library may differ, 
-	depending on the distro and whether the system is 32- or 64-bit."
-	#(
-		'/usr/lib/i386-linux-gnu/liblinear.so.3' 
-		'/usr/lib32/liblinear.so.3' 
-		'/usr/lib/liblinear.so.3'
-		'liblinear.so.3' ) 
-	do: [ :path | 
-		path asFileReference exists ifTrue: [ ^ path ] ].
-	self error: 'Cannot locate liblinear.so.3 library. Please check that it is installed on your system.'
+	^ self unixModuleName 
 ]
 
 { #category : #'accessing platform' }
 LibLinear >> unixModuleName [
 	"On different flavors of Linux, the path to the library may differ, 
 	depending on the distro and whether the system is 32- or 64-bit."
-	#(
-		'/usr/lib/i386-linux-gnu/liblinear.so.3' 
-		'/usr/lib32/liblinear.so.3' 
-		'/usr/lib/liblinear.so.3'
-		'liblinear.so.3' ) 
+	{  
+		'/usr/lib/i386-linux-gnu/liblinear.so.', self version. 
+		'/usr/lib32/liblinear.so.', self version. 
+		'/usr/lib/liblinear.so.', self version.
+		'liblinear.so.', self version. }
 	do: [ :path | 
 		path asFileReference exists ifTrue: [ ^ path ] ].
-	self error: 'Cannot locate liblinear.so.3 library. Please check that it is installed on your system.'
+	self error: 'Cannot locate liblinear.so.', self version, ' library. Please check that it is installed on your system.'
+]
+
+{ #category : #versions }
+LibLinear >> version [ 
+	^ '3'
 ]
 
 { #category : #'accessing platform' }

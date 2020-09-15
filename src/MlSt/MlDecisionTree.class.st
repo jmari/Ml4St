@@ -58,16 +58,18 @@ MlDecisionTree >> id3OnData: aMlArray originalData: originalData features: featu
 	infoGain     := criterion = #entropy
 							ifTrue:[aMlArray infoGain: features ->targetAttributeName]
 							ifFalse:[aMlArray gini: features ->targetAttributeName].
+	self flag:#todo. 
+	"we receive the vector of ginis on each interval of a float value
+	 we have to extract the partition block"
 	infoGainMax  := infoGain max.
 	bestFeature  := (features at: (infoGain indexOf: infoGainMax)).  
 	nextFeatures := (features select:[:f| f ~= bestFeature] ).
-	
+
 	(nextFeatures includes: targetAttributeName) 
 		ifFalse:[ featuresIncluded := nextFeatures ,{targetAttributeName}].
-	
 	tree := (MlTreeNode 
 						newFeatureName:bestFeature
-						infoGain:infoGainMax) .
+						infoGain:infoGainMax).
 	aMlArray groupBy: bestFeature->featuresIncluded 
 				aggregate:[:k :v|
 					subtree := self id3OnData: v 

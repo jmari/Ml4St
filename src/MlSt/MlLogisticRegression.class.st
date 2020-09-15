@@ -1,6 +1,6 @@
 Class {
 	#name : #MlLogisticRegression,
-	#superclass : #MlClassification,
+	#superclass : #MlLinearClassifier,
 	#category : #'MlSt-LinearModel-Classification'
 }
 
