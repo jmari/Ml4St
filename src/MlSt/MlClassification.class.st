@@ -14,7 +14,7 @@ Class {
 MlClassification class >> new: aDictOrCollectionOfAssociations [
 	| instance |
 	instance := self new.
-	instance parameters: (aDictOrCollectionOfAssociations as: MlLibLinearParameter).
+	instance parameters: (aDictOrCollectionOfAssociations as: instance parameterClass).
 	instance initializeSolver.
 	^ instance
 ]
@@ -41,7 +41,7 @@ MlClassification >> fit: aSparseMatrix target: anArray sampleWeight: sw [
 		self parameters at:#weight put: (reader targetAsSVM: swDict values)].
 	bias := self parameters at:#bias.
 	problem := problem ifNil:[SVMReader new asLNProblemWithTarget: anArray features: aSparseMatrix bias: bias]. 
-	self model: (self library train: problem parameter: self parameters nativeParameters).
+	self model: (self libraryClass train: problem parameter: self parameters nativeParameters).
 	^  self
 ]
 
@@ -55,7 +55,7 @@ MlClassification >> initialize [
 
 { #category : #initialization }
 MlClassification >> initializeParameters [
-	self subclassResponsibility 
+	parameters := self parameterClass new.
 ]
 
 { #category : #initialization }
@@ -64,7 +64,13 @@ MlClassification >> initializeSolver [
 ]
 
 { #category : #initialization }
-MlClassification >> library [ 	
+MlClassification >> libraryClass [ 	
+	"return library class"
+	self subclassResponsibility 
+]
+
+{ #category : #initialization }
+MlClassification >> parameterClass [ 	
 	"return library class"
 	self subclassResponsibility 
 ]
@@ -77,7 +83,7 @@ MlClassification >> predict: aSparseMatrix [
 	labels := Array new: native_features size.
 	native_features doWithIndex:[:e :index|
 		labels at:index put:(
-		self library predict: self model featureNode: (LNFeatureNode fromHandle: e))].
+		self libraryClass predict: self model featureNode: (LNFeatureNode fromHandle: e))].
 	^ labels
 ]
 
@@ -91,7 +97,7 @@ MlClassification >> predictProbability: aSparseMatrix [
 		|label probabilities probBuffer i|
 		probabilities := Array new: self model nr_class.
 		probBuffer := ByteArray new: FFIFloat64 externalTypeSize * self model nr_class.
-		label:= self library 	predictProbability: self model 
+		label:= self libraryClass 	predictProbability: self model 
 								featureNode: (LNFeatureNode fromHandle: e)
 								probEstimates: probBuffer.
 		i := 1.

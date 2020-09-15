@@ -49,11 +49,11 @@ MlLinearClassifier >> autotune: aSparseMatrix target: anArray sampleWeight: sw [
 ]
 
 { #category : #initialization }
-MlLinearClassifier >> initializeParameters [
-	parameters := MlLibLinearParameter new.
+MlLinearClassifier >> libraryClass [ 
+	^ LibLinear
 ]
 
 { #category : #initialization }
-MlLinearClassifier >> library [ 
-	^ LibLinear
+MlLinearClassifier >> parameterClass [ 
+	^ MlLibLinearParameter 
 ]
