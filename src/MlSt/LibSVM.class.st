@@ -55,7 +55,7 @@ LibSVM class >> getNRClass: aModel [
 { #category : #'ffi calls' }
 LibSVM class >> getNRSV: aModel [ 
 
-	^ self ffiCall: #(int svm_get_nr_sv(LNModel *aModel) ) library: LibSVM
+	^ self ffiCall: #(int svm_get_nr_sv(SVMModel *aModel) ) library: LibSVM
 ]
 
 { #category : #'ffi calls' }
@@ -87,19 +87,19 @@ LibSVM class >> loadModel: aString [
 { #category : #'ffi calls' }
 LibSVM class >> predict: aModel featureNode: aFeatureNode [ 
 	
-	^ self ffiCall: #( double svm_predict(SVMModel *aModel, SVMFeatureNode  *aFeatureNode) ) library: LibSVM
+	^ self ffiCall: #( double svm_predict(SVMModel *aModel, SVMNode  *aFeatureNode) ) library: LibSVM
 ]
 
 { #category : #'ffi calls' }
 LibSVM class >> predictProbability: aModel featureNode: aFeatureNode probEstimates: aDouble [
 	"double predict_probability(const struct model *model_, const struct feature_node *x, double* prob_estimates);"
-	^ self ffiCall: #( double svm_predict_probability(SVMModel *aModel, SVMFeatureNode  *aFeatureNode, double* aDouble) ) library: LibSVM
+	^ self ffiCall: #( double svm_predict_probability(SVMModel *aModel, SVMNode  *aFeatureNode, double* aDouble) ) library: LibSVM
 ]
 
 { #category : #'ffi calls' }
 LibSVM class >> predictValues: aModel featureNode: aFeatureNode decValues: aDouble [
 
-	^ self ffiCall: #( double svm_predict_values(SVMModel *aModel, SVMFeatureNode  *aFeatureNode, double* aDouble) ) library: LibSVM
+	^ self ffiCall: #( double svm_predict_values(SVMModel *aModel, SVMNode  *aFeatureNode, double* aDouble) ) library: LibSVM
 ]
 
 { #category : #'ffi calls' }

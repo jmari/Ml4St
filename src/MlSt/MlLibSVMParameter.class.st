@@ -4,7 +4,7 @@ Class {
 	#instVars : [
 		'svmParameter'
 	],
-	#category : #'MlSt-Svm-Classification'
+	#category : #'MlSt-Svm'
 }
 
 { #category : #access }

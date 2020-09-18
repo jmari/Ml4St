@@ -1,7 +1,7 @@
 Class {
 	#name : #MlLinearClassifier,
 	#superclass : #MlClassification,
-	#category : #'MlSt-LinearModel-Classification'
+	#category : #'MlSt-LinearModel'
 }
 
 { #category : #tuning }
@@ -54,6 +54,16 @@ MlLinearClassifier >> libraryClass [
 ]
 
 { #category : #initialization }
+MlLinearClassifier >> nodeClass [ 
+	^ LNFeatureNode
+]
+
+{ #category : #initialization }
 MlLinearClassifier >> parameterClass [ 
 	^ MlLibLinearParameter 
+]
+
+{ #category : #'fit-predict' }
+MlLinearClassifier >> problemFromArray: anArray features: aSparseMatrix bias: bias [
+	^ SVMReader new asLNProblemWithTarget: anArray features: aSparseMatrix bias: bias
 ]

@@ -14,7 +14,7 @@ Class {
 	#instVars : [
 		'linearParameter'
 	],
-	#category : #'MlSt-LinearModel-Classification'
+	#category : #'MlSt-LinearModel'
 }
 
 { #category : #initialization }

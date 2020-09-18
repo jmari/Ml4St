@@ -29,11 +29,9 @@ SVMParameter class >> fieldsDesc [
 		int degree;
 		double gamma;	       
 		double coef0; 
-		
 		double cache_size;
 		double eps;
-		double C
-		
+		double C;
 		int nr_weight;
 		int *weight_label;
 		double* weight;
@@ -54,6 +52,11 @@ SVMParameter >> C [
 SVMParameter >> C: anObject [
 	"This method was automatically generated"
 	handle doubleAt: OFFSET_C put: anObject
+]
+
+{ #category : #'accessing structure variables' }
+SVMParameter >> bias [ 
+	^ -1
 ]
 
 { #category : #'accessing structure variables' }

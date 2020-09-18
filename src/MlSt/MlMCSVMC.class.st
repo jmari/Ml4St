@@ -4,7 +4,7 @@ multi-class support vector classification by Crammer and Singer
 Class {
 	#name : #MlMCSVMC,
 	#superclass : #MlLinearClassifier,
-	#category : #'MlSt-LinearModel-Classification'
+	#category : #'MlSt-LinearModel'
 }
 
 { #category : #initialization }

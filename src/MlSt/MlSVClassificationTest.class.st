@@ -69,8 +69,8 @@ MlSVClassificationTest >> testTrainAndPredictProbabilityWeighedModel [
 	reader := SVMReader on: sample readStream.
 	"gets an array with:target with:features"
 	problem := reader nextToLast.	
-	regressor := MlSVClassifier new:{	#C->1.
-												#p->0.5}.
+	regressor := MlSVC new:{	#C->1.
+									#p->0.5}.
 	regressor fit: (problem at:2) target: (problem at:1) sampleWeight:{2->5}. 
 	labelsAndProb :=	regressor predictProbability: (problem at:2).
 	score := (labelsAndProb collect:[:e| e key]) accuracy: (problem at:1).
@@ -85,7 +85,7 @@ MlSVClassificationTest >> testTrainAndPredictWeighedModel [
 	reader := SVMReader on: sample readStream.
 	"gets an array with:target with:features"
 	problem := reader nextToLast.	
-	regressor := MlSVClassifier new:{	#C->1.
+	regressor := MlSVC new:{	#C->1.
 												#p->0.5}.
 	regressor fit: (problem at:2) target: (problem at:1) sampleWeight:{2->5}. 
 	labels :=	regressor predict: (problem at:2).
@@ -100,7 +100,7 @@ MlSVClassificationTest >> testTrainModel [
 	reader := SVMReader on: sample readStream.
 	"gets an array with:target with:features"
 	problem := reader nextToLast.	
-	regressor := MlSVClassifier new:{	#C->1.
+	regressor := MlSVC new:{	#C->1.
 												#p->0.5}.
 	regressor fit: (problem at:2) target: (problem at:1). 
 	self assert: regressor model nr_class equals:2 
@@ -115,7 +115,7 @@ MlSVClassificationTest >> testTrainWeighedModel [
 	reader := SVMReader on: sample readStream.
 	"gets an array with:target with:features"
 	problem := reader nextToLast.	
-	regressor := MlSVClassifier new:{	#C->1.
+	regressor := MlSVC new:{	#C->1.
 												#p->0.5}.
 	regressor fit: (problem at:2) target: (problem at:1) sampleWeight:{2->5}. 
 	self assert: regressor model nr_class equals:2 

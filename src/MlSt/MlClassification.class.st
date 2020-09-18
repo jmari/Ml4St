@@ -7,7 +7,7 @@ Class {
 	#pools : [
 		'LNSolverType'
 	],
-	#category : #'MlSt-LinearModel-Classification'
+	#category : #'MlSt-LinearModel'
 }
 
 { #category : #'instance creation' }
@@ -39,8 +39,9 @@ MlClassification >> fit: aSparseMatrix target: anArray sampleWeight: sw [
 		self parameters at:#nr_weight put: sw size.
 		self parameters at:#weight_label put: ( reader targetAsSVM: swDict keys).
 		self parameters at:#weight put: (reader targetAsSVM: swDict values)].
-	bias := self parameters at:#bias.
-	problem := problem ifNil:[SVMReader new asLNProblemWithTarget: anArray features: aSparseMatrix bias: bias]. 
+	bias := self parameters at:#bias ifAbsent:[-1.0].
+	problem := problem ifNil:[
+		self problemFromArray: anArray features: aSparseMatrix bias: bias]. 
 	self model: (self libraryClass train: problem parameter: self parameters nativeParameters).
 	^  self
 ]
@@ -48,7 +49,7 @@ MlClassification >> fit: aSparseMatrix target: anArray sampleWeight: sw [
 { #category : #initialization }
 MlClassification >> initialize [ 
 	super initialize.
-	super initializeParameters.
+	self initializeParameters.
 	self initializeSolver
 	
 ]
@@ -70,6 +71,12 @@ MlClassification >> libraryClass [
 ]
 
 { #category : #initialization }
+MlClassification >> nodeClass [ 	
+	"return library class"
+	self subclassResponsibility 
+]
+
+{ #category : #initialization }
 MlClassification >> parameterClass [ 	
 	"return library class"
 	self subclassResponsibility 
@@ -79,11 +86,11 @@ MlClassification >> parameterClass [
 MlClassification >> predict: aSparseMatrix [ 
 	| labels bias native_features |
 	bias := self parameters at:#bias.
-	native_features := (SVMReader new featuresAsSVM: aSparseMatrix bias: bias) at:1.
+	native_features := (SVMReader new featuresAsSVM: aSparseMatrix bias: bias nodeClass:'LNFeatureNode*') at:1.
 	labels := Array new: native_features size.
 	native_features doWithIndex:[:e :index|
 		labels at:index put:(
-		self libraryClass predict: self model featureNode: (LNFeatureNode fromHandle: e))].
+		self libraryClass predict: self model featureNode: (self nodeClass fromHandle: e))].
 	^ labels
 ]
 
@@ -91,14 +98,14 @@ MlClassification >> predict: aSparseMatrix [
 MlClassification >> predictProbability: aSparseMatrix [  
 	| labels bias native_features  |
 	bias := self parameters at:#bias.
-	native_features := (SVMReader new featuresAsSVM: aSparseMatrix bias: bias) at:1.
+	native_features := (SVMReader new featuresAsSVM: aSparseMatrix bias: bias nodeClass:'LNFeatureNode*') at:1.
 	labels := Array new: native_features size.
 	native_features doWithIndex:[:e :index|
 		|label probabilities probBuffer i|
 		probabilities := Array new: self model nr_class.
 		probBuffer := ByteArray new: FFIFloat64 externalTypeSize * self model nr_class.
 		label:= self libraryClass 	predictProbability: self model 
-								featureNode: (LNFeatureNode fromHandle: e)
+								featureNode: (self nodeClass fromHandle: e)
 								probEstimates: probBuffer.
 		i := 1.
 		(1 to: probBuffer size by:FFIFloat64 externalTypeSize) do:[:pointer|
@@ -108,6 +115,11 @@ MlClassification >> predictProbability: aSparseMatrix [
 		].
 							
 	^ labels 
+]
+
+{ #category : #initialization }
+MlClassification >> problemFromArray: anArray features: aSparseMatrix bias: bias [
+	self subclassResponsibility 
 ]
 
 { #category : #'fit-predict' }

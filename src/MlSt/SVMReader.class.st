@@ -58,7 +58,7 @@ SVMReader >> asLNProblemWithTarget: yArray features: xArray bias:bias [
 	| y featuresArray  max_index  f_m_pair |
 	max_index := 0.
 	y := self targetAsSVM: yArray.
-	f_m_pair := self featuresAsSVM: xArray bias:bias.
+	f_m_pair := self featuresAsSVM: xArray bias:bias nodeClass:'LNFeatureNode*'.
 	featuresArray := f_m_pair at:1.
 	max_index := f_m_pair at:2.
 	^ LNProblem new 
@@ -73,11 +73,35 @@ SVMReader >> asLNProblemWithTarget: yArray features: xArray bias:bias [
 ]
 
 { #category : #accessing }
-SVMReader >> featuresAsSVM: xArray bias: bias [
+SVMReader >> asSVMProblem [
+	|problem |
+	problem := self nextToLast.
+	^ self asSVMProblemWithTarget:(problem at:1) features:(problem at:2) 
+]
+
+{ #category : #accessing }
+SVMReader >> asSVMProblemWithTarget: yArray features: xArray [ 
+	| y featuresArray  f_m_pair |
+
+	y := self targetAsSVM: yArray.
+	f_m_pair := self featuresAsSVM: xArray bias:-1 nodeClass: 'SVMNode*'.
+	featuresArray := f_m_pair at:1.
+	
+	^ SVMProblem new 
+					x: featuresArray ; 
+					y:y;
+					l:y size; 
+					f_array:featuresArray; 
+					x_space: x_space 
+	
+]
+
+{ #category : #accessing }
+SVMReader >> featuresAsSVM: xArray bias: bias nodeClass: nodeClass [
 	| featuresArray  max_index x_space_size i collectionOfBiasCol|
 	max_index := 0.
 
-	featuresArray := FFIArray externalNewType: 'LNFeatureNode*'  size: xArray size.
+	featuresArray := FFIArray externalNewType: nodeClass  size: xArray size.
 	featuresArray autoRelease.
 	"we add 2 each time for a -1:?, or ...,max_index:bias,-1:? at the end"
 	x_space_size := xArray inject:0 into:[:sum :row| row size +2 +sum].

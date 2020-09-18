@@ -1,7 +1,7 @@
 Class {
 	#name : #MlLogisticRegression,
 	#superclass : #MlLinearClassifier,
-	#category : #'MlSt-LinearModel-Classification'
+	#category : #'MlSt-LinearModel'
 }
 
 { #category : #initialization }
