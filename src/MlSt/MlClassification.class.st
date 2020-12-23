@@ -86,7 +86,7 @@ MlClassification >> parameterClass [
 MlClassification >> predict: aSparseMatrix [ 
 	| labels bias native_features |
 	bias := self parameters at:#bias.
-	native_features := (SVMReader new featuresAsSVM: aSparseMatrix bias: bias nodeClass:'LNFeatureNode*') at:1.
+	native_features := (SVMReader new featuresAsSVM: aSparseMatrix bias: bias nodeClass: self nodeClass) at:1.
 	labels := Array new: native_features size.
 	native_features doWithIndex:[:e :index|
 		labels at:index put:(
@@ -98,7 +98,7 @@ MlClassification >> predict: aSparseMatrix [
 MlClassification >> predictProbability: aSparseMatrix [  
 	| labels bias native_features  |
 	bias := self parameters at:#bias.
-	native_features := (SVMReader new featuresAsSVM: aSparseMatrix bias: bias nodeClass:'LNFeatureNode*') at:1.
+	native_features := (SVMReader new featuresAsSVM: aSparseMatrix bias: bias nodeClass: self nodeClass) at:1.
 	labels := Array new: native_features size.
 	native_features doWithIndex:[:e :index|
 		|label probabilities probBuffer i|

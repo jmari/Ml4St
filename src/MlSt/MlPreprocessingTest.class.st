@@ -6,7 +6,7 @@ Class {
 
 { #category : #tests }
 MlPreprocessingTest >> testConstantImputer [
-	|a imputed imputer |
+	|a imputer |
 	a := MlArray  from: {{{1. 4. 7. Float nan}. {2. Float nan. 8. 11}. {Float nan. 6. 9. 12}}} order:#F.
 	imputer := MlConstantImputer new.
 	imputer constant:{ 1. 2. 3. 4}.
@@ -16,10 +16,6 @@ MlPreprocessingTest >> testConstantImputer [
 	[   2,   2,   8,  11]	
 	[   1,   6,   9,  12]	]]"
 	self assert: (a anySatisfy:[:e | e isNaN]) not. 
-	
-	 
-
-	
 ]
 
 { #category : #tests }

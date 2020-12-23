@@ -183,6 +183,43 @@ MlArray class >> checkClassForAllElementsIn: aCollection [
 	^ true
 ]
 
+{ #category : #'binary operations' }
+MlArray class >> concatArrays:  aMlArraysCollection axis: standarAxisNumber [
+	| instance axis i dictOfJumps heightOfBlock |
+	"use first instance as instance method provider"	
+	axis := aMlArraysCollection first getAxisNumberFromStandard: standarAxisNumber.
+	"check if they all can be concatenated"
+	aMlArraysCollection allButFirst do:[:each|
+		(aMlArraysCollection first isShapeOf: each concatenableAlongAxis: axis) 
+		ifFalse:[MlShapeError signal:('Array is not concatenable on axis:', standarAxisNumber asString)]].
+	
+	"calculate new shape. It will be the same shape but in the given dimension, that  
+	 should be the sum of all of the lenghts"
+	instance := aMlArraysCollection first 
+		newInstanceButShaped: 
+		(aMlArraysCollection first shape deepCopy 
+					at: axis 
+					put: (aMlArraysCollection inject:0 into:[:sum :each| (each shape at:axis) + sum]);
+		yourself) .			
+	"add labels and init dictionary of jumps"		
+	dictOfJumps := Dictionary new.												
+	aMlArraysCollection do:[:each| 
+		dictOfJumps at: each identityHash put: 1.
+		(instance labelsDictAt: axis) addAll:(each labelsDictAt: axis)].
+		 													
+	i:=1.
+	[i < instance size] whileTrue:[
+			aMlArraysCollection do:[:each|	
+				heightOfBlock := (each jumpToNextBlockInAxis: axis).
+				instance internalArray replaceFrom:i  to: (i + heightOfBlock - 1) with: each internalArray  startingAt: (dictOfJumps at: each identityHash) .
+				i := i + heightOfBlock.
+				dictOfJumps at:each identityHash incrementBy: heightOfBlock.
+			]
+	].
+
+	^ instance
+]
+
 { #category : #'instance creation' }
 MlArray class >> detectTypeOf:aCollection [ 
 	|col parent firstRowIsSameKind  firstCol firstColIsSameKind |
@@ -852,7 +889,7 @@ MlArray >> anySatisfy: aBlock [
 
 { #category : #'binary operations' }
 MlArray >> applyBooleanFilter: aBooleanMlArray on: axis [
-	| ratio instance standardAxisNumber |
+	| ratio instance |
 	
 	instance := self performBinaryOp: #applyBooleanFilter: on: aBooleanMlArray.
 	ratio := instance size / self size.
@@ -1109,6 +1146,21 @@ MlArray >> collect: aBlock [
 	^ self newInstanceButEmpty internalArray:  (self internalArray collect:aBlock)
 ]
 
+{ #category : #enumerating }
+MlArray >> columnsDo: aTwoArgBlock [
+	| slice |
+	self walkOnWhile:[:l :s| l < self nDim ]  
+		when: [:l :s| l = self nDim and:[(s at:(self nDim -1)) = 1]]  
+		do: [:l :s| 
+			slice := (s deepCopy at: (self nDim - 1 ) put:1@(self shape at: (self nDim - 1));yourself).
+			aTwoArgBlock
+				valueWithEnoughArguments: {   
+				((self slice: slice ) reshape: {(self shape at: self nDim -1)}).
+				slice}
+			]
+	
+]
+
 { #category : #'private-slicing' }
 MlArray >> completeSlice: aSliceArray [
 	" this function substitutes the _ an negative integers by its value.
@@ -1173,32 +1225,7 @@ MlArray >> completeSlice: aSliceArray [
 
 { #category : #'binary operations' }
 MlArray >> concat: aMlArray axis: standarAxisNumber [
-	| instance axis heightOfSelf heightOfOther j i  k |
-	
-	axis := self getAxisNumberFromStandard: standarAxisNumber.
-
-	(self isShapeOf: aMlArray concatenableAlongAxis: axis) ifFalse:[MlShapeError signal:('Array is not concatenable on axis:', axis asString)].
-	
-	instance := self newInstanceButShaped: (self shape deepCopy 
-															at: axis 
-															put: (self shape at:axis) + (aMlArray shape at:axis);
-															yourself) .
-	(instance labelsDictAt: axis) addAll:(aMlArray labelsDictAt: axis).
-		 									
-	heightOfSelf :=self jumpToNextBlockInAxis: axis.
-	heightOfOther := aMlArray jumpToNextBlockInAxis: axis.
-
-	i:= j := k:= 1.
-	[i < instance size] whileTrue:[
-		instance internalArray replaceFrom:i  to: (i + heightOfSelf - 1) with: self internalArray  startingAt: k.
-		k:= k + heightOfSelf .
-		i := i + heightOfSelf .
-		instance internalArray replaceFrom:i  to: (i + heightOfOther - 1) with: aMlArray internalArray  startingAt: j.
-		j := j + heightOfOther .
-		i := i + heightOfOther 
-	].
-
-	^ instance
+	^ self class concatArrays: (Array with:self with: aMlArray) axis: standarAxisNumber
 ]
 
 { #category : #'reduce operations' }
@@ -1350,6 +1377,34 @@ MlArray >> doWithIndex: aBlock [
 ]
 
 { #category : #'binary operations' }
+MlArray >> dot: aMlArray [
+	| reshapedArray array shape2 i j jump result rowNumber tmp newShape numberOfRows |
+	shape2 := aMlArray shape deepCopy.
+	reshapedArray := aMlArray reshaped:{-1. shape2 last}.
+	i:=1.j:= shape2 at:(shape size - 1).
+	jump := j.
+	rowNumber := 1.
+	numberOfRows := self shape at:( self shape size - 1).
+	result := self newInstanceButShaped: {((self calculateNewShape: {-1. self shape last}) first). shape2 last}. 	
+	array := reshapedArray slice: {i@j. _}.
+	self rowsDo:[:row :rslice|		
+			array columnsDo:[:column :cslice|
+				tmp := (row * column) sum.
+				result at:{rowNumber. cslice last} put: tmp].
+			
+			(rowNumber % numberOfRows = 0)
+			ifTrue:[
+				i := i + jump.
+				j := j + jump.
+				array := reshapedArray slice: {i@j. _}].
+			rowNumber := rowNumber + 1.
+		].
+	newShape := self shape deepCopy.
+	newShape at: newShape size  put: shape2 last.
+	^ result reshape: newShape
+]
+
+{ #category : #'binary operations' }
 MlArray >> encode: aMlArray [ 
 	^ self performBinaryOp: #encode: on: aMlArray 
 
@@ -1386,11 +1441,11 @@ MlArray >> first [
 
 { #category : #'private-accessing' }
 MlArray >> getAddressForPoint:anArrayOfInt [
-	| address  adaptedAddress  |
+	| address  transportedAddress  |
 	address := 1.
-	adaptedAddress := anArrayOfInt  - 1.
-	
-	adaptedAddress  doWithIndex:[:each :i| address := address + (each * (self weightForAxis:i))].	
+	"transport to [1,n] => [0,n-1]"
+	transportedAddress := anArrayOfInt  - 1.
+	transportedAddress  doWithIndex:[:each :i| address := address + (each * (self weightForAxis:i))].	
 	^ address 
 ]
 
@@ -1537,8 +1592,23 @@ MlArray >> groupBy: anAssociation aggregate: aBlock storeCallbackValue: includeK
 		{keys}->{aggregated values}
 		or [block]->[aggregated values]"
 	
-	| agKeys agValues  values aggregate  r valueRows  keyRows labelsForGroup val result groupingKey |
-	self nDim ~=2 ifTrue:[MlShapeError signal: ('It should be a 2D Array and it has ', self nDim asString, ' Dimensions')].
+	| agKeys agValues  values aggregate  r valueRows  keyRows labelsForGroup val result groupingKey subgroupsCollection newDim |
+
+	self nDim <2 ifTrue:[MlShapeError signal: ('It should be a nD Array and it has only one Dimensions')].
+	self nDim >2 ifTrue:[
+	 
+		subgroupsCollection := OrderedCollection new.
+		1 to: self shape first do:[:pos|
+				newDim := Array new:self nDim withAll:nil.
+				newDim at:1 put:pos.
+				"first dimension always have only one position so we can reshape and forget the first dim"
+				subgroupsCollection add: (
+								(( self at:newDim) reshape: self shape allButFirst) 
+										groupBy: anAssociation aggregate: aBlock storeCallbackValue: includeKeyCol )
+		].
+		^ self class concatArrays:subgroupsCollection axis:0.
+	].
+
 	labelsForGroup :=	OrderedCollection new.
 	agKeys := anAssociation key isInteger | (anAssociation key isString)
 					ifTrue:[{anAssociation key}]
@@ -1692,7 +1762,7 @@ MlArray >> itemSize [
 
 { #category : #'private-slicing' }
 MlArray >> jumpToNextBlockInAxis: axis [
-
+	"called only by #concatArrays:  aMlArraysCollection axis: standarAxisNumber..."
 	^ self order = #F 
 		ifTrue:[(self weightForAxis: axis) * (self shape at:axis)]
 		ifFalse:[(self weightForAxis: axis-1)].
@@ -1945,7 +2015,7 @@ MlArray >> perform: aSymbol axis: anAxis arguments: args [
 	"Execute a reduce function (mean,max... all values from an axis to one) 
 	aSymbol is the operation, anAxis, the axis, args an array with the arguments for the method
 	aClass is the  "
-	| axis  newShape instance realAxis|
+	| axis  instance realAxis|
 	realAxis := self getAxisNumberFromStandard: anAxis.
 	axis := self nDim - anAxis.
 	axis < 0 ifTrue:[ axis := self shape last + 1 - axis].
@@ -2180,6 +2250,19 @@ MlArray >> resortByColumn: indexOrNameOfColumn where: aBlock [
 	z := self at: columns.
 	si := z argSortBy: aBlock.
 	self resortBy: si onAxis:1
+	
+]
+
+{ #category : #enumerating }
+MlArray >> rowsDo: aTwoArgBlock [
+	| slice |
+	self walkOnWhile:[:l :s| l < (self nDim - 1)]  when:[:l :s| l = (self nDim - 1)]  do: [:l :s| 
+		slice := (s deepCopy at: self nDim put:1@self shape last;yourself).
+		aTwoArgBlock 
+		valueWithEnoughArguments: {  
+			((self slice: slice) reshape: {(self shape at: self nDim )}).
+			slice}
+			]
 	
 ]
 
@@ -2465,20 +2548,22 @@ MlArray >> walkOnWhile: aWhileBlock when: aConditionBlock do: aBlock [
 
 { #category : #enumerating }
 MlArray >> weightForAxis: anAxis [
-	| w tempShape axis|
+	| w  axis|
+	"In #F order, if anAxis is the last axis weight is the product of all of the inner shapes, otherwise weight is product of all of the outer   	shapes.
+	In #C order weight is always the product of all of the outer shapes"
 	axis := anAxis.
 	axis < 1 ifTrue:[^ self size].
-	self nDim = 1 ifTrue:[^ 1].
-	tempShape := self shape.
+	"one dimension so weight for any axis is 1"
+	self nDim = 1 ifTrue:[^ 1]. 
 	self order=#F ifTrue:[  
-		anAxis = (self nDim - 1) ifTrue:[^ 1].
+		anAxis = (self nDim - 1) ifTrue:[^ 1]. "column dim weight is 1"
 		w := anAxis = self nDim 
 				ifTrue:[ (1 to: axis -1)  inject:1 into:[:mul :e|  mul * (self shape at:e)]]
 				ifFalse:[ (axis +1 to: self nDim -1)  inject:1 into:[:mul :e|  mul * (self shape at:e)]].
 		].
-	self order=#C ifTrue:[  
-		anAxis = self nDim ifTrue:[^ 1].
-		w:= (axis +1 to: self nDim) inject:1 into:[:mul :e|  mul * (tempShape at:e)]].
+	self order=#C ifTrue:[ 
+		anAxis = self nDim ifTrue:[^ 1]. "row dim weight is 1"
+		w:= (axis +1 to: self nDim) inject:1 into:[:mul :e|  mul * (self shape at:e)]].
 	^ w
 ]
 

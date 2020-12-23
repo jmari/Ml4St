@@ -86,7 +86,7 @@ MlSVClassificationTest >> testTrainAndPredictWeighedModel [
 	"gets an array with:target with:features"
 	problem := reader nextToLast.	
 	regressor := MlSVC new:{	#C->1.
-												#p->0.5}.
+									#p->0.5}.
 	regressor fit: (problem at:2) target: (problem at:1) sampleWeight:{2->5}. 
 	labels :=	regressor predict: (problem at:2).
 	score := labels accuracy: (problem at:1).

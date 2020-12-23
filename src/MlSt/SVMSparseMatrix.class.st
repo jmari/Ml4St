@@ -19,9 +19,7 @@ SVMSparseMatrix class >> fromMlArray: aMlArray [
 		rowWidth:= aMlArray shape last.
 		jump := 1].
 	aMlArray order = #F ifTrue:[
-		jump := aMlArray nDim > 1 
-			ifTrue:[aMlArray weightForAxis: (aMlArray nDim)]
-			ifFalse:[1].
+		jump := aMlArray weightForAxis: (aMlArray nDim).
 		rowWidth  := aMlArray shape at: aMlArray nDim].	
 	
 	i:=0.
@@ -30,7 +28,7 @@ SVMSparseMatrix class >> fromMlArray: aMlArray [
 		((j) to: (j+ aMlArray size -1) by: jump) do:[:index|
 			((i \\ (rowWidth)) = 0) ifTrue:[ row:= instance add: SVMRow new].
 			val := (aMlArray as1DArray at: ((index -1)\\ (aMlArray size ))+1).
-			val =0 ifFalse:[
+			(val =0 | val isNil) ifFalse:[
 				columnNumber := (i \\ rowWidth).
 				(instance width <	columnNumber) ifTrue:[	instance width:	columnNumber].	
 				row at: columnNumber put: val].

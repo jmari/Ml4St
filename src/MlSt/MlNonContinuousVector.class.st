@@ -16,7 +16,8 @@ Class {
 	#superclass : #MlBufferedArray,
 	#type : #variable,
 	#instVars : [
-		'strides'
+		'strides',
+		'lastPos'
 	],
 	#category : #'MlSt-Core'
 }
@@ -38,6 +39,7 @@ MlNonContinuousVector class >> new: size [
 		myClass := hisBuffer species].
 
 	instance := self basicNew.
+	instance initialize.
 	instance buffer: (myClass new:size).
 	instance validRanges:{1 to: size}.
 	^ instance
@@ -48,6 +50,7 @@ MlNonContinuousVector class >> newFromArray: bufferObject [
 	| instance |
 
 	instance := self basicNew.
+	instance initialize.
 	instance buffer: bufferObject .
 	instance validRanges:{1 to: bufferObject size}.
 	^ instance
@@ -65,7 +68,7 @@ MlNonContinuousVector >> ** anIntOrArray [
 MlNonContinuousVector >> *= anArray [
 	self isSliced not & (self buffer respondsTo: #*=)
 	ifTrue:[self buffer *= anArray]
-	ifFalse:[ 1 to:self size do:[:i| self at:i put:((self at:i) * anArray at:i)]]
+	ifFalse:[ 1 to:self size do:[:i| self at:i put:((self at:i) * (anArray at:i))]]
 
 ]
 
@@ -73,7 +76,7 @@ MlNonContinuousVector >> *= anArray [
 MlNonContinuousVector >> += anArray [
 	self isSliced not & (self buffer respondsTo: #+=)
 	ifTrue:[self buffer += anArray]
-	ifFalse:[ 1 to:self size do:[:i| self at:i put:((self at:i) + anArray at:i)]]
+	ifFalse:[ 1 to:self size do:[:i| self at:i put:((self at:i) + (anArray at:i))]]
 ]
 
 { #category : #'accumulator ops' }
@@ -92,21 +95,21 @@ MlNonContinuousVector >> , anArray [
 MlNonContinuousVector >> -= anArray [
 	self isSliced not & (self buffer respondsTo: #-=)
 	ifTrue:[self buffer -= anArray]
-	ifFalse:[ 1 to:self size do:[:i| self at:i put:((self at:i) - anArray at:i)]]
+	ifFalse:[ 1 to:self size do:[:i| self at:i put:((self at:i) - (anArray at:i))]]
 ]
 
 { #category : #'accumulator ops' }
 MlNonContinuousVector >> /= anArray [
 	self isSliced not & (self buffer respondsTo: #/=)
 	ifTrue:[self buffer /= anArray]
-	ifFalse:[ 1 to:self size do:[:i| self at:i put:((self at:i) / anArray at:i)]]
+	ifFalse:[ 1 to:self size do:[:i| self at:i put:((self at:i) / (anArray at:i))]]
 ]
 
 { #category : #'accumulator ops' }
 MlNonContinuousVector >> \\= anArray [
 	self isSliced not & (self buffer respondsTo: #\\=)
 	ifTrue:[self buffer \\= anArray]
-	ifFalse:[ 1 to:self size do:[:i| self at:i put:((self at:i) \\ anArray at:i)]]
+	ifFalse:[ 1 to:self size do:[:i| self at:i put:((self at:i) \\ (anArray at:i))]]
 ]
 
 { #category : #adding }
@@ -209,14 +212,24 @@ MlNonContinuousVector >> fakeAt: aPos [
 	| address currentPos j|
 	
 	aPos > self size ifTrue:[ SubscriptOutOfBounds signal: aPos asString].
-	address := aPos .
-	currentPos := self strides first.
-	j := 2.
-	[ address >= currentPos & (j < self strides size)] whileTrue:[
-		address := address +( self strides at:j )- ( self strides at:j-1).
+
+	(lastPos notNil and:[ aPos >= lastPos key ])
+	ifTrue:[
+		address := aPos+lastPos value at:1.
+		j := lastPos value at:2.
+		currentPos := (lastPos value at:3)]
+	ifFalse:[
+		address := aPos.
+		j := 2.
+		currentPos := self strides first].
+	
+	[ address >= currentPos and: [j < self strides size]] whileTrue:[
+		address := address +( self strides at:j ) - ( self strides at:j-1).
 		currentPos:= ( self strides at:j+1 ).
 		j:=j+2.
 		].
+	"store last sum of the strides and last j. It will accelerate next access in a do: operation"
+	lastPos := aPos ->  (Array with:(address - aPos) with:j with:currentPos ). 
 	^ address
 	
 	
@@ -262,22 +275,24 @@ MlNonContinuousVector >> swap: j by: k [
 
 { #category : #accessing }
 MlNonContinuousVector >> validRanges: anArrayOfValidIntervals [
-
 	| newStrides|
 
 	newStrides := OrderedCollection new.
 	self size: 0.
 	newStrides add:1.
-	anArrayOfValidIntervals  do:[:e|
-		self size: self size + e size.
-		e increment = 1 
+	anArrayOfValidIntervals  do:[:interval|
+		self size: self size + interval size.
+		interval increment = 1 
 		ifTrue:[
-
-			newStrides add: (e first  ).
-			newStrides add: e last+1]
+			newStrides last = interval first 
+			ifTrue:[newStrides removeLast]
+			ifFalse:[newStrides add: (interval first  )].
+			newStrides add: interval last+1]
 		ifFalse:[
-			e do:[:index|
-				newStrides add: index.
+			interval do:[:index|
+				newStrides last = index 
+				ifTrue:[newStrides removeLast]
+				ifFalse:[newStrides add: index].
 				newStrides add: index + 1]
 			]].
 	newStrides add: self buffer size+1.

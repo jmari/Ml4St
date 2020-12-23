@@ -58,7 +58,7 @@ SVMReader >> asLNProblemWithTarget: yArray features: xArray bias:bias [
 	| y featuresArray  max_index  f_m_pair |
 	max_index := 0.
 	y := self targetAsSVM: yArray.
-	f_m_pair := self featuresAsSVM: xArray bias:bias nodeClass:'LNFeatureNode*'.
+	f_m_pair := self featuresAsSVM: xArray bias:bias nodeClass:'LNFeatureNode'.
 	featuresArray := f_m_pair at:1.
 	max_index := f_m_pair at:2.
 	^ LNProblem new 
@@ -84,7 +84,7 @@ SVMReader >> asSVMProblemWithTarget: yArray features: xArray [
 	| y featuresArray  f_m_pair |
 
 	y := self targetAsSVM: yArray.
-	f_m_pair := self featuresAsSVM: xArray bias:-1 nodeClass: 'SVMNode*'.
+	f_m_pair := self featuresAsSVM: xArray bias:-1 nodeClass: 'SVMNode'.
 	featuresArray := f_m_pair at:1.
 	
 	^ SVMProblem new 
@@ -101,7 +101,7 @@ SVMReader >> featuresAsSVM: xArray bias: bias nodeClass: nodeClass [
 	| featuresArray  max_index x_space_size i collectionOfBiasCol|
 	max_index := 0.
 
-	featuresArray := FFIArray externalNewType: nodeClass  size: xArray size.
+	featuresArray := FFIArray externalNewType: (nodeClass asString , '*' ) size: xArray size.
 	featuresArray autoRelease.
 	"we add 2 each time for a -1:?, or ...,max_index:bias,-1:? at the end"
 	x_space_size := xArray inject:0 into:[:sum :row| row size +2 +sum].
@@ -111,7 +111,7 @@ SVMReader >> featuresAsSVM: xArray bias: bias nodeClass: nodeClass [
 	i:=1.
 	xArray doWithIndex:[:each :index|
 		|node|
-		"each position has a collection of SmallDictionaries"
+		"each element of xArray has a SmallDictionary of column->value"
 		featuresArray at:index put: (x_space at:i) getHandle asExternalAddress.
 		each keysAndValuesDo:[:k :v|
 			node := x_space at:i.

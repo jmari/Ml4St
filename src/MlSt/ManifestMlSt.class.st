@@ -23,6 +23,11 @@ ManifestMlSt class >> ruleRBGlobalVariablesUsageV1FalsePositive [
 ]
 
 { #category : #'code-critics' }
+ManifestMlSt class >> ruleRBStringConcatenationRuleV1FalsePositive [
+	^ #(#(#(#RGMethodDefinition #(#MlArray #concatArrays:axis: #false)) #'2020-09-20T18:34:31.242784+02:00') )
+]
+
+{ #category : #'code-critics' }
 ManifestMlSt class >> ruleRBToDoRuleV1FalsePositive [
 	^ #(#(#(#RGMethodDefinition #(#MlArray #completeSlice: #false)) #'2020-05-10T08:57:45.590726+02:00') )
 ]
