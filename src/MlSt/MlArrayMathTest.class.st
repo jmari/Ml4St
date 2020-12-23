@@ -5,6 +5,21 @@ Class {
 }
 
 { #category : #tests }
+MlArrayMathTest >> testBigDot [
+
+	| a b dot r|
+	a := (MlArray random: #( 1000000 10)).
+	b := (MlArray random: #( 10 100000)).
+	dot := a dot:b.
+
+	
+
+	
+
+
+]
+
+{ #category : #tests }
 MlArrayMathTest >> testBooleanOperations [
 	| a b c d e |
 	a := MlArray  from: {{{true. true. true}. {false. false. false}. {true. true. true}}}.

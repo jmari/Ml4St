@@ -1149,7 +1149,7 @@ MlArray >> collect: aBlock [
 { #category : #enumerating }
 MlArray >> columnsDo: aTwoArgBlock [
 	| slice |
-	self walkOnWhile:[:l :s| l < self nDim ]  
+	self walkWhile:[:l :s| l < self nDim ]  
 		when: [:l :s| l = self nDim and:[(s at:(self nDim -1)) = 1]]  
 		do: [:l :s| 
 			slice := (s deepCopy at: (self nDim - 1 ) put:1@(self shape at: (self nDim - 1));yourself).
@@ -2024,7 +2024,7 @@ MlArray >> perform: aSymbol axis: anAxis arguments: args [
 	"the operation 'aSymbol' should return the same number of elements"
 
 	instance := self newInstanceLikeMe.
-	self walkOnWhile:[:l :s| axis >1 ifTrue:[l < (axis -1)] ifFalse:[false]]
+	self walkWhile:[:l :s| axis >1 ifTrue:[l < (axis -1)] ifFalse:[false]]
 		when: [:l :s| (s at:realAxis)=1 ]  
 		do:[:l :s| 
 		| slice array|
@@ -2164,7 +2164,7 @@ MlArray >> reduce: aSymbol axis: anAxis arguments: args [
 	"the operation 'aSymbol' should reduce the collection to 1, i.e. mean, std..."
 	results := OrderedCollection new.
 
-	self walkOnWhile:[:l :s| axis >1 ifTrue:[l < (axis -1)] ifFalse:[false]]
+	self walkWhile:[:l :s| axis >1 ifTrue:[l < (axis -1)] ifFalse:[false]]
 		when: [:l :s| (s at:realAxis)=1 ]  
 		do:[:l :s| 
 		| slide array|
@@ -2256,7 +2256,7 @@ MlArray >> resortByColumn: indexOrNameOfColumn where: aBlock [
 { #category : #enumerating }
 MlArray >> rowsDo: aTwoArgBlock [
 	| slice |
-	self walkOnWhile:[:l :s| l < (self nDim - 1)]  when:[:l :s| l = (self nDim - 1)]  do: [:l :s| 
+	self walkWhile:[:l :s| l < (self nDim - 1)]  when:[:l :s| l = (self nDim - 1)]  do: [:l :s| 
 		slice := (s deepCopy at: self nDim put:1@self shape last;yourself).
 		aTwoArgBlock 
 		valueWithEnoughArguments: {  
@@ -2520,28 +2520,28 @@ MlArray >> variance: axis [
 	^ self reduce: #variance axis: axis
 ]
 
-{ #category : #enumerating }
-MlArray >> walkOn:l slice: s while: aWhileBlock when: aConditionBlock do: aBlock [ 
-
+{ #category : #'private-enumerating' }
+MlArray >> walkLevel:l slice: s while: aWhileBlock when: aConditionBlock do: aBlock [ 
+	"recursive call to walk the axes in order"
 
 	1 to: (self shape at: l) do:[:i| 
 		s at:l put: i.
 		(aWhileBlock value:l value:s) ifTrue:[
-			self walkOn:l+1 slice: s while: aWhileBlock when: aConditionBlock do: aBlock ].
+			self walkLevel:l+1 slice: s while: aWhileBlock when: aConditionBlock do: aBlock ].
 		(aConditionBlock value:l value:s) ifTrue:[(aBlock  value:l value:s)].
 	]
 ]
 
 { #category : #enumerating }
-MlArray >> walkOnWhen: aConditionBlock do: aBlock [ 
-	self walkOn:1 slice: (Array new: self nDim withAll:1) while: [:l :s| l < self nDim]  when: aConditionBlock do: aBlock 
+MlArray >> walkWhen: aConditionBlock do: aBlock [ 
+	self walkLevel:1 slice: (Array new: self nDim withAll:1) while: [:l :s| l < self nDim]  when: aConditionBlock do: aBlock 
 
 
 ]
 
 { #category : #enumerating }
-MlArray >> walkOnWhile: aWhileBlock when: aConditionBlock do: aBlock [ 
-	self walkOn:1 slice: (Array new: self nDim withAll:1) while: aWhileBlock when: aConditionBlock do: aBlock 
+MlArray >> walkWhile: aWhileBlock when: aConditionBlock do: aBlock [ 
+	self walkLevel:1 slice: (Array new: self nDim withAll:1) while: aWhileBlock when: aConditionBlock do: aBlock 
 
 
 ]
