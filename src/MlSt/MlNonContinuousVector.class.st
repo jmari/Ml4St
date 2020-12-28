@@ -209,31 +209,19 @@ MlNonContinuousVector >> do: aBlock [
 
 { #category : #accessing }
 MlNonContinuousVector >> fakeAt: aPos [
-	| address currentPos j|
-	
-	aPos > self size ifTrue:[ SubscriptOutOfBounds signal: aPos asString].
+	^ LibNcv fakeAt: aPos strides: self strides stridesSize: self strides size  size: self size  lastPos: lastPos 
+]
 
-	(lastPos notNil and:[ aPos >= lastPos key ])
-	ifTrue:[
-		address := aPos+lastPos value at:1.
-		j := lastPos value at:2.
-		currentPos := (lastPos value at:3)]
-	ifFalse:[
-		address := aPos.
-		j := 2.
-		currentPos := self strides first].
+{ #category : #initialization }
+MlNonContinuousVector >> initialize [ 
+	super initialize.
+	lastPos := FFIArray externalNewType: #uint size:4.
+	lastPos at:1 put:0.
+	lastPos at:2 put:0.
+	lastPos at:3 put:0.
+	lastPos at:4 put:0.
+	lastPos autoRelease 
 	
-	[ address >= currentPos and: [j < self strides size]] whileTrue:[
-		address := address +( self strides at:j ) - ( self strides at:j-1).
-		currentPos:= ( self strides at:j+1 ).
-		j:=j+2.
-		].
-	"store last sum of the strides and last j. It will accelerate next access in a do: operation"
-	lastPos := aPos ->  (Array with:(address - aPos) with:j with:currentPos ). 
-	^ address
-	
-	
-		 
 ]
 
 { #category : #testing }
@@ -260,8 +248,10 @@ MlNonContinuousVector >> strides [
 ]
 
 { #category : #accessing }
-MlNonContinuousVector >> strides: aColectionOfStrides [
-	strides := aColectionOfStrides
+MlNonContinuousVector >> strides: aCollectionOfStrides [
+	strides := FFIArray externalNewType: #uint size:aCollectionOfStrides size.
+	strides autoRelease.
+	aCollectionOfStrides doWithIndex:[:e :i| strides at:i put:e]
 	
 ]
 
@@ -296,6 +286,6 @@ MlNonContinuousVector >> validRanges: anArrayOfValidIntervals [
 				newStrides add: index + 1]
 			]].
 	newStrides add: self buffer size+1.
-	strides := newStrides asArray
+	self strides: newStrides 
 
 ]
