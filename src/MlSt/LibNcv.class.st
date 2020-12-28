@@ -6,12 +6,13 @@ Class {
 
 { #category : #accessing }
 LibNcv class >> fakeAt: aPos strides: strides stridesSize: stridesSize size: size lastPos: lastPos [
-	^ self ffiCall: #(int fakeAt( int aPos, int* strides,  int stridesSize,  int size,   int* lastPos)) library: LibNcv 
+	^ self ffiCall: #(uint fakeAt( uint aPos, uint* strides,  uint stridesSize,  uint size,   uint* lastPos)) library: LibNcv 
 ]
 
 { #category : #accessing }
-LibNcv class >> testA:aPos [
-	^ self ffiCall: #(int testA(int aPos)) library: LibNcv 
+LibNcv class >> testA:aPos pos:pos [
+	"q coño pasa"
+	^ self ffiCall: #(int testA(int *aPos, int pos)) library: LibNcv 
 ]
 
 { #category : #'accessing platform' }
