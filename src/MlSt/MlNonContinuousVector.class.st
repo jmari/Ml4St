@@ -215,7 +215,7 @@ MlNonContinuousVector >> fakeAt: aPos [
 { #category : #initialization }
 MlNonContinuousVector >> initialize [ 
 	super initialize.
-	lastPos := FFIArray externalNewType: #uint size:4.
+	lastPos := FFIArray externalNewType: #int size:4.
 	lastPos at:1 put:0.
 	lastPos at:2 put:0.
 	lastPos at:3 put:0.
@@ -249,7 +249,7 @@ MlNonContinuousVector >> strides [
 
 { #category : #accessing }
 MlNonContinuousVector >> strides: aCollectionOfStrides [
-	strides := FFIArray externalNewType: #uint size:aCollectionOfStrides size.
+	strides := FFIArray externalNewType: #int size:aCollectionOfStrides size.
 	strides autoRelease.
 	aCollectionOfStrides doWithIndex:[:e :i| strides at:i put:e]
 	

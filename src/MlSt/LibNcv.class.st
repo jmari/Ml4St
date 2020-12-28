@@ -6,7 +6,7 @@ Class {
 
 { #category : #accessing }
 LibNcv class >> fakeAt: aPos strides: strides stridesSize: stridesSize size: size lastPos: lastPos [
-	^ self ffiCall: #(uint fakeAt( uint aPos, uint *strides,  uint stridesSize,  uint size,   uint *lastPos)) library: LibNcv 
+	^ self ffiCall: #(int fakeAt( int aPos, int* strides,  int stridesSize,  int size,   int* lastPos)) library: LibNcv 
 ]
 
 { #category : #accessing }
