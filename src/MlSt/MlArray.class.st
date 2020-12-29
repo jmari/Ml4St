@@ -1109,19 +1109,20 @@ MlArray >> changeLabelsByIndexes: anArrayOfInt [
 { #category : #'private-accessing' }
 MlArray >> classForType: aType [
 	| dTypeDic |
-
 	dTypeDic := { #Float->FloatArray.
 	 				  #BoxedFloat64->FloatArray.
-					  #SmallFloat64->FloatArray.
-					  #Integer -> IntegerArray.
-					  #SmallInteger -> IntegerArray.
-					  #LargeInteger -> IntegerArray.
+					  #SmallFloat64->FloatArray .
+					  #Integer ->IntegerArray.
+					  #SmallInteger -> IntegerArray .
+					  #LargeInteger -> IntegerArray .
 					  #LargeNegativeInteger -> IntegerArray.
 					  #LargePositiveInteger -> IntegerArray.
-					  #Word -> WordArray.
+					  #Word -> WordArray .
 					  #DoubleWord -> DoubleWordArray.
-					  #DoubleByte -> DoubleByteArray.
-					  #Byte -> ByteArray} asDictionary.
+					  #DoubleByte -> DoubleByteArray .
+					  #Byte -> ByteArray.
+					  #UFFIFloat->MlFloatArray.
+					  #UFFIInteger->MlIntArray} asDictionary.
 	^ dTypeDic at:aType ifAbsent:[Array]
 ]
 
@@ -1155,7 +1156,7 @@ MlArray >> columnsDo: aTwoArgBlock [
 			slice := (s deepCopy at: (self nDim - 1 ) put:1@(self shape at: (self nDim - 1));yourself).
 			aTwoArgBlock
 				valueWithEnoughArguments: {   
-				((self slice: slice ) reshape: {(self shape at: self nDim -1)}).
+				((self slice: slice copy:true) reshape: {(self shape at: self nDim -1)}).
 				slice}
 			]
 	
@@ -1293,8 +1294,9 @@ MlArray >> createNewSlicedInstance: indexes shape: newShape [
 	newInstance := self newInstanceButShaped: newShape.
 	i := 1.
 	(indexes sort:[:a :b| a first < b first]) do:[:each|
+			each first <= newInstance size ifTrue:[
 			newInstance internalArray  replaceFrom:i  to: (i + each size -1) with: self internalArray  startingAt: each first. 
-			i:=i + each size ].
+			i:=i + each size ]].
 	^ newInstance 
 ]
 
@@ -1396,7 +1398,7 @@ MlArray >> dot: aMlArray [
 			ifTrue:[
 				i := i + jump.
 				j := j + jump.
-				array := reshapedArray slice: {i@j. _}].
+				array := reshapedArray slice: {i@j. _} copy:true].
 			rowNumber := rowNumber + 1.
 		].
 	newShape := self shape deepCopy.
@@ -1725,7 +1727,7 @@ MlArray >> internalArrayOfType: aType size: size [
 	| dataClass |
 	self dType:aType.
 	dataClass :=self classForType: self dType.
-	self internalArray: (dataClass new:size)
+	self internalArray: (dataClass new: size)
 ]
 
 { #category : #slicing }
@@ -2260,7 +2262,7 @@ MlArray >> rowsDo: aTwoArgBlock [
 		slice := (s deepCopy at: self nDim put:1@self shape last;yourself).
 		aTwoArgBlock 
 		valueWithEnoughArguments: {  
-			((self slice: slice) reshape: {(self shape at: self nDim )}).
+			((self slice: slice copy:true) reshape: {(self shape at: self nDim )}).
 			slice}
 			]
 	

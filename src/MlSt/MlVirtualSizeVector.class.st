@@ -52,6 +52,11 @@ MlVirtualSizeVector >> at: anObject put: aValue [
 	MlNonWritableObject signal
 ]
 
+{ #category : #testing }
+MlVirtualSizeVector >> isSliced [
+	^ true
+]
+
 { #category : #accessing }
 MlVirtualSizeVector >> ntimes: tr [ 
 	timesRepeat:= tr

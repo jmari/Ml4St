@@ -39,6 +39,22 @@ MlArrayPerformanceTest >> testArraysMul [
 ]
 
 { #category : #tests }
+MlArrayPerformanceTest >> testBigDot [
+
+	| a b t|
+	a := (MlArray random: #( 100 100)).
+	b := (MlArray random: #( 100 100)).
+	
+	t := [a dot:b.] timeToRun.
+	self assert:t <= (Duration milliSeconds:1000).
+	
+
+	
+
+
+]
+
+{ #category : #tests }
 MlArrayPerformanceTest >> testMulArray [
 
 	| a b t|
@@ -89,7 +105,7 @@ MlArrayPerformanceTest >> testScalarMul [
 	a := MlArray random: #(100 100 100).
 	"multiply by a constant"
 	t := [a *= 5] timeToRun.
-	self assert:t <= (Duration milliSeconds:1).
+	self assert:t <= (Duration milliSeconds:500).
 	
 	
 	

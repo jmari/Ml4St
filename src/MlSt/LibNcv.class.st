@@ -1,27 +1,27 @@
 Class {
-	#name : #LibNcv,
+	#name : #LibNCV,
 	#superclass : #FFILibrary,
-	#category : #'MlSt-Core'
+	#category : #'MlSt-FFI-NCVector'
 }
 
 { #category : #accessing }
-LibNcv class >> fakeAt: aPos strides: strides stridesSize: stridesSize size: size lastPos: lastPos [
-	^ self ffiCall: #(uint fakeAt( uint aPos, uint* strides,  uint stridesSize,  uint size,   uint* lastPos)) library: LibNcv 
+LibNCV class >> fakeAt: aPos strides: strides stridesSize: stridesSize size: size lastPos: lastPos [
+	^ self ffiCall: #(uint fakeAt( uint aPos, uint* strides,  uint stridesSize,  uint size,   uint* lastPos)) library: LibNCV 
 ]
 
 { #category : #accessing }
-LibNcv class >> testA:aPos pos:pos [
+LibNCV class >> testA:aPos pos:pos [
 	"q coño pasa"
-	^ self ffiCall: #(int testA(int *aPos, int pos)) library: LibNcv 
+	^ self ffiCall: #(int testA(int *aPos, int pos)) library: LibNCV 
 ]
 
 { #category : #'accessing platform' }
-LibNcv >> macModuleName [
+LibNCV >> macModuleName [
 	^ self unixModuleName 
 ]
 
 { #category : #'accessing platform' }
-LibNcv >> unixModuleName [
+LibNCV >> unixModuleName [
 	"On different flavors of Linux, the path to the library may differ, 
 	depending on the distro and whether the system is 32- or 64-bit."
 	{  'libncv_', self version, '.dylib'. }
@@ -31,6 +31,6 @@ LibNcv >> unixModuleName [
 ]
 
 { #category : #versions }
-LibNcv >> version [ 
+LibNCV >> version [ 
 	^ '1'
 ]

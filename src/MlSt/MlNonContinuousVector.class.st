@@ -57,6 +57,19 @@ MlNonContinuousVector class >> newFromArray: bufferObject [
 ]
 
 { #category : #'accumulator ops' }
+MlNonContinuousVector >> * anArray [
+	| instance |
+	^ (anArray isNumber not and:[self isSliced not & anArray isSliced not] )
+	ifTrue:[self class newFromArray:(self buffer * anArray buffer)]
+	ifFalse:[ 
+		instance := self class new:self size.
+		1 to:self size do:[:i| instance at:i put:((self at:i) * 
+			(anArray isNumber ifTrue:[anArray] ifFalse:[anArray at:i]))].
+		instance]
+
+]
+
+{ #category : #'accumulator ops' }
 MlNonContinuousVector >> ** anIntOrArray [
 	^ self collectWithIndex:[:o :i| 
 			o ** (anIntOrArray isNumber 
@@ -66,22 +79,36 @@ MlNonContinuousVector >> ** anIntOrArray [
 
 { #category : #'accumulator ops' }
 MlNonContinuousVector >> *= anArray [
-	self isSliced not & (self buffer respondsTo: #*=)
-	ifTrue:[self buffer *= anArray]
-	ifFalse:[ 1 to:self size do:[:i| self at:i put:((self at:i) * (anArray at:i))]]
+	(anArray isNumber not and:[self isSliced not & anArray isSliced not] )
+	ifTrue:[self class newFromArray:(self buffer *= anArray buffer)]
+	ifFalse:[ 1 to:self size do:[:i| self at:i put:((self at:i) * 
+				(anArray isNumber ifTrue:[anArray] ifFalse:[anArray at:i]))]]
 
+]
+
+{ #category : #'accumulator ops' }
+MlNonContinuousVector >> + anArray [
+	| instance |
+	^ (anArray isNumber not and:[self isSliced not & anArray isSliced not] )
+	ifTrue:[self class newFromArray:(self buffer + anArray buffer)]
+	ifFalse:[ 
+		instance := self class new:self size.
+		1 to:self size do:[:i| instance at:i put:((self at:i) + 			
+						(anArray isNumber ifTrue:[anArray] ifFalse:[anArray at:i]))].
+		instance]
 ]
 
 { #category : #'accumulator ops' }
 MlNonContinuousVector >> += anArray [
-	self isSliced not & (self buffer respondsTo: #+=)
-	ifTrue:[self buffer += anArray]
-	ifFalse:[ 1 to:self size do:[:i| self at:i put:((self at:i) + (anArray at:i))]]
+	(anArray isNumber not and:[self isSliced not & anArray isSliced not] )
+	ifTrue:[self class newFromArray:(self buffer += anArray buffer)]
+	ifFalse:[ 1 to:self size do:[:i| self at:i put:((self at:i) + 
+				(anArray isNumber ifTrue:[anArray] ifFalse:[anArray at:i]))]]
 ]
 
 { #category : #'accumulator ops' }
 MlNonContinuousVector >> , anArray [
-	^ self isSliced not & (self buffer respondsTo: #,)
+	^ (anArray isNumber not and:[self isSliced not & anArray isSliced not] )
 		ifTrue:[self class newFromArray:(self buffer , anArray)]
 		ifFalse:[
 			self class newFromArray:(
@@ -93,23 +120,26 @@ MlNonContinuousVector >> , anArray [
 
 { #category : #'accumulator ops' }
 MlNonContinuousVector >> -= anArray [
-	self isSliced not & (self buffer respondsTo: #-=)
-	ifTrue:[self buffer -= anArray]
-	ifFalse:[ 1 to:self size do:[:i| self at:i put:((self at:i) - (anArray at:i))]]
+	(anArray isNumber not and:[self isSliced not & anArray isSliced not] )
+	ifTrue:[self class newFromArray:(self buffer -= anArray buffer)]
+	ifFalse:[ 1 to:self size do:[:i| self at:i put:((self at:i) - 
+				(anArray isNumber ifTrue:[anArray] ifFalse:[anArray at:i]))]]
 ]
 
 { #category : #'accumulator ops' }
 MlNonContinuousVector >> /= anArray [
-	self isSliced not & (self buffer respondsTo: #/=)
-	ifTrue:[self buffer /= anArray]
-	ifFalse:[ 1 to:self size do:[:i| self at:i put:((self at:i) / (anArray at:i))]]
+	(anArray isNumber not and:[self isSliced not & anArray isSliced not] )
+	ifTrue:[self class newFromArray:(self buffer /= anArray buffer)]
+	ifFalse:[ 1 to:self size do:[:i| self at:i put:((self at:i) / 
+				(anArray isNumber ifTrue:[anArray] ifFalse:[anArray at:i]))]]
 ]
 
 { #category : #'accumulator ops' }
 MlNonContinuousVector >> \\= anArray [
-	self isSliced not & (self buffer respondsTo: #\\=)
-	ifTrue:[self buffer \\= anArray]
-	ifFalse:[ 1 to:self size do:[:i| self at:i put:((self at:i) \\ (anArray at:i))]]
+	(anArray isNumber not and:[self isSliced not & anArray isSliced not] )
+	ifTrue:[self class newFromArray:(self buffer \\= anArray buffer)]
+	ifFalse:[ 1 to:self size do:[:i| self at:i put:((self at:i) \\ 
+				(anArray isNumber ifTrue:[anArray] ifFalse:[anArray at:i]))]]
 ]
 
 { #category : #adding }
@@ -241,7 +271,7 @@ MlNonContinuousVector >> fakeAt: aPos [
 
 { #category : #accessing }
 MlNonContinuousVector >> fakeAtFFI: aPos [
-	^ LibNcv 
+	^ LibNCV 
 		fakeAt: aPos 
 		strides: self strides getHandle 
 		stridesSize: self strides size  
@@ -277,8 +307,8 @@ MlNonContinuousVector >> isSliced [
 { #category : #'accumulator ops' }
 MlNonContinuousVector >> replaceFrom: start to: stop with: replacement startingAt: repStart [ 
 
-	self isSliced not & (self buffer respondsTo: #replaceFrom:to:with:startingAt: )
-	ifTrue:[self buffer replaceFrom: start to: stop with: replacement startingAt: repStart ]
+	(self isSliced not & replacement isSliced not)
+	ifTrue:[self buffer replaceFrom: start to: stop with: replacement buffer startingAt: repStart ]
 	ifFalse:[ super replaceFrom: start to: stop with: replacement startingAt: repStart]
 
 ]
