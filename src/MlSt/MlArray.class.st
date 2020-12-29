@@ -1391,7 +1391,7 @@ MlArray >> dot: aMlArray [
 	array := reshapedArray slice: {i@j. _}.
 	self rowsDo:[:row :rslice|		
 			array columnsDo:[:column :cslice|
-				tmp := (row * column) sum.
+				tmp := (row internalArray dot: column internalArray).
 				result at:{rowNumber. cslice last} put: tmp].
 			
 			(rowNumber % numberOfRows = 0)

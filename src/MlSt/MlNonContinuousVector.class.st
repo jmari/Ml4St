@@ -237,6 +237,19 @@ MlNonContinuousVector >> do: aBlock [
 	1 to: self size do:[:i| aBlock value: (self at: i)]
 ]
 
+{ #category : #'accumulator ops' }
+MlNonContinuousVector >> dot: anArray [
+	| sum |
+	^ (anArray isNumber not and:[self isSliced not & anArray isSliced not] )
+	ifTrue:[self buffer dot: anArray buffer]
+	ifFalse:[ 
+		sum := 0.
+		1 to:self size do:[:i| sum := sum + ((self at:i) * 
+			(anArray isNumber ifTrue:[anArray] ifFalse:[anArray at:i]))].
+		sum]
+
+]
+
 { #category : #accessing }
 MlNonContinuousVector >> fakeAt: aPos [
 	| address currentPos j|
