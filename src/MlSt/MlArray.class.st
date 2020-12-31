@@ -842,9 +842,9 @@ MlArray >> adaptSizeOfArray: anArray [
 	
 	tr := self size / anArray size.
 	sameRows := self nDim >1 & (anArray nDim > 1)
-							ifTrue:[(self shape at:( self nDim-1)) = (anArray shape at:( anArray nDim-1))  ] 
+							ifTrue:[self length = anArray length ] 
 							ifFalse:[self size = anArray size].
-	sameColumns := (self shape last = (anArray shape last)) | (anArray size = 1).
+	sameColumns := (self width = anArray width) | (anArray size = 1).
 	
 	(sameRows | sameColumns) ifFalse:[MlShapeError signal:('Array ' ,anArray asString ,' could not be broadcasted')].
 	self order = #F 
@@ -1153,10 +1153,10 @@ MlArray >> columnsDo: aTwoArgBlock [
 	self walkWhile:[:l :s| l < self nDim ]  
 		when: [:l :s| l = self nDim and:[(s at:(self nDim -1)) = 1]]  
 		do: [:l :s| 
-			slice := (s deepCopy at: (self nDim - 1 ) put:1@(self shape at: (self nDim - 1));yourself).
+			slice := (s deepCopy at: (self nDim - 1 ) put:1@(self length);yourself).
 			aTwoArgBlock
 				valueWithEnoughArguments: {   
-				((self slice: slice copy:true) reshape: {(self shape at: self nDim -1)}).
+				((self slice: slice copy:true) reshape: {self length}).
 				slice}
 			]
 	
@@ -1808,7 +1808,7 @@ MlArray >> last [
 { #category : #accessing }
 MlArray >> length [
 	"returns the number of rows"
-	^ self shape at: (self nDim -1)
+	^ self shape at: (self nDim - 1)
 ]
 
 { #category : #enumerating }
@@ -2020,7 +2020,7 @@ MlArray >> perform: aSymbol axis: anAxis arguments: args [
 	| axis  instance realAxis|
 	realAxis := self getAxisNumberFromStandard: anAxis.
 	axis := self nDim - anAxis.
-	axis < 0 ifTrue:[ axis := self shape last + 1 - axis].
+	axis < 0 ifTrue:[ axis := self width + 1 - axis].
 	(axis > self nDim)|( axis < 1 )ifTrue:[ MlShapeError signal:'Axis is higher than nDim']. 
 
 	"the operation 'aSymbol' should return the same number of elements"
@@ -2174,7 +2174,7 @@ MlArray >> reduce: aSymbol axis: anAxis arguments: args [
 	| axis results newShape instance realAxis|
 	realAxis := self getAxisNumberFromStandard: anAxis.
 	axis := self nDim - anAxis.
-	axis < 0 ifTrue:[ axis := self shape last + 1 - axis].
+	axis < 0 ifTrue:[ axis := self width + 1 - axis].
 	(axis > self nDim)|( axis < 1 )ifTrue:[ MlShapeError signal:'Axis is higher than nDim']. 
 
 	"the operation 'aSymbol' should reduce the collection to 1, i.e. mean, std..."
@@ -2273,7 +2273,7 @@ MlArray >> resortByColumn: indexOrNameOfColumn where: aBlock [
 MlArray >> rowsDo: aTwoArgBlock [
 	| slice |
 	self walkWhile:[:l :s| l < (self nDim - 1)]  when:[:l :s| l = (self nDim - 1)]  do: [:l :s| 
-		slice := (s deepCopy at: self nDim put:1@self shape last;yourself).
+		slice := (s deepCopy at: self nDim put:1@self width;yourself).
 		aTwoArgBlock 
 		valueWithEnoughArguments: {  
 			((self slice: slice copy:true) reshape: {(self shape at: self nDim )}).
@@ -2581,7 +2581,7 @@ MlArray >> weightForAxis: anAxis [
 	^ w
 ]
 
-{ #category : #printing }
+{ #category : #accessing }
 MlArray >> width [ 
 	^ self shape last
 ]

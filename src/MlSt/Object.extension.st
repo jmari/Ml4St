@@ -11,6 +11,11 @@ Object >> isMlTreeNode [
 ]
 
 { #category : #'*MlSt' }
+Object >> isNonContinuousVector [
+	^ false
+]
+
+{ #category : #'*MlSt' }
 Object >> isSlice [ 	
 	^ false
 ]

@@ -60,7 +60,8 @@ MlNonContinuousVector class >> newFromArray: bufferObject [
 MlNonContinuousVector >> * anArray [
 	| instance |
 	^ (anArray isNumber not and:[self isSliced not & anArray isSliced not] )
-	ifTrue:[self class newFromArray:(self buffer * anArray buffer)]
+	ifTrue:[self class newFromArray:(self buffer * 
+		(anArray isNonContinuousVector ifTrue:[anArray buffer] ifFalse:[anArray]))]
 	ifFalse:[ 
 		instance := self class new:self size.
 		1 to:self size do:[:i| instance at:i put:((self at:i) * 
@@ -80,7 +81,8 @@ MlNonContinuousVector >> ** anIntOrArray [
 { #category : #'accumulator ops' }
 MlNonContinuousVector >> *= anArray [
 	(anArray isNumber not and:[self isSliced not & anArray isSliced not] )
-	ifTrue:[self class newFromArray:(self buffer *= anArray buffer)]
+	ifTrue:[self class newFromArray:(self buffer *=  
+		(anArray isNonContinuousVector ifTrue:[anArray buffer] ifFalse:[anArray]))]
 	ifFalse:[ 1 to:self size do:[:i| self at:i put:((self at:i) * 
 				(anArray isNumber ifTrue:[anArray] ifFalse:[anArray at:i]))]]
 
@@ -90,7 +92,8 @@ MlNonContinuousVector >> *= anArray [
 MlNonContinuousVector >> + anArray [
 	| instance |
 	^ (anArray isNumber not and:[self isSliced not & anArray isSliced not] )
-	ifTrue:[self class newFromArray:(self buffer + anArray buffer)]
+	ifTrue:[self class newFromArray:(self buffer + 
+		(anArray isNonContinuousVector ifTrue:[anArray buffer] ifFalse:[anArray]))]
 	ifFalse:[ 
 		instance := self class new:self size.
 		1 to:self size do:[:i| instance at:i put:((self at:i) + 			
@@ -101,7 +104,8 @@ MlNonContinuousVector >> + anArray [
 { #category : #'accumulator ops' }
 MlNonContinuousVector >> += anArray [
 	(anArray isNumber not and:[self isSliced not & anArray isSliced not] )
-	ifTrue:[self class newFromArray:(self buffer += anArray buffer)]
+	ifTrue:[self class newFromArray:(self buffer += 
+		(anArray isNonContinuousVector ifTrue:[anArray buffer] ifFalse:[anArray]))]
 	ifFalse:[ 1 to:self size do:[:i| self at:i put:((self at:i) + 
 				(anArray isNumber ifTrue:[anArray] ifFalse:[anArray at:i]))]]
 ]
@@ -109,7 +113,8 @@ MlNonContinuousVector >> += anArray [
 { #category : #'accumulator ops' }
 MlNonContinuousVector >> , anArray [
 	^ (anArray isNumber not and:[self isSliced not & anArray isSliced not] )
-		ifTrue:[self class newFromArray:(self buffer , anArray)]
+		ifTrue:[self class newFromArray:(self buffer , 
+			(anArray isNonContinuousVector ifTrue:[anArray buffer] ifFalse:[anArray]))]
 		ifFalse:[
 			self class newFromArray:(
 		  		self copyReplaceFrom: self size + 1
@@ -121,7 +126,8 @@ MlNonContinuousVector >> , anArray [
 { #category : #'accumulator ops' }
 MlNonContinuousVector >> -= anArray [
 	(anArray isNumber not and:[self isSliced not & anArray isSliced not] )
-	ifTrue:[self class newFromArray:(self buffer -= anArray buffer)]
+	ifTrue:[self class newFromArray:(self buffer -= 
+		(anArray isNonContinuousVector ifTrue:[anArray buffer] ifFalse:[anArray]))]
 	ifFalse:[ 1 to:self size do:[:i| self at:i put:((self at:i) - 
 				(anArray isNumber ifTrue:[anArray] ifFalse:[anArray at:i]))]]
 ]
@@ -129,7 +135,8 @@ MlNonContinuousVector >> -= anArray [
 { #category : #'accumulator ops' }
 MlNonContinuousVector >> /= anArray [
 	(anArray isNumber not and:[self isSliced not & anArray isSliced not] )
-	ifTrue:[self class newFromArray:(self buffer /= anArray buffer)]
+	ifTrue:[self class newFromArray:(self buffer /= 
+		(anArray isNonContinuousVector ifTrue:[anArray buffer] ifFalse:[anArray]))]
 	ifFalse:[ 1 to:self size do:[:i| self at:i put:((self at:i) / 
 				(anArray isNumber ifTrue:[anArray] ifFalse:[anArray at:i]))]]
 ]
@@ -137,7 +144,8 @@ MlNonContinuousVector >> /= anArray [
 { #category : #'accumulator ops' }
 MlNonContinuousVector >> \\= anArray [
 	(anArray isNumber not and:[self isSliced not & anArray isSliced not] )
-	ifTrue:[self class newFromArray:(self buffer \\= anArray buffer)]
+	ifTrue:[self class newFromArray:(self buffer \\= 
+		(anArray isNonContinuousVector ifTrue:[anArray buffer] ifFalse:[anArray]))]
 	ifFalse:[ 1 to:self size do:[:i| self at:i put:((self at:i) \\ 
 				(anArray isNumber ifTrue:[anArray] ifFalse:[anArray at:i]))]]
 ]
@@ -306,6 +314,11 @@ MlNonContinuousVector >> initialize [
 
 	
 	
+]
+
+{ #category : #testing }
+MlNonContinuousVector >> isNonContinuousVector [
+	^ true
 ]
 
 { #category : #testing }
