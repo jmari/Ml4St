@@ -1628,7 +1628,7 @@ MlArray >> groupBy: anAssociation aggregate: aBlock storeCallbackValue: includeK
 	agValues := agValues collect:[:v|(self labelsDictAt: (self nDim )) translate:v].
 
 	aggregate := Dictionary new.
-	(1 to: (self shape at: self nDim -1)) doWithIndex:[:k :i|
+	(1 to: self length) doWithIndex:[:k :i|
 		values := self slice:{i. agValues}.	
 		groupingKey:= agKeys isBlock 
 										ifTrue:[(agKeys value:((self slice:{i. _}) reshaped:{-1})) 
@@ -2132,20 +2132,6 @@ MlArray >> printString [
 	^ s contents
 ]
 
-{ #category : #printing }
-MlArray >> printString2 [
-	"TODO provisional"
-	|s maxPad reshapedArray|
-	s := WriteStream on: String new.
-	maxPad := 10.
-	reshapedArray := self reshaped:{-1,(self shape at: self nDim)}. 
-	reshapedArray := reshapedArray slice:{ ((1 to: self maxRowToPrint) , (( self length - self maxRowToPrint) to:self length)).
-													  ((1 to: self maxRowToPrint) , (( self width - self maxRowToPrint) to:self width))}.
-	
-	self printOn:s axis: OrderedCollection new maxPad:maxPad.
-	^ s contents
-]
-
 { #category : #'reduce operations' }
 MlArray >> quartiles [
 	^ self internalArray quartiles
@@ -2276,7 +2262,7 @@ MlArray >> rowsDo: aTwoArgBlock [
 		slice := (s deepCopy at: self nDim put:1@self width;yourself).
 		aTwoArgBlock 
 		valueWithEnoughArguments: {  
-			((self slice: slice copy:true) reshape: {(self shape at: self nDim )}).
+			((self slice: slice copy:true) reshape: {self width}).
 			slice}
 			]
 	
