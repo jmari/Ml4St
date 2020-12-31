@@ -1289,14 +1289,14 @@ MlArray >> count: aBlock onAxis: axis [
 { #category : #'private-slicing' }
 MlArray >> createNewSlicedInstance: indexes shape: newShape [
 
-	| newInstance i |
+	| newInstance i end|
 	
 	newInstance := self newInstanceButShaped: newShape.
 	i := 1.
 	(indexes sort:[:a :b| a first < b first]) do:[:each|
-			each first <= newInstance size ifTrue:[
-			newInstance internalArray  replaceFrom:i  to: (i + each size -1) with: self internalArray  startingAt: each first. 
-			i:=i + each size ]].
+			end := (i + each size -1). 
+			newInstance internalArray  replaceFrom:i  to: end with: self internalArray  startingAt: each first. 
+			i:=i + each size ].
 	^ newInstance 
 ]
 
@@ -1382,19 +1382,19 @@ MlArray >> doWithIndex: aBlock [
 MlArray >> dot: aMlArray [
 	| reshapedArray array shape2 i j jump result rowNumber tmp newShape numberOfRows |
 	shape2 := aMlArray shape deepCopy.
-	reshapedArray := aMlArray reshaped:{-1. shape2 last}.
-	i:=1.j:= shape2 at:(shape size - 1).
+	reshapedArray := aMlArray reshaped:{-1. aMlArray width}.
+	i:=1.j:= aMlArray length.
 	jump := j.
 	rowNumber := 1.
-	numberOfRows := self shape at:( self shape size - 1).
-	result := self newInstanceButShaped: {((self calculateNewShape: {-1. self shape last}) first). shape2 last}. 	
+	numberOfRows := self length.
+	result := self newInstanceButShaped: {((self calculateNewShape: {-1. self width}) first). aMlArray width}. 	
 	array := reshapedArray slice: {i@j. _}.
 	self rowsDo:[:row :rslice|		
 			array columnsDo:[:column :cslice|
 				tmp := (row internalArray dot: column internalArray).
 				result at:{rowNumber. cslice last} put: tmp].
 			
-			(rowNumber % numberOfRows = 0)
+			((rowNumber % numberOfRows = 0) & (i + jump < reshapedArray length))
 			ifTrue:[
 				i := i + jump.
 				j := j + jump.
@@ -2084,7 +2084,7 @@ MlArray >> printOn: aStream axis: axisCollection maxPad: maxPad [
 		lastA := interval first.
 		interval do:[:a| 
 			axisCollection add:a.
-			"in 1d array index should be an index otherwise it returns an slide {1. 3} b.e"
+			"in 1d array index should be an index otherwise it returns an slide {1. 3} i.e"
 			element := self at: (self nDim = 1 ifTrue:[axisCollection first] ifFalse:[axisCollection asArray]).
 			aStream nextPutAll: ((element isInteger|element isFloat) 
 				ifTrue:[ element printPaddedWith: Character space to: maxPad]
@@ -2127,6 +2127,20 @@ MlArray >> printString [
 	|s maxPad|
 	s := WriteStream on: String new.
 	[  maxPad := ((self max asInteger asString size) + 2)] on:Exception do:[maxPad := 10].
+	
+	self printOn:s axis: OrderedCollection new maxPad:maxPad.
+	^ s contents
+]
+
+{ #category : #printing }
+MlArray >> printString2 [
+	"TODO provisional"
+	|s maxPad reshapedArray|
+	s := WriteStream on: String new.
+	maxPad := 10.
+	reshapedArray := self reshaped:{-1,(self shape at: self nDim)}. 
+	reshapedArray := reshapedArray slice:{ ((1 to: self maxRowToPrint) , (( self length - self maxRowToPrint) to:self length)).
+													  ((1 to: self maxRowToPrint) , (( self width - self maxRowToPrint) to:self width))}.
 	
 	self printOn:s axis: OrderedCollection new maxPad:maxPad.
 	^ s contents
@@ -2323,8 +2337,6 @@ MlArray >> slice: aSliceArray [
 
 { #category : #'private-slicing' }
 MlArray >> slice: aSliceArray copy: makeCopy [
-
-
 	| slice list indexes newShape startLevel newInstance |
 	
 	slice := self completeSlice: aSliceArray.
@@ -2567,6 +2579,11 @@ MlArray >> weightForAxis: anAxis [
 		anAxis = self nDim ifTrue:[^ 1]. "row dim weight is 1"
 		w:= (axis +1 to: self nDim) inject:1 into:[:mul :e|  mul * (self shape at:e)]].
 	^ w
+]
+
+{ #category : #printing }
+MlArray >> width [ 
+	^ self shape last
 ]
 
 { #category : #'binary operations' }

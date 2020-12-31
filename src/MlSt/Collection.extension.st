@@ -66,6 +66,15 @@ Collection >> differentiate: step times: times [
 ]
 
 { #category : #'*MlSt' }
+Collection >> dot: anArray [
+	| sum |
+	sum := 0.
+	1 to:self size do:[:i| sum := sum + ((self at:i) * (anArray at:i))].
+	^ sum
+		
+]
+
+{ #category : #'*MlSt' }
 Collection >> kurtosis [
 	| meanAndStd  kurtosis n m4|
 	n:= self size.
