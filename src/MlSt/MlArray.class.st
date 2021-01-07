@@ -202,9 +202,11 @@ MlArray class >> concatArrays:  aMlArraysCollection axis: standarAxisNumber [
 					put: (aMlArraysCollection inject:0 into:[:sum :each| (each shape at:axis) + sum]);
 		yourself) .			
 	"add labels and init dictionary of jumps"		
-	dictOfJumps := Dictionary new.												
+	dictOfJumps := Dictionary new.	
+	(instance labelsDictAt: axis) removeAll.											
 	aMlArraysCollection do:[:each| 
 		dictOfJumps at: each identityHash put: 1.
+		
 		(instance labelsDictAt: axis) addAll:(each labelsDictAt: axis)].
 		 													
 	i:=1.
@@ -656,8 +658,19 @@ MlArray class >> random: aShape seed: aSeed [
 	| instance generator  |
 	instance := self new: aShape.
 	generator := Random new seed:aSeed.
-	1 to: instance size do:[:i|  instance internalArray at: i put: ((100 atRandom: generator) / 100 ) asFloat ].
+	1 to: instance size do:[:i|  instance internalArray at: i put: ((SmallInteger maxVal  atRandom: generator) asFloat  / (SmallInteger maxVal ) asFloat  ) ].
 	instance dType: #Float.
+	^instance
+]
+
+{ #category : #'instance creation' }
+MlArray class >> randomInt: aShape [ 
+	| instance generator aSeed |
+	instance := self new: aShape.
+	aSeed:= Time now asMilliSeconds.
+	generator := Random new seed:aSeed.
+	1 to: instance size do:[:i|  instance internalArray at: i put: (100 atRandom: generator)  ].
+	instance dType: #Integer.
 	^instance
 ]
 
@@ -981,8 +994,8 @@ MlArray >> at: anObject [
 	"aBlock returns a boolean MlArray of execution of eval 
 	 over the internal array, we can not know the shape of the execution..."
 	anObject isBlock ifTrue:[^ self eval:anObject].
-	"if nDim = 1 an array is a slice"
 	
+	"if nDim = 1 an array is a slice"
 	anArrayOfInt := (self nDim = 1 & (anObject isArray)  
 								and:[anObject notEmpty 
 								and:[anObject first isArray not & (anObject isNotNil)]]) 
@@ -1001,7 +1014,8 @@ MlArray >> at: anObject [
 		ifFalse:[
 			"changes -1 by the last element"
 			anArrayOfInt := anArrayOfInt collectWithIndex:[:e :i| e < 0 ifTrue:[(self shape at:i) + e + 1] ifFalse:[e]].
-			(self validateAddress: anArrayOfInt) ifFalse:[MlShapeError signal:'Position is not valid for this shape']. "get the address in the 1D internalArray"
+			self validateAddress: anArrayOfInt.
+			"get the address in the 1D internalArray"
 			address := self getAddressForPoint:anArrayOfInt.
 			^ self internalArray at:address]
 ]
@@ -1060,7 +1074,7 @@ MlArray >> at: anObject put: aValue [
 		ifFalse:[
 			"changes -1 by the last element"
 			anArrayOfInt := anArrayOfInt collectWithIndex:[:e :i| e < 0 ifTrue:[(self shape at:i) + e + 1] ifFalse:[e]].
-			(self validateAddress: anArrayOfInt) ifFalse:[MlShapeError signal:'Position is not valid for this shape'].
+			self validateAddress: anArrayOfInt.
 			address := self getAddressForPoint:anArrayOfInt.
 			^ [  self internalArray at:address put: aValue] on: Exception do:[self internalArray at:address put: Float nan]]
 	
@@ -1120,9 +1134,7 @@ MlArray >> classForType: aType [
 					  #Word -> WordArray .
 					  #DoubleWord -> DoubleWordArray.
 					  #DoubleByte -> DoubleByteArray .
-					  #Byte -> ByteArray.
-					  #UFFIFloat->MlFloatArray.
-					  #UFFIInteger->MlIntArray} asDictionary.
+					  #Byte -> ByteArray} asDictionary.
 	^ dTypeDic at:aType ifAbsent:[Array]
 ]
 
@@ -1534,7 +1546,7 @@ MlArray >> gini: featuresTargetAssociation [
 	(features->target_name):
     1. split_attribute_name = the name of the feature for which the information gain should be calculated
     2. target_name = the name of the target feature."
-	|giniIndices featuresTarget p length sum target featureName lengthVentor onesVector  mInverse |
+	|giniIndices featuresTarget p length target featureName lengthVector  mInverse sumDictionary gini opsymbol probInverse |
 
 	featuresTarget := (featuresTargetAssociation key isArray) 
 		ifTrue:[ featuresTargetAssociation]
@@ -1543,39 +1555,36 @@ MlArray >> gini: featuresTargetAssociation [
 	giniIndices :=OrderedDictionary new.
 	p:= (self at:{_. featuresTargetAssociation value}) uniqueAndCount.
 	length := self length.
-	sum := 0.
+
 	"for each feature"
 	featuresTarget key do:[:feature	|
 		target := featuresTargetAssociation value.
 		featureName := feature asString.
+		sumDictionary := Dictionary new.
+
 		self groupBy: target ->feature
 			  aggregate:[:k :v| 
 				"probability of k"
 				|prob giniIndex m|
 				"k is a noncontinuousvector with the key (k first)"
 				"p is a MlArray containing count x category #(#(categories) #(count))"
-				prob:=(p at:{ 2. ((p at:{1. _}) = k first)}) first / length.
-	
+				prob:=(p at:(k first asString)) / length.
+				probInverse:=(length - (p at:(k first asString))) / length.
 				m := v first isFloat 
-											ifTrue:[v thresholdForEach ]
-											ifFalse:[v uniqueAndCount  ].
-				"ucount := v uniqueAndCount at:{2. _}."
-				v first isFloat 
-				ifTrue:[ 
-					lengthVentor := self class new: m shape withAll:v length.
-					onesVector := self class ones: m shape.
-					mInverse := lengthVentor - m.
-					giniIndex := onesVector - (( m / v length)**2)+(( mInverse / v length)**2).
-					self halt."eso esta mal xq el vector no tiene todos los elementos"
-					sum:= (prob * giniIndex) + sum ]
-				ifFalse:[
-					giniIndex := 1 - (( m / v length)**2) sum.
-					sum:= sum + (prob * giniIndex)].
-				]
+											ifTrue:[opsymbol:='>='.v thresholdForEach ]
+											ifFalse:[opsymbol:='='.v uniqueAndCount  ].
+				
+				lengthVector := self class new: m shape withAll:v length.
+				mInverse := lengthVector - m.
+				giniIndex := (prob *(( m / v length)**2))+(probInverse * (( mInverse / v length)**2)).
+				giniIndex setLabels: (m getLabelsOnAxis:1) onAxis:1.			
+				(m getLabelsOnAxis:1) do:[:label| 
+					sumDictionary at: label incrementBy: (giniIndex at:label)]]
 			  storeCallbackValue: false.
-		giniIndices at: featureName put:sum.
-		sum:=0].
-	giniIndices := self class from: giniIndices values.
+		gini := (sumDictionary associationAt:(sumDictionary keyAtValue: sumDictionary max)).
+		giniIndices at: ('''', featureName,'''',opsymbol,gini key ) put:(1 - gini value).
+		].
+	giniIndices := self class from: {giniIndices keys. giniIndices values}.
 	^ giniIndices
 ]
 
@@ -1642,7 +1651,7 @@ MlArray >> groupBy: anAssociation aggregate: aBlock storeCallbackValue: includeK
 		val := aBlock value:k value:v.
 		r add:( val isMlArray ifTrue:[val as1DArray] ifFalse:[{val}]	)]. 
 		"if there is only one column in right side it will return an Object, 
-		and it should be always an array or a MlArray, becouse r should be a 2D column stacked array"
+		and it should be always an array or a MlArray, because r should be a 2D column stacked array"
 	includeKeyCol ifTrue:[
 		keyRows := self class from: aggregate keys order: self order dType:#Object.
 		valueRows := self class from: r  order: self order dType:#Object.	
@@ -1656,31 +1665,7 @@ MlArray >> groupBy: anAssociation aggregate: aBlock storeCallbackValue: includeK
 
 { #category : #accessing }
 MlArray >> indexOf: anObject [
-	| linearIndex tmpIndex |
-	linearIndex := self internalArray indexOf: anObject.
-	
-	^ self nDim = 1 
-			ifTrue:[linearIndex] 
-			ifFalse:[
-				tmpIndex := Array new: self nDim withAll:1.
-				self indexOf: linearIndex index: tmpIndex level:1 sum:0.
-				tmpIndex]
-]
-
-{ #category : #accessing }
-MlArray >> indexOf: anAddress index: anArray level:l sum:s [
-	| axisLength i sum |
-	axisLength := self shape at:l. 
-	i :=0.
-	sum := s.
-	[ anAddress > sum ] whileTrue:[ 
-		sum := sum + axisLength.
-		anArray at:l put:i.
-		i := i+1].
-	l < (self nDim) 
-	  	ifTrue:[ self indexOf: anAddress index: anArray level: (l+1) sum: (sum - axisLength)]
-	  
-	
+	^ self sliceForAddress: (self internalArray indexOf: anObject)
 ]
 
 { #category : #utility }
@@ -1827,6 +1812,21 @@ MlArray >> log: base [
 	^ i
 ]
 
+{ #category : #enumerating }
+MlArray >> matricesDo: aTwoArgBlock [
+	| slice |
+	self nDim < 3 ifTrue:[aTwoArgBlock valueWithEnoughArguments: {self} ]
+	ifFalse:[
+	self walkWhile:[:l :s| l < (self nDim - 1)]  when:[:l :s| l = (self nDim - 2)]  do: [:l :s| 
+		slice := (s deepCopy at: self nDim put:1@self width;at: (self nDim -1) put:1@self length;yourself).
+		aTwoArgBlock 
+		valueWithEnoughArguments: {  
+			(self slice: slice copy:true).
+			slice}
+			]
+	]
+]
+
 { #category : #'reduce operations' }
 MlArray >> max [ 
 	^ self internalArray max
@@ -1839,7 +1839,7 @@ MlArray >> max: axis [
 
 { #category : #printing }
 MlArray >> maxElementsToPrint [
-	^ maxElementsToPrint ifNil:[maxElementsToPrint := 10]
+	^ maxElementsToPrint ifNil:[maxElementsToPrint := 50]
 ]
 
 { #category : #printing }
@@ -2063,72 +2063,67 @@ MlArray >> performBinaryOp: op on: aMlArray withArguments:args [
 ]
 
 { #category : #printing }
-MlArray >> printOn: aStream axis: axisCollection maxPad: maxPad [
-	| axistmp axis lenghtOfDimension interval  lastA  printPoints element |
-	"axisCollection is Empty in the first call"
-	axis := (axisCollection size +1 ).
-	"is last axis"	
-	printPoints := false.
-	lastA:=0.
-	axis = self nDim 
-	ifTrue:[	
-		aStream nextPut: Character tab;nextPut:$[.
-		lenghtOfDimension := (self shape at: axis).
-		interval := (lenghtOfDimension < (2 * self maxElementsToPrint+1) ) 
-			ifTrue:[1 to:lenghtOfDimension]
-			ifFalse:[
-				printPoints := true.
-				(1 to:self maxElementsToPrint ),
-				(( lenghtOfDimension- self maxElementsToPrint ) to:lenghtOfDimension) ].		
-		
-		lastA := interval first.
-		interval do:[:a| 
-			axisCollection add:a.
-			"in 1d array index should be an index otherwise it returns an slide {1. 3} i.e"
-			element := self at: (self nDim = 1 ifTrue:[axisCollection first] ifFalse:[axisCollection asArray]).
-			aStream nextPutAll: ((element isInteger|element isFloat) 
-				ifTrue:[ element printPaddedWith: Character space to: maxPad]
-				ifFalse:[ element asString ]).
-			a = lenghtOfDimension ifFalse:[aStream nextPut:$,].
-			(printPoints and:[a -lastA >1 ]) ifTrue:[aStream nextPutAll:'...'] .
-			lastA := a.
-			axisCollection removeLast.
-			].
-		aStream nextPut:$]; nextPut: Character tab.
-		axistmp :=(self shape copyFrom: 1 to: axisCollection size).
-		axisCollection asArray=  axistmp ifFalse:[aStream cr]]
-	ifFalse:[
-		aStream nextPut:$[.
-		lenghtOfDimension := (self shape at: axis).
-		interval := (lenghtOfDimension < (2 * self maxElementsToPrint + 1) ) 
-			ifTrue:[1 to:lenghtOfDimension]
-			ifFalse:[
-				printPoints := true.
-				(1 to:self maxElementsToPrint ),
-				(( lenghtOfDimension- self maxElementsToPrint ) to:lenghtOfDimension) ].
-		lastA := interval first.
-		interval do:[:a|		
-			axisCollection add:a.
-			self printOn: aStream axis: axisCollection maxPad: maxPad.
-			(printPoints and:[a-lastA >1 ]) ifTrue:[aStream nextPut:$.;cr;nextPut:$.;cr;nextPut:$.;cr] .
-			lastA := a.
-			axisCollection removeLast.
-		].
-		aStream nextPut:$].
-	].
+MlArray >> printElement: element pad:maxPad [
+	^((element isInteger|element isFloat) 
+						ifTrue:[ element printShowingDecimalPlaces: maxPad]
+						ifFalse:[ element asString ]).
+]
 
-		
+{ #category : #printing }
+MlArray >> printOn: aStream maxPad: maxPad level: l [
+	| printedRows totalRows i |
+	l <= (self nDim - 1)
+		ifTrue: [ aStream nextPut: $[.
+			self printOn: aStream maxPad: maxPad level: l + 1 ]
+		ifFalse: [ printedRows := i := 0.
+			totalRows := (self
+				calculateNewShape:
+					{-1.
+					self width}) first.
+			self
+				matricesDo: [ :matrix | 
+					matrix
+						rowsDo: [ :row | 
+							"this is ugly...doing the loop without printing"
+							printedRows < (self maxElementsToPrint / 2)
+								| (i > (totalRows - (self maxElementsToPrint / 2)))
+								ifTrue: [ self printOn: aStream row: row pad: maxPad.
+									printedRows := printedRows + 1 ].
+							printedRows >= (self maxElementsToPrint / 2)
+								& (i = ((self maxElementsToPrint / 2) asInteger + 1))
+								ifTrue: [ aStream cr;	nextPutAll: '...';cr ].
+							i := i + 1 ].
+					self nDim > 2 ifTrue: [ aStream nextPut: $] ] ] ].
+	l <= (self nDim - 1) ifTrue: [ aStream nextPut: $] ]
+]
 
+{ #category : #printing }
+MlArray >> printOn: aStream row: row pad:maxPad [
+	aStream nextPut:$[;nextPut:Character tab.
+				(row size > self maxElementsToPrint ) 
+				ifTrue:[
+					(1 to:self maxElementsToPrint / 2 ) do:[:i| 
+						aStream nextPutAll: (self printElement:(row at:i) pad:maxPad );nextPut:$,;nextPut:Character tab]
+				] 
+				ifFalse:[(1 to:row size ) do:[:i| 
+						aStream nextPutAll: (self printElement:(row at:i) pad:maxPad ).
+						i = row size ifFalse:[aStream nextPut:$,;nextPut:Character tab]]].
+				(row size > self maxElementsToPrint ) ifTrue:[
+					aStream nextPutAll:' ... ,'.
+					((row size - (self maxElementsToPrint / 2 )) to: row size) 
+					do:[:i| 
+						aStream nextPutAll: (self printElement:(row at:i) pad:maxPad ).
+						i = row size ifFalse:[aStream nextPut:$,;nextPut:Character tab]].
+									].
+				aStream nextPut:$];nextPut:Character cr.
 ]
 
 { #category : #printing }
 MlArray >> printString [
 	"TODO provisional"
-	|s maxPad|
+	|s |
 	s := WriteStream on: String new.
-	[  maxPad := ((self max asInteger asString size) + 2)] on:Exception do:[maxPad := 10].
-	
-	self printOn:s axis: OrderedCollection new maxPad:maxPad.
+	self printOn:s maxPad:5 level:1.
 	^ s contents
 ]
 
@@ -2258,6 +2253,8 @@ MlArray >> resortByColumn: indexOrNameOfColumn where: aBlock [
 { #category : #enumerating }
 MlArray >> rowsDo: aTwoArgBlock [
 	| slice |
+	self nDim < 2 ifTrue:[aTwoArgBlock valueWithEnoughArguments: {self} ]
+	ifFalse:[
 	self walkWhile:[:l :s| l < (self nDim - 1)]  when:[:l :s| l = (self nDim - 1)]  do: [:l :s| 
 		slice := (s deepCopy at: self nDim put:1@self width;yourself).
 		aTwoArgBlock 
@@ -2265,7 +2262,7 @@ MlArray >> rowsDo: aTwoArgBlock [
 			((self slice: slice copy:true) reshape: {self width}).
 			slice}
 			]
-	
+	]
 ]
 
 { #category : #enumerating }
@@ -2293,6 +2290,10 @@ MlArray >> shape [
 
 { #category : #'private-accessing' }
 MlArray >> shape: anArrayOfInt [
+	(shape notNil and:[anArrayOfInt size = 1 & (shape size > 1)])  ifTrue:[ 
+		self labelsDict size >2 ifTrue:[
+			self labelsDict at:1 put: (self labelsDict at:2). 
+			self labelsDict removeKey:2 ]].
 	shape := anArrayOfInt asArray
 ]
 
@@ -2350,6 +2351,28 @@ MlArray >> slice: aSliceArray copy: makeCopy [
 	newInstance := newInstance sliceUsingBooleanFilter: aSliceArray.
 
 	^newInstance 
+]
+
+{ #category : #accessing }
+MlArray >> sliceForAddress: anInteger [
+	| linearIndex tmpIndex blockWeight loop blocksize |
+	"the loop should be from the slower changing axis to the faster changing axis"
+	linearIndex := anInteger - 1.
+	
+	tmpIndex := (self nDim = 1 )
+			ifTrue:[linearIndex + 1] 
+			ifFalse:[
+				tmpIndex := Array new: self nDim withAll:0.
+				loop := (self order =#F)  ifTrue:[{self nDim} , (1 to:(self nDim -1))] ifFalse:[1 to: self nDim ].
+				loop do:[:i|
+					blockWeight := (self weightForAxis:i).
+					blocksize := (linearIndex / blockWeight) asInteger.
+					tmpIndex at:i put:blocksize .
+					linearIndex := linearIndex  - (blocksize * blockWeight)].
+					tmpIndex + 1.
+				].
+
+	^tmpIndex
 ]
 
 { #category : #'private-labeling' }
@@ -2455,9 +2478,9 @@ MlArray >> thresholdForEach [
 	unique := Dictionary new.
 	self internalArray do:[:each| 
 		categories do:[:cat|
-			unique at:('<=',each asString) incrementBy: (cat <= each ifTrue:[1] ifFalse:[0])]].
+			unique at:(each asString) incrementBy: (cat <= each ifTrue:[1] ifFalse:[0])]].
 
-	^ (self class from:(Array with:unique values ) order:self order) setLabels: unique keys onAxis: 1 
+	^ (self class from:unique values  order:self order) setLabels: unique keys onAxis: 1 
 	
 ]
 
@@ -2492,20 +2515,24 @@ MlArray >> unique [
 
 { #category : #'reduce operations' }
 MlArray >> uniqueAndCount [
-	|unique|
+	|unique instance |
 	unique := Dictionary new.
 	self internalArray do:[:each| unique at:each incrementBy: 1 ].
-	^ self class from:(Array with:unique keys with:unique values ) order:self order
+	instance := self class from: unique values  order:self order.
+	instance setLabels: unique keys onAxis:1.
+	^instance
 	
 ]
 
 { #category : #'private-accessing' }
 MlArray >> validateAddress: anArrayOfInt [
-	(anArrayOfInt size = self nDim ) ifFalse:[^false].
+	"check if a point is in the domain space"
+	(anArrayOfInt size = self nDim ) ifFalse:[MlShapeError signal:'Position is not valid for this shape'].
 	self shape doWithIndex:[:e :i| 
 		(anArrayOfInt at:i) isInteger ifFalse:[MlIndexTypeError signal].
-		(e >= (anArrayOfInt at:i) and:[(anArrayOfInt at:i)>0]) ifFalse:[^false]].
-	^ true.
+		(e >= (anArrayOfInt at:i) and:[(anArrayOfInt at:i)>0]) 
+		ifFalse:[MlShapeError signal:'Position is not valid for this shape']].
+
 		
 ]
 
@@ -2522,7 +2549,17 @@ MlArray >> variance: axis [
 
 { #category : #'private-enumerating' }
 MlArray >> walkLevel:l slice: s while: aWhileBlock when: aConditionBlock do: aBlock [ 
-	"recursive call to walk the axes in order"
+	"recursive call to walk the axes in order, it passes two parameter to the block, l:level s: slice.
+	aWhileBlock, if true it follows the recursion tree.
+	aConditionBlock, ifTrue executes aBlock. 
+	i.e. 3d shape:
+	l=3 s=1 1 1
+	l=3 s=1 1 2 
+	l=3 s=1 1 3
+	l=3 s=1 2 1 
+	l=3 s=1 2 2
+	l=3 s=1 2 3
+	..."
 
 	1 to: (self shape at: l) do:[:i| 
 		s at:l put: i.
@@ -2549,8 +2586,9 @@ MlArray >> walkWhile: aWhileBlock when: aConditionBlock do: aBlock [
 { #category : #enumerating }
 MlArray >> weightForAxis: anAxis [
 	| w  axis|
-	"In #F order, if anAxis is the last axis weight is the product of all of the inner shapes, otherwise weight is product of all of the outer   	shapes.
-	In #C order weight is always the product of all of the outer shapes"
+	"the weigth means the number of elements we have to jump in the internal vector to get next element in the same axis"
+	"In #F order, if anAxis is the last axis weight is the product of all of the inner axis length, otherwise weight is the product of all of the outer axes.
+	In #C order weight is always the product of all of the outer axes"
 	axis := anAxis.
 	axis < 1 ifTrue:[^ self size].
 	"one dimension so weight for any axis is 1"
@@ -2569,6 +2607,7 @@ MlArray >> weightForAxis: anAxis [
 
 { #category : #accessing }
 MlArray >> width [ 
+	"returns the number of elements in the column axis"
 	^ self shape last
 ]
 

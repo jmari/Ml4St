@@ -55,6 +55,18 @@ MlArrayPerformanceTest >> testBigDot [
 ]
 
 { #category : #tests }
+MlArrayPerformanceTest >> testGrouping [
+
+	| a b t |
+	a := MlArray  randomInt:{1000. 3}.
+	t:= [b := a groupBy: 1->{2. 3} aggregate:[:k :v| v sum:0]] timeToRun.
+	self assert:t <= (Duration milliSeconds:300).
+
+	t:= [b := a groupBy:[:row| (row at:1) > 50 ] ->{2. 3} aggregate:[:k :v| v sum:0]] timeToRun.
+	self assert:t <= (Duration milliSeconds:300).
+]
+
+{ #category : #tests }
 MlArrayPerformanceTest >> testMulArray [
 
 	| a b t|

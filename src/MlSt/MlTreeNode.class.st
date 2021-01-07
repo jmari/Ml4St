@@ -3,7 +3,8 @@ Class {
 	#superclass : #OrderedCollection,
 	#instVars : [
 		'featureName',
-		'infoGain'
+		'infoGain',
+		'conditionBlock'
 	],
 	#category : #'MlSt-Ensemble-RandomForestClassifier'
 }
@@ -11,6 +12,16 @@ Class {
 { #category : #'instance creation' }
 MlTreeNode class >> newFeatureName: fname infoGain: infogain [
 	^ self new featureName: fname; infoGain: infogain 
+]
+
+{ #category : #accessing }
+MlTreeNode >> conditionBlock [
+	^ conditionBlock 
+]
+
+{ #category : #accessing }
+MlTreeNode >> conditionBlock: aBlockReturnsBool [
+	conditionBlock := aBlockReturnsBool 
 ]
 
 { #category : #accessing }

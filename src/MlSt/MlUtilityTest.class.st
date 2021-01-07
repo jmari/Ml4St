@@ -20,7 +20,7 @@ MlUtilityTest >> testDecisionTree [
 							  #(#H10 #Sunny false #Rich #Tennis ) 
 							).
 	a setLabels:#(#Weekend #Weather #ParentalAvaliability #Wealthy #Decision) onAxis:1. 
-	b := MlDecisionTree new maxDepth:10."default gini"
+	b := MlDecisionTree new maxDepth:10.
 	c := b fit:(a at:{_. {#Weather. #ParentalAvaliability.  #Wealthy}}) 
 			 target: (a at:{_. #Decision}). 	
 	p := c predict: a.
@@ -29,7 +29,7 @@ MlUtilityTest >> testDecisionTree [
 	self assert: (r at:#accuracy) equals: 1.
 
 
-	b := MlDecisionTree new maxDepth:10; criterionEntropy.
+	b := MlDecisionTree new maxDepth:10.
 	c := b fit:(a at:{_. {#Weather. #ParentalAvaliability.  #Wealthy}}) 
 			 target: (a at:{_. #Decision}). 	
 	p := c predict: a.
@@ -54,7 +54,7 @@ MlUtilityTest >> testDecisionTreeContinuousVar [
 							  #(#H10 10.0 false #Rich #Tennis ) 
 							).
 	a setLabels:#(#Weekend #Weather #ParentalAvaliability #Wealthy #Decision) onAxis:1. 
-	b := MlDecisionTree new maxDepth:10."default gini"
+	b := MlDecisionTree new maxDepth:10;criterionGini.
 	c := b fit:(a at:{_. {#Weather. #ParentalAvaliability.  #Wealthy}}) 
 			 target: (a at:{_. #Decision}). 	
 	p := c predict: a.
@@ -118,37 +118,16 @@ MlUtilityTest >> testGiniIndex [
 	a setLabels:#(#pastTrend #openInterest #tradingVol #return) onAxis:1. 
 
 	b := a gini:#pastTrend->#return.
-	self assert: b first closeTo: 4/15.
+	self assert: (b at:2 at:1) closeTo: 16/45.
 	b := a gini:#openInterest->#return.
-	self assert: b first closeTo: 7/15.
+	self assert: (b at:2 at:1) closeTo: 79/180.
 	b := a gini:#tradingVol->#return.
-	self assert: b first  closeTo: 3/10.
+	self assert: (b at:2 at:1)  closeTo: 7/20.
 	b := a gini:#(#pastTrend #openInterest #tradingVol )->#return.
-	self assert:b closeTo: (MlArray from:{4/15. 7/15. 3/10}).	
+	self assert:(b at:2 at:_) closeTo: (MlArray from:{{16/45. 79/180. 7/20}}).	
 
 	
 							
-		
-]
-
-{ #category : #tests }
-MlUtilityTest >> testIndexOf [
-	| a b c |
-	a := MlArray from: #(
-							  #(#H1 #Sunny true #Rich #Cinema true) 
-							  #(#H2 #Sunny false #Rich #Tennis true) 
-							  #(#H3 #Windy true #Rich #Cinema true) 
-							  #(#H4 #Rainy true #Poor #Cinema true) 
-							  #(#H5 #Rainy false #Rich #Home true) 
-							  #(#H6 #Rainy true #Poor #Cinema true) 
-							  #(#H7 #Windy false #Poor #Cinema true) 
-							  #(#H8 #Windy false #Rich #Shopping true) 
-							  #(#H9 #Windy true #Rich #Cinema true)
-							  #(#H10 #Sunny false #Rich #Tennis true) 
-							).
-	self flag:#todo. "it is not working at all"
-	c := a indexOf:#H7	
-				
 		
 ]
 

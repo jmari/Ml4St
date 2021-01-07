@@ -18,6 +18,15 @@ MlArrayTest >> testAddDimension [
 ]
 
 { #category : #tests }
+MlArrayTest >> testAddressing [
+	|a|
+	a := MlArray random:{4. 2. 3. 7}.
+	Transcript clear.
+	1 to: a size do:[:add | Transcript show: (a sliceForAddress:add);cr]
+
+]
+
+{ #category : #tests }
 MlArrayTest >> testAsCArray [
 
 	| a b|
@@ -243,6 +252,49 @@ MlArrayTest >> testGroupingNDim [
 							  {'[ :row | (row at: 1) > 1 ]'. 8. 9 } .
 							  {'[ :row | (row at: 1) > 1 ]'. 15. 18 } .  }.
 	self assert: b equals:c.	
+]
+
+{ #category : #tests }
+MlArrayTest >> testIndexOf [
+	| a b c |
+	
+	a := MlArray from: #(
+							  #(#(#H1 #Sunny true #Rich #Cinema true) 
+							  #(#H2 #Sunny false #Rich #Tennis true) )
+							  #(#(#H3 #Windy true #Rich #Cinema true) 
+							  #(#H4 #Rainy true #Poor #Cinema true)) 
+							  #(#(#H5 #Rainy false #Rich #Home true) 
+							  #(#H6 #Rainy true #Poor #Cinema true) )
+							  #(#(#H7 #Windy false #Poor #Cinema true) 
+							  #(#H8 #Windy false #Rich #Shopping true))
+							  #(#(#H9 #Windy true #Rich #Cinema true)
+							  #(#H10 #Sunny false #Rich #Tennis true)) 
+							) order:#C. 
+	c := a indexOf:#H7.	
+	self assert:c equals:{4. 1. 1.}.
+	c := a indexOf:#Sunny.	
+	self assert:c equals:{1. 1. 2.}.				
+	c := a indexOf:#Shopping.	
+	self assert:c equals:{4. 2. 5.}.
+	
+	a := MlArray from: #(
+							  #(#(#H1 #Sunny true #Rich #Cinema true) 
+							  #(#H2 #Sunny false #Rich #Tennis true) )
+							  #(#(#H3 #Windy true #Rich #Cinema true) 
+							  #(#H4 #Rainy true #Poor #Cinema true)) 
+							  #(#(#H5 #Rainy false #Rich #Home true) 
+							  #(#H6 #Rainy true #Poor #Cinema true) )
+							  #(#(#H7 #Windy false #Poor #Cinema true) 
+							  #(#H8 #Windy false #Rich #Shopping true))
+							  #(#(#H9 #Windy true #Rich #Cinema true)
+							  #(#H10 #Sunny false #Rich #Tennis true)) 
+							). 
+	c := a indexOf:#H7.	
+	self assert:c equals:{4. 1. 1.}.
+	c := a indexOf:#Sunny.	
+	self assert:c equals:{1. 1. 2.}.				
+	c := a indexOf:#Shopping.	
+	self assert:c equals:{4. 2. 5.}		
 ]
 
 { #category : #tests }
