@@ -1168,7 +1168,7 @@ MlArray >> columnsDo: aTwoArgBlock [
 			slice := (s deepCopy at: (self nDim - 1 ) put:1@(self length);yourself).
 			aTwoArgBlock
 				valueWithEnoughArguments: {   
-				((self slice: slice copy:true) reshape: {self length}).
+				((self slice: slice) reshape: {self length}).
 				slice}
 			]
 	
@@ -1571,7 +1571,7 @@ MlArray >> gini: featuresTargetAssociation [
 				prob:=(p at:(k first asString)) / length.
 				probInverse:=(length - (p at:(k first asString))) / length.
 				m := v first isFloat 
-											ifTrue:[opsymbol:='>='.v thresholdForEach ]
+											ifTrue:[opsymbol:='<='.v thresholdForEach ]
 											ifFalse:[opsymbol:='='.v uniqueAndCount  ].
 				
 				lengthVector := self class new: m shape withAll:v length.
@@ -1582,7 +1582,7 @@ MlArray >> gini: featuresTargetAssociation [
 					sumDictionary at: label incrementBy: (giniIndex at:label)]]
 			  storeCallbackValue: false.
 		gini := (sumDictionary associationAt:(sumDictionary keyAtValue: sumDictionary max)).
-		giniIndices at: ('''', featureName,'''',opsymbol,gini key ) put:(1 - gini value).
+		giniIndices at: (featureName asString ,opsymbol,gini key ) put:(1 - gini value).
 		].
 	giniIndices := self class from: {giniIndices keys. giniIndices values}.
 	^ giniIndices
@@ -1821,7 +1821,7 @@ MlArray >> matricesDo: aTwoArgBlock [
 		slice := (s deepCopy at: self nDim put:1@self width;at: (self nDim -1) put:1@self length;yourself).
 		aTwoArgBlock 
 		valueWithEnoughArguments: {  
-			(self slice: slice copy:true).
+			(self slice: slice).
 			slice}
 			]
 	]
@@ -2062,28 +2062,23 @@ MlArray >> performBinaryOp: op on: aMlArray withArguments:args [
 	^ newInstance
 ]
 
-{ #category : #printing }
+{ #category : #'private-printing' }
 MlArray >> printElement: element pad:maxPad [
 	^((element isInteger|element isFloat) 
 						ifTrue:[ element printShowingDecimalPlaces: maxPad]
 						ifFalse:[ element asString ]).
 ]
 
-{ #category : #printing }
+{ #category : #'private-printing' }
 MlArray >> printOn: aStream maxPad: maxPad level: l [
 	| printedRows totalRows i |
 	l <= (self nDim - 1)
 		ifTrue: [ aStream nextPut: $[.
 			self printOn: aStream maxPad: maxPad level: l + 1 ]
 		ifFalse: [ printedRows := i := 0.
-			totalRows := (self
-				calculateNewShape:
-					{-1.
-					self width}) first.
-			self
-				matricesDo: [ :matrix | 
-					matrix
-						rowsDo: [ :row | 
+			totalRows := (self calculateNewShape:{-1.self width}) first.
+			self matricesDo: [ :matrix | 
+					matrix rowsDo: [ :row | 
 							"this is ugly...doing the loop without printing"
 							printedRows < (self maxElementsToPrint / 2)
 								| (i > (totalRows - (self maxElementsToPrint / 2)))
@@ -2097,7 +2092,7 @@ MlArray >> printOn: aStream maxPad: maxPad level: l [
 	l <= (self nDim - 1) ifTrue: [ aStream nextPut: $] ]
 ]
 
-{ #category : #printing }
+{ #category : #'private-printing' }
 MlArray >> printOn: aStream row: row pad:maxPad [
 	aStream nextPut:$[;nextPut:Character tab.
 				(row size > self maxElementsToPrint ) 
@@ -2123,6 +2118,7 @@ MlArray >> printString [
 	"TODO provisional"
 	|s |
 	s := WriteStream on: String new.
+
 	self printOn:s maxPad:5 level:1.
 	^ s contents
 ]
@@ -2253,13 +2249,13 @@ MlArray >> resortByColumn: indexOrNameOfColumn where: aBlock [
 { #category : #enumerating }
 MlArray >> rowsDo: aTwoArgBlock [
 	| slice |
-	self nDim < 2 ifTrue:[aTwoArgBlock valueWithEnoughArguments: {self} ]
+	self nDim = 1 ifTrue:[aTwoArgBlock valueWithEnoughArguments: {self} ]
 	ifFalse:[
 	self walkWhile:[:l :s| l < (self nDim - 1)]  when:[:l :s| l = (self nDim - 1)]  do: [:l :s| 
 		slice := (s deepCopy at: self nDim put:1@self width;yourself).
 		aTwoArgBlock 
 		valueWithEnoughArguments: {  
-			((self slice: slice copy:true) reshape: {self width}).
+			((self slice: slice) reshape: {self width}).
 			slice}
 			]
 	]
@@ -2585,23 +2581,22 @@ MlArray >> walkWhile: aWhileBlock when: aConditionBlock do: aBlock [
 
 { #category : #enumerating }
 MlArray >> weightForAxis: anAxis [
-	| w  axis|
+	| w |
 	"the weigth means the number of elements we have to jump in the internal vector to get next element in the same axis"
 	"In #F order, if anAxis is the last axis weight is the product of all of the inner axis length, otherwise weight is the product of all of the outer axes.
 	In #C order weight is always the product of all of the outer axes"
-	axis := anAxis.
-	axis < 1 ifTrue:[^ self size].
+	anAxis < 1 ifTrue:[^ self size].
 	"one dimension so weight for any axis is 1"
 	self nDim = 1 ifTrue:[^ 1]. 
 	self order=#F ifTrue:[  
 		anAxis = (self nDim - 1) ifTrue:[^ 1]. "column dim weight is 1"
 		w := anAxis = self nDim 
-				ifTrue:[ (1 to: axis -1)  inject:1 into:[:mul :e|  mul * (self shape at:e)]]
-				ifFalse:[ (axis +1 to: self nDim -1)  inject:1 into:[:mul :e|  mul * (self shape at:e)]].
-		].
-	self order=#C ifTrue:[ 
+				ifTrue:[ (1 to: anAxis -1)  inject:1 into:[:mul :e|  mul * (self shape at:e)]]
+				ifFalse:[ (anAxis +1 to: self nDim -1)  inject:1 into:[:mul :e|  mul * (self shape at:e)]].
+		]
+	ifFalse:[ 
 		anAxis = self nDim ifTrue:[^ 1]. "row dim weight is 1"
-		w:= (axis +1 to: self nDim) inject:1 into:[:mul :e|  mul * (self shape at:e)]].
+		w:= (anAxis +1 to: self nDim) inject:1 into:[:mul :e|  mul * (self shape at:e)]].
 	^ w
 ]
 

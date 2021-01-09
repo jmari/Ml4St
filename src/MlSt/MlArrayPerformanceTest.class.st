@@ -55,6 +55,36 @@ MlArrayPerformanceTest >> testBigDot [
 ]
 
 { #category : #tests }
+MlArrayPerformanceTest >> testColumnsDo [
+
+	| a t|
+	"create a million float array"
+	a := (MlArray random: #(10 100000)).
+	"boolean 1 axis slicing"
+	t := [a columnsDo:[:r :s| #doNothing]] timeToRun.
+	"it takes around 40 ms to do a slice of 1 row and 10 columns in #F order"
+	self assert:t <= (Duration milliSeconds:1000).
+	
+	
+	
+]
+
+{ #category : #tests }
+MlArrayPerformanceTest >> testColumnsDoC [
+
+	| a t|
+	"create a million float array"
+	a := (MlArray random: #(10 100000)) asCArray.
+	"boolean 1 axis slicing"
+	t := [a columnsDo:[:r :s| #doNothing]] timeToRun.
+	"it takes around 40 ms to do a slice of 1 row and 10 columns in #F order"
+	self assert:t <= (Duration milliSeconds:3000).
+	
+	
+	
+]
+
+{ #category : #tests }
 MlArrayPerformanceTest >> testGrouping [
 
 	| a b t |
@@ -64,6 +94,38 @@ MlArrayPerformanceTest >> testGrouping [
 
 	t:= [b := a groupBy:[:row| (row at:1) > 50 ] ->{2. 3} aggregate:[:k :v| v sum:0]] timeToRun.
 	self assert:t <= (Duration milliSeconds:300).
+]
+
+{ #category : #tests }
+MlArrayPerformanceTest >> testMatrixDo [
+
+	| a t |
+	"create a million float array"
+	a := (MlArray random: #(10000 10 10)).
+	"boolean 1 axis slicing"
+
+	t := [a matricesDo:[:r :s| "doNothing"]] timeToRun.
+	"it takes around 49 ms to do 1000 slices of 10 row and 10 columns in #F order"
+	self assert:t <= (Duration milliSeconds:500).
+
+	
+	
+]
+
+{ #category : #tests }
+MlArrayPerformanceTest >> testMatrixDoC [
+
+	| a t|
+	"create a million float array"
+	a := (MlArray random: #(10000 10 10)) asCArray.
+	"boolean 1 axis slicing"
+
+	t := [a matricesDo:[:r :s| "doNothing"]] timeToRun.
+	"it takes around 40 ms to do a slice of 1 row and 10 columns in #F order"
+	self assert:t <= (Duration milliSeconds:500).
+
+	
+	
 ]
 
 { #category : #tests }
@@ -107,6 +169,36 @@ MlArrayPerformanceTest >> testNonContinuousVectorTest [
 	b := a at:{_. _. 1@_@3}.
 	1 to: (b shape at:3) do:[:i|
 		self assert: (b at:1 at:1 at:i) equals: (a at:1 at:1 at:(i*3 - 2))]. 
+]
+
+{ #category : #tests }
+MlArrayPerformanceTest >> testRowsDo [
+
+	| a b t|
+	"create a million float array"
+	a := (MlArray random: #(100000 10)).
+	"boolean 1 axis slicing"
+	t := [a rowsDo:[:r :s| #doNothing]] timeToRun.
+	"it takes around 40 ms to do a slice of 1 row and 10 columns in #F order"
+	self assert:t <= (Duration milliSeconds:2500).
+	
+	
+	
+]
+
+{ #category : #tests }
+MlArrayPerformanceTest >> testRowsDoC [
+
+	| a b t|
+	"create a million float array"
+	a := (MlArray random: #(100000 10)) asCArray.
+	"boolean 1 axis slicing"
+	t := [a rowsDo:[:r :s| #doNothing]] timeToRun.
+	"it takes around 20 ms to do a slice of 1 row and 10 columns in #F order"
+	self assert:t <= (Duration milliSeconds:1000).
+	
+	
+	
 ]
 
 { #category : #tests }
@@ -160,6 +252,25 @@ MlArrayPerformanceTest >> testSliceArray3 [
 	"boolean 1 axis slicing"
 	t := [b:= a at:{_. _. ((a at:{_. _. 1}) >0.5)}] timeToRun.
 	self assert:t <= (Duration milliSeconds:300).
+	
+	
+	
+]
+
+{ #category : #tests }
+MlArrayPerformanceTest >> testWalk [
+
+	| a t dTimes wTimes lTimes |
+	"create a million float array"
+	a := (MlArray random: #(100 100 100)).
+	lTimes:=wTimes:=dTimes:=0.
+	t := [a 
+		walkWhile:[:l :s| lTimes := lTimes + 1.l < (a nDim - 1). ]  
+		when:[:l :s|  wTimes := wTimes + 1.l = (a nDim - 1). ]  
+		do:[:r :s|  dTimes := dTimes + 1]] timeToRun.
+	self assert:t <= (Duration milliSeconds:100).
+	self assert:lTimes equals:wTimes.
+	
 	
 	
 	

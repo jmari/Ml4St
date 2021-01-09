@@ -9,7 +9,7 @@ Class {
 	#category : #'MlSt-Ensemble-RandomForestClassifier'
 }
 
-{ #category : #'tree-algoritm' }
+{ #category : #'tree-algoritms' }
 MlDecisionTree >> cartOnData: aMlArray features: features target: targetAttributeName [
 	
 	^ self cartOnData: aMlArray originalData: aMlArray features: features target: targetAttributeName parentNodeClass: nil depth:1
@@ -17,7 +17,7 @@ MlDecisionTree >> cartOnData: aMlArray features: features target: targetAttribut
 
 ]
 
-{ #category : #'tree-algoritm' }
+{ #category : #'tree-algoritms' }
 MlDecisionTree >> cartOnData: aMlArray originalData: originalData features: features target: targetAttributeName parentNodeClass: parentNodeClass depth:depth [
  
 	| infoGain bestFeature nextFeatures uClass pNodeClass tree infoGainMax  vLeft leftSubtree vRight rigthSubtree k rightSubtree conditionBlock compiledCoditionBlock |
@@ -34,7 +34,8 @@ MlDecisionTree >> cartOnData: aMlArray originalData: originalData features: feat
 	"we receive the vector of ginis on each interval of a float value
 	 we have to extract the partition block"
 	infoGainMax := (infoGain at:2 at:_) max.
-	conditionBlock :=(infoGain at: 1 at:((infoGain at:2 at:_) indexOf:infoGainMax) first) .
+	conditionBlock := (self conditionBlockFromString: ((infoGain at: 1 at:((infoGain at:2 at:_) indexOf:infoGainMax) first))) .
+	
 	compiledCoditionBlock := (self class compiler  source:conditionBlock).
 	tree := (MlTreeNode 
 						newFeatureName:bestFeature
@@ -57,6 +58,13 @@ MlDecisionTree >> cartOnData: aMlArray originalData: originalData features: feat
 	tree add:( k ->rightSubtree).	
 
 	^ tree
+]
+
+{ #category : #'as yet unclassified' }
+MlDecisionTree >> conditionBlockFromString: aCondition [
+	| symbols |
+	symbols := { #<=. #= }.
+	
 ]
 
 { #category : #'as yet unclassified' }
@@ -88,7 +96,7 @@ MlDecisionTree >> fit: aMlArray target: tMlArray sampleWeight: sw [
 	
 ]
 
-{ #category : #'tree-algoritm' }
+{ #category : #'tree-algoritms' }
 MlDecisionTree >> id3OnData: aMlArray features: features target: targetAttributeName [
 	
 	^ self id3OnData: aMlArray originalData: aMlArray features: features target: targetAttributeName parentNodeClass: nil depth:1
@@ -96,7 +104,7 @@ MlDecisionTree >> id3OnData: aMlArray features: features target: targetAttribute
 
 ]
 
-{ #category : #'tree-algoritm' }
+{ #category : #'tree-algoritms' }
 MlDecisionTree >> id3OnData: aMlArray originalData: originalData features: features target: targetAttributeName parentNodeClass: parentNodeClass depth:depth [
  
 	| infoGain bestFeature nextFeatures subtree uClass pNodeClass tree featuresIncluded infoGainMax |
