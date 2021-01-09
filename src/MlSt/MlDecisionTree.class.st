@@ -61,10 +61,12 @@ MlDecisionTree >> cartOnData: aMlArray originalData: originalData features: feat
 ]
 
 { #category : #'as yet unclassified' }
-MlDecisionTree >> conditionBlockFromString: aCondition [
-	| symbols |
-	symbols := { #<=. #= }.
+MlDecisionTree >> conditionBlockFromString: aConditionString [
+	| symbols keyValue|
+	symbols := { $<. $= }.
+	keyValue := aConditionString findTokens: symbols.
 	
+	^ [ :row| row at:keyValue first ]
 ]
 
 { #category : #'as yet unclassified' }

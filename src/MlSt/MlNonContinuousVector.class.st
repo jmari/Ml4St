@@ -279,7 +279,7 @@ MlNonContinuousVector >> fakeAt: aPos [
 		currentPos:= ( self strides at:j+1 ).
 		j:=j+2.
 		].
-	"store last sum of the strides and last j. It will accelerate next access in a do: operation"
+	"lastPost is a buffer to speed up a call in a loop. store last sum of the strides and last j. It will accelerate next access in a do: operation"
 	lastPos at:1 put:aPos.
 	lastPos at:2 put: (address - aPos).
 	lastPos at:3 put:j.
@@ -288,17 +288,6 @@ MlNonContinuousVector >> fakeAt: aPos [
 	
 	
 		 
-]
-
-{ #category : #accessing }
-MlNonContinuousVector >> fakeAtFFI: aPos [
-	^ LibNCV 
-		fakeAt: aPos 
-		strides: self strides getHandle 
-		stridesSize: self strides size  
-		size: self size  
-		lastPos:  lastPos getHandle. 
-
 ]
 
 { #category : #initialization }

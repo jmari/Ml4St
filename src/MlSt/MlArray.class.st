@@ -1161,6 +1161,12 @@ MlArray >> collect: aBlock [
 
 { #category : #enumerating }
 MlArray >> columnsDo: aTwoArgBlock [
+	self columnsDo: aTwoArgBlock copy: false
+	
+]
+
+{ #category : #enumerating }
+MlArray >> columnsDo: aTwoArgBlock copy: aBool [
 	| slice |
 	self walkWhile:[:l :s| l < self nDim ]  
 		when: [:l :s| l = self nDim and:[(s at:(self nDim -1)) = 1]]  
@@ -1168,7 +1174,7 @@ MlArray >> columnsDo: aTwoArgBlock [
 			slice := (s deepCopy at: (self nDim - 1 ) put:1@(self length);yourself).
 			aTwoArgBlock
 				valueWithEnoughArguments: {   
-				((self slice: slice) reshape: {self length}).
+				((self slice: slice copy: aBool) reshape: {self length}).
 				slice}
 			]
 	
@@ -1176,7 +1182,7 @@ MlArray >> columnsDo: aTwoArgBlock [
 
 { #category : #'private-slicing' }
 MlArray >> completeSlice: aSliceArray [
-	" this function substitutes the _ an negative integers by its value.
+	" this function substitutes the _ and negative integers by its value.
 	 _@_ left _ will be replaced by 1 and right _ will be replaced by the lenght of the dimension
 	 -1@-2 negatige integers will be replaced by n + k + 1 where n is the lenght of the dimension 
 	   and k is the negative integer
@@ -1404,7 +1410,7 @@ MlArray >> dot: aMlArray [
 	self rowsDo:[:row :rslice|		
 			array columnsDo:[:column :cslice|
 				tmp := (row internalArray dot: column internalArray).
-				result at:{rowNumber. cslice last} put: tmp].
+				result at:{rowNumber. cslice last} put: tmp] copy:true.
 			
 			((rowNumber % numberOfRows = 0) & (i + jump < reshapedArray length))
 			ifTrue:[
@@ -1769,7 +1775,7 @@ MlArray >> kurtosis: axis [
 { #category : #accessing }
 MlArray >> labelsDict [ 
 	"labels dict is a dictionary axis-->labels"
-	^ labelsDict ifNil:[ labelsDict := SmallDictionary new]
+	^ labelsDict ifNil:[ labelsDict := Dictionary new]
 ]
 
 { #category : #accessing }
@@ -2248,6 +2254,11 @@ MlArray >> resortByColumn: indexOrNameOfColumn where: aBlock [
 
 { #category : #enumerating }
 MlArray >> rowsDo: aTwoArgBlock [
+	self rowsDo: aTwoArgBlock copy: false
+]
+
+{ #category : #enumerating }
+MlArray >> rowsDo: aTwoArgBlock copy: aBool [
 	| slice |
 	self nDim = 1 ifTrue:[aTwoArgBlock valueWithEnoughArguments: {self} ]
 	ifFalse:[
@@ -2255,7 +2266,7 @@ MlArray >> rowsDo: aTwoArgBlock [
 		slice := (s deepCopy at: self nDim put:1@self width;yourself).
 		aTwoArgBlock 
 		valueWithEnoughArguments: {  
-			((self slice: slice) reshape: {self width}).
+			((self slice: slice copy:aBool) reshape: {self width}).
 			slice}
 			]
 	]
