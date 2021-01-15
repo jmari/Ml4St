@@ -4,7 +4,8 @@ Class {
 	#instVars : [
 		'start',
 		'step',
-		'stop'
+		'stop',
+		'size'
 	],
 	#category : #'MlSt-Core-Enumeration'
 }
@@ -144,7 +145,7 @@ MlInterval >> extent [
 	"Answer the max - min of the receiver interval."
 	"(10 to: 50) extent"
 
-	^ step < 0 ifTrue:[start - stop] ifFalse:[stop - start]
+	^ step < 0 ifTrue:[start - stop + 1] ifFalse:[stop - start + 1]
 ]
 
 { #category : #accessing }
@@ -165,6 +166,13 @@ MlInterval >> hash [
 ]
 
 { #category : #accessing }
+MlInterval >> includes: aSlice [
+	"Return true if the number lies in the interval between start and stop "
+
+	^ (self indexOf:aSlice) isInteger and:[self rangeIncludes: aSlice]
+]
+
+{ #category : #accessing }
 MlInterval >> increment [
 	"Answer the receiver's interval increment."
 
@@ -180,8 +188,10 @@ MlInterval >> indexOf:anArrayOfInt [
 											ifFalse:[	anArrayOfInt  - start].
 
 	transportedAddress  doWithIndex:[:each :i| address := address + (each * (self weightForAxis:i))].	
-		
-	^ (address +1 )/ step
+ 
+	address := (address +1 )/ (step abs). 
+	step < 0 ifTrue:[address :=  address - 1].
+	^ address
 ]
 
 { #category : #accessing }
@@ -213,11 +223,12 @@ MlInterval >> permutationsDo: aBlock [
 
 { #category : #accessing }
 MlInterval >> rangeIncludes: aSlice [
-	"Return true if the number lies in the interval between start and stop."
-
-	step >= 0
-		ifTrue: [^ aSlice between: start and: stop]
-		ifFalse: [^ aSlice between: stop and: start]
+	"Return true if the number lies in the interval between start and stop "
+	step > 0 
+	ifTrue:[ aSlice doWithIndex:[:v :i| 
+			(v >= (start at:i) and:[v <= (stop at:i)]) ifFalse:[^ false]].^ true] 
+	ifFalse:[ aSlice doWithIndex:[:v :i| 
+			(v >= (stop at:i) and:[v <= (start at:i)]) ifFalse:[^ false]].^ true] 
 ]
 
 { #category : #accessing }
@@ -232,13 +243,12 @@ MlInterval >> reverseDo: aBlock [
 	"Evaluate aBlock for each element of my interval, in reverse order.
 	Implementation notes: see do: for an explanation on loop detail"
 
-	| aValue index |
+	|  index |
 	index := self size.
 	[index > 0]
 		whileTrue: [
-			index := index - 1.
-			aValue := start + (index * step).
-			aBlock value: aValue]
+			aBlock value: (self at:index).
+			index := index - 1.]
 ]
 
 { #category : #accessing }
@@ -267,11 +277,8 @@ MlInterval >> shuffled [
 MlInterval >> size [
 	"Answer how many elements the receiver contains."
 
-	step < 0
-		ifTrue: [(self indexOf:start) < (self indexOf:stop)
-				ifTrue: [^ 0]
-				ifFalse: [^(( self indexOf:start) - (self indexOf:stop)) asInteger +1 ]]
-		ifFalse: [(self indexOf:stop) < (self indexOf:start)
+	^ size ifNil:[
+		size := (self indexOf:stop) < (self indexOf:start)
 				ifTrue: [^ 0]
 				ifFalse: [^ ((self indexOf:stop) - (self indexOf:start) ) asInteger +1]]
 ]
@@ -311,15 +318,6 @@ MlInterval >> storeOn: aStream [
 	 	store: stop.
 	step ~= 1 ifTrue: [aStream nextPutAll: ' by: '; store: step].
 	aStream nextPut: $)
-]
-
-{ #category : #accessing }
-MlInterval >> sum [
-	"Optimized version. Use the sum(n * i - k, i=a..b) = -1/2 * (a - b - 1) * (n * (a + b) - 2 * k) equation with a = 1, n = step, b = self size and k = step - start."
-
-	| b |
-	b := self size.
-	^b * ((b - 1) * step + (start * 2)) / 2
 ]
 
 { #category : #enumerating }
