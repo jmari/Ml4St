@@ -6,6 +6,12 @@ Object >> isMlArray [
 ]
 
 { #category : #'*MlSt' }
+Object >> isMlInterval [
+
+	^ false
+]
+
+{ #category : #'*MlSt' }
 Object >> isMlTreeNode [
 	^ false
 ]

@@ -497,19 +497,19 @@ MlArray class >> gtSlicingExamples1D [
 	self assert:b equals: a.
 	"three first elements of a"
 	b := a at: {_@3}.
-	self assert:b as1DArray equals: #(10 1 3).
+	self assert:b flatten equals: #(10 1 3).
 	"three last elements of a"
 	b := a at: {-3@_}.
-	self assert:b as1DArray equals: #(11 12 56).
+	self assert:b flatten equals: #(11 12 56).
 	"three  elements in the middle"
 	b := a at: {3@5}.
-	self assert:b as1DArray equals: #(3 5 2).
+	self assert:b flatten equals: #(3 5 2).
 	"three elements 2 by 2"
 	b := a at: {3@7@2}.
-	self assert:b as1DArray equals: #(3 2 6).
+	self assert:b flatten equals: #(3 2 6).
 	"list of slices"
 	b := a at: {  1@2. 4@5. 7@9  }.
-	self assert:b as1DArray equals: #( 10 1 5 2 6 4 10).
+	self assert:b flatten equals: #( 10 1 5 2 6 4 10).
 	"list of integers"
 	d := a at: #( 1 2 3 4 5 6 8). 
 	sol :=  MlArray from: #( 10 1 3 5 2 5 4).
@@ -534,13 +534,13 @@ MlArray class >> gtSlicingExamples3D [
 	self assert:b equals: a.
 	"three first elements of a"
 	b := a at: {1. 1. _ }.
-	self assert:b as1DArray equals: #(10 1 3).
+	self assert:b flatten equals: #(10 1 3).
 	"three last elements of a"
 	b := a at: {-1. -1. _}.
-	self assert:b as1DArray equals: #(11 12 56).
+	self assert:b flatten equals: #(11 12 56).
 	"three  elements in the middle"
 	b := a at: {-1. -1. 2@3}.
-	self assert:b as1DArray equals: #(12 56).
+	self assert:b flatten equals: #(12 56).
 	"three elements 2 by 2"
 	b := a at: {_@_@2. _. _}.
 	sol := MlArray from:#(#(#(10 1 3) 
@@ -935,11 +935,6 @@ MlArray >> arrayType [
 ]
 
 { #category : #converting }
-MlArray >> as1DArray [
-	^ self internalArray 
-]
-
-{ #category : #converting }
 MlArray >> asCArray [
 	| newInstance  |
 	order = #C ifTrue:[^self].
@@ -1173,9 +1168,8 @@ MlArray >> columnsDo: aTwoArgBlock copy: aBool [
 		do: [:l :s| 
 			slice := (s deepCopy at: (self nDim - 1 ) put:1@(self length);yourself).
 			aTwoArgBlock
-				valueWithEnoughArguments: {   
-				((self slice: slice copy: aBool) reshape: {self length}).
-				slice}
+				value: ((self slice: slice copy: aBool) reshape: {self length})
+				value: slice
 			]
 	
 ]
@@ -1459,6 +1453,11 @@ MlArray >> first [
 	^ self internalArray first.
 ]
 
+{ #category : #converting }
+MlArray >> flatten [
+	^ self internalArray 
+]
+
 { #category : #'private-accessing' }
 MlArray >> getAddressForPoint:anArrayOfInt [
 	| address  transportedAddress  |
@@ -1649,13 +1648,13 @@ MlArray >> groupBy: anAssociation aggregate: aBlock storeCallbackValue: includeK
 										ifTrue:[(agKeys value:((self slice:{i. _}) reshaped:{-1})) 
 														ifTrue:[{agKeys asString}]
 														ifFalse:[{agKeys asString,' not'}]]
-										ifFalse:[(self slice:{i. agKeys}) as1DArray ].
+										ifFalse:[(self slice:{i. agKeys}) flatten ].
 		aggregate at: groupingKey vstack: values].
 		"call slice force to return always a MlArray"
 	r := OrderedCollection new.
 	aggregate keysAndValuesDo:[:k :v| 
 		val := aBlock value:k value:v.
-		r add:( val isMlArray ifTrue:[val as1DArray] ifFalse:[{val}]	)]. 
+		r add:( val isMlArray ifTrue:[val flatten] ifFalse:[{val}]	)]. 
 		"if there is only one column in right side it will return an Object, 
 		and it should be always an array or a MlArray, because r should be a 2D column stacked array"
 	includeKeyCol ifTrue:[
@@ -1826,9 +1825,8 @@ MlArray >> matricesDo: aTwoArgBlock [
 	self walkWhile:[:l :s| l < (self nDim - 1)]  when:[:l :s| l = (self nDim - 2)]  do: [:l :s| 
 		slice := (s deepCopy at: self nDim put:1@self width;at: (self nDim -1) put:1@self length;yourself).
 		aTwoArgBlock 
-		valueWithEnoughArguments: {  
-			(self slice: slice).
-			slice}
+		value: (self slice: slice)
+		value:	 slice
 			]
 	]
 ]
@@ -1845,7 +1843,7 @@ MlArray >> max: axis [
 
 { #category : #printing }
 MlArray >> maxElementsToPrint [
-	^ maxElementsToPrint ifNil:[maxElementsToPrint := 50]
+	^ maxElementsToPrint ifNil:[maxElementsToPrint := 10]
 ]
 
 { #category : #printing }
@@ -2077,23 +2075,26 @@ MlArray >> printElement: element pad:maxPad [
 
 { #category : #'private-printing' }
 MlArray >> printOn: aStream maxPad: maxPad level: l [
-	| printedRows totalRows i |
+	| printedRows totalRows currentRow |
 	l <= (self nDim - 1)
 		ifTrue: [ aStream nextPut: $[.
 			self printOn: aStream maxPad: maxPad level: l + 1 ]
-		ifFalse: [ printedRows := i := 0.
+		ifFalse: [ printedRows := currentRow := 0.
 			totalRows := (self calculateNewShape:{-1.self width}) first.
-			self matricesDo: [ :matrix | 
-					matrix rowsDo: [ :row | 
-							"this is ugly...doing the loop without printing"
-							printedRows < (self maxElementsToPrint / 2)
-								| (i > (totalRows - (self maxElementsToPrint / 2)))
-								ifTrue: [ self printOn: aStream row: row pad: maxPad.
-									printedRows := printedRows + 1 ].
-							printedRows >= (self maxElementsToPrint / 2)
-								& (i = ((self maxElementsToPrint / 2) asInteger + 1))
-								ifTrue: [ aStream cr;	nextPutAll: '...';cr ].
-							i := i + 1 ].
+			self matricesDo: [ :matrix :s| 
+					matrix 
+						rowsDo: [ :row :s2| 
+							currentRow := currentRow + 1.
+							(currentRow <= (self maxElementsToPrint / 2) 
+								or:[currentRow > (totalRows - (self maxElementsToPrint / 2))])
+								ifTrue:[							
+									self printOn: aStream row: row pad: maxPad.
+									printedRows := printedRows + 1].
+						
+							(currentRow = ((self maxElementsToPrint / 2) asInteger + 1))
+								ifTrue: [ aStream cr;	nextPutAll: '...';cr]]
+						copy: false.
+						
 					self nDim > 2 ifTrue: [ aStream nextPut: $] ] ] ].
 	l <= (self nDim - 1) ifTrue: [ aStream nextPut: $] ]
 ]
@@ -2262,12 +2263,11 @@ MlArray >> rowsDo: aTwoArgBlock copy: aBool [
 	| slice |
 	self nDim = 1 ifTrue:[aTwoArgBlock valueWithEnoughArguments: {self} ]
 	ifFalse:[
-	self walkWhile:[:l :s| l < (self nDim - 1)]  when:[:l :s| l = (self nDim - 1)]  do: [:l :s| 
+	self walkWhile: [:l :s| l < (self nDim - 1)]  when:[:l :s| l = (self nDim - 1)]  do: [:l :s| 
 		slice := (s deepCopy at: self nDim put:1@self width;yourself).
 		aTwoArgBlock 
-		valueWithEnoughArguments: {  
-			((self slice: slice copy:aBool) reshape: {self width}).
-			slice}
+		value:  ((self slice: slice copy:aBool) reshape: {self width})
+		value: 	slice
 			]
 	]
 ]
@@ -2572,7 +2572,7 @@ MlArray >> walkLevel:l slice: s while: aWhileBlock when: aConditionBlock do: aBl
 		s at:l put: i.
 		(aWhileBlock value:l value:s) ifTrue:[
 			self walkLevel:l+1 slice: s while: aWhileBlock when: aConditionBlock do: aBlock ].
-		(aConditionBlock value:l value:s) ifTrue:[(aBlock  value:l value:s)].
+		(aConditionBlock value:l value:s) ifTrue:[(aBlock  value:l value:s)]
 	]
 ]
 

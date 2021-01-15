@@ -13,6 +13,11 @@ ManifestMlSt class >> ruleGRTemporaryVariableCapitalizationRuleV1FalsePositive [
 ]
 
 { #category : #'code-critics' }
+ManifestMlSt class >> ruleRBEndTrueFalseRuleV1FalsePositive [
+	^ #(#(#(#RGMethodDefinition #(#'MlIterator class' #forArray: #true)) #'2021-01-11T19:06:43.189623+01:00') )
+]
+
+{ #category : #'code-critics' }
 ManifestMlSt class >> ruleRBEqualNilRuleV1FalsePositive [
 	^ #(#(#(#RGClassDefinition #(#MlFromCSVTest)) #'2020-06-30T19:19:52.588371+02:00') )
 ]

@@ -1,7 +1,7 @@
 Class {
 	#name : #MlArrayPerformanceTest,
 	#superclass : #TestCase,
-	#category : #'MlSt-Test'
+	#category : #'MlSt-Core-Test'
 }
 
 { #category : #tests }
@@ -46,7 +46,7 @@ MlArrayPerformanceTest >> testBigDot [
 	b := (MlArray random: #( 100 100)).
 	
 	t := [a dot:b.] timeToRun.
-	self assert:t <= (Duration milliSeconds:1000).
+	self assert:t <= (Duration milliSeconds:1100).
 	
 
 	
@@ -174,13 +174,13 @@ MlArrayPerformanceTest >> testNonContinuousVectorTest [
 { #category : #tests }
 MlArrayPerformanceTest >> testRowsDo [
 
-	| a b t|
+	| a t|
 	"create a million float array"
 	a := (MlArray random: #(100000 10)).
 	"boolean 1 axis slicing"
 	t := [a rowsDo:[:r :s| #doNothing]] timeToRun.
 	"it takes around 40 ms to do a slice of 1 row and 10 columns in #F order"
-	self assert:t <= (Duration milliSeconds:2500).
+	self assert:t <= (Duration milliSeconds:3000).
 	
 	
 	
@@ -270,7 +270,8 @@ MlArrayPerformanceTest >> testWalk [
 		do:[:r :s|  dTimes := dTimes + 1]] timeToRun.
 	self assert:t <= (Duration milliSeconds:100).
 	self assert:lTimes equals:wTimes.
-	
+	self assert:dTimes equals:10000. 
+	self assert:lTimes equals:10100 
 	
 	
 	

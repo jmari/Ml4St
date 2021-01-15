@@ -121,7 +121,7 @@ MlDecisionTree >> id3OnData: aMlArray originalData: originalData features: featu
 	infoGain     := aMlArray infoGain: features ->targetAttributeName.
 	"we receive the vector of ginis on each interval of a float value
 	 we have to extract the partition block"
-	infoGainMax  := (infoGain as1DArray sort:[:a :b| a value > b value]) first.
+	infoGainMax  := (infoGain flatten sort:[:a :b| a value > b value]) first.
 	bestFeature  := (features at: (infoGain indexOf: infoGainMax)).  
 	nextFeatures := (features select:[:f| f ~= bestFeature] ).
 

@@ -1,7 +1,7 @@
 Class {
 	#name : #MlArrayMathTest,
 	#superclass : #TestCase,
-	#category : #'MlSt-Test'
+	#category : #'MlSt-Core-Test'
 }
 
 { #category : #tests }

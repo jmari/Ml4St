@@ -59,7 +59,7 @@ MlEncoder >> max [
 
 { #category : #adding }
 MlEncoder >> oneHotDecode: aMlArray [
-	aMlArray as1DArray doWithIndex:[:e :anIndex|
+	aMlArray flatten doWithIndex:[:e :anIndex|
 		e = 1 ifTrue:[ ^ self reverseIndex at:anIndex ifAbsent:[ aMlArray ]]].
 	^ aMlArray
 	

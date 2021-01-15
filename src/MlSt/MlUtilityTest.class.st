@@ -1,7 +1,7 @@
 Class {
 	#name : #MlUtilityTest,
 	#superclass : #TestCase,
-	#category : #'MlSt-Test'
+	#category : #'MlSt-Core-Test'
 }
 
 { #category : #tests }

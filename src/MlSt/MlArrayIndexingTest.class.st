@@ -1,7 +1,7 @@
 Class {
 	#name : #MlArrayIndexingTest,
 	#superclass : #TestCase,
-	#category : #'MlSt-Test'
+	#category : #'MlSt-Core-Test'
 }
 
 { #category : #accessing }

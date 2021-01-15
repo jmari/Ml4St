@@ -13,6 +13,18 @@ Class {
 	#category : #'MlSt-Core'
 }
 
+{ #category : #arithmetic }
+MlSlice >> + aSlice [ 
+	aSlice isSlice 
+		ifTrue:[^ (self x + aSlice x)@(self y + aSlice y)@(self step + aSlice step)]
+		ifFalse:[ self error:'We can not add an Integer'] 
+]
+
+{ #category : #arithmetic }
+MlSlice >> - aSlice [ 
+	^ (self x - aSlice x)@(self y - aSlice y)@(self step - aSlice step)
+]
+
 { #category : #converting }
 MlSlice >> asSlice [
 	^self
@@ -21,6 +33,11 @@ MlSlice >> asSlice [
 { #category : #testing }
 MlSlice >> isSlice [ 
 	^ true
+]
+
+{ #category : #testing }
+MlSlice >> isZero [
+	^ (self x = 0 )& (self y = 0 )& (self step = 0)
 ]
 
 { #category : #accessing }
@@ -32,4 +49,10 @@ MlSlice >> step [
 MlSlice >> step: anInteger [ 	
 	step := anInteger.
 	(step < 0) & (x = 1) ifTrue:[x := nil]
+]
+
+{ #category : #'as yet unclassified' }
+MlSlice >> to: aSlice by: aStep [
+
+	^ MlInterval from:self to: aSlice by: aStep 
 ]

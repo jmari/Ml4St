@@ -4,7 +4,7 @@ Class {
 	#classVars : [
 		'LNSolverType'
 	],
-	#category : #'MlSt-Test'
+	#category : #'MlSt-Core-Test'
 }
 
 { #category : #'as yet unclassified' }
