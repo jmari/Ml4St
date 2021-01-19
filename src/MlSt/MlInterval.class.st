@@ -69,6 +69,16 @@ MlInterval class >> streamSpecies [
 	^ Array
 ]
 
+{ #category : #arithmetic }
+MlInterval >> + aScalarOrArray [
+	^ self class from: start + aScalarOrArray to: stop + aScalarOrArray by: step
+]
+
+{ #category : #arithmetic }
+MlInterval >> - aScalarOrArray [
+	^ self class from: start - aScalarOrArray to: stop - aScalarOrArray by: step
+]
+
 { #category : #accessing }
 MlInterval >> = anObject [
 
@@ -91,6 +101,7 @@ MlInterval >> at: anInteger [
 	"Answer the anInteger'th element."
 	| linearIndex tmpIndex blockWeight blocksize |
 	"the loop should be from the slower changing axis to the faster changing axis"
+	anInteger > self size | anInteger <1 ifTrue:[self error:'Index should be higer than 0 and lower than ', self size].
 	linearIndex :=  (anInteger - 1) * step.
 	
 	tmpIndex := (self nDim = 1 )
@@ -115,7 +126,7 @@ MlInterval >> at: anInteger put: anObject [
 	self error: 'you can not store into an interval'
 ]
 
-{ #category : #accessing }
+{ #category : #enumerating }
 MlInterval >> collect: aBlock [
 	| nextValue result |
 	result := self species new: self size.
@@ -127,17 +138,30 @@ MlInterval >> collect: aBlock [
 	^ result
 ]
 
-{ #category : #accessing }
+{ #category : #enumerating }
 MlInterval >> do: aBlock [
 	"Evaluate aBlock for each value of the interval"
 
-	| index size |
+	| index size1 |
 	index := 0.
-	size := self size.
-	[index < size]
+	size1 := self size.
+	[index < size1]
 		whileTrue: [
 			index := index + 1.
 			aBlock value: (self at:index)]
+]
+
+{ #category : #enumerating }
+MlInterval >> doWithIndex: aBlock [
+	"Evaluate aBlock for each value of the interval"
+
+	| index size1|
+	index := 0.
+	size1 := self size.
+	[index < size1]
+		whileTrue: [
+			index := index + 1.
+			aBlock value: (self at:index) value:index]
 ]
 
 { #category : #accessing }
@@ -190,7 +214,7 @@ MlInterval >> indexOf:anArrayOfInt [
 	transportedAddress  doWithIndex:[:each :i| address := address + (each * (self weightForAxis:i))].	
  
 	address := (address +1 )/ (step abs). 
-	step < 0 ifTrue:[address :=  address - 1].
+	"step < 0 ifTrue:[address :=  address - 1]."
 	^ address
 ]
 
@@ -238,7 +262,7 @@ MlInterval >> remove: newObject [
 	self error: 'elements cannot be removed from an Interval'
 ]
 
-{ #category : #accessing }
+{ #category : #enumerating }
 MlInterval >> reverseDo: aBlock [ 
 	"Evaluate aBlock for each element of my interval, in reverse order.
 	Implementation notes: see do: for an explanation on loop detail"
@@ -248,6 +272,19 @@ MlInterval >> reverseDo: aBlock [
 	[index > 0]
 		whileTrue: [
 			aBlock value: (self at:index).
+			index := index - 1.]
+]
+
+{ #category : #enumerating }
+MlInterval >> reverseDoWithIndex: aBlock [ 
+	"Evaluate aBlock for each element of my interval, in reverse order.
+	Implementation notes: see do: for an explanation on loop detail"
+
+	|  index |
+	index := self size.
+	[index > 0]
+		whileTrue: [
+			aBlock value: (self at:index) value: index.
 			index := index - 1.]
 ]
 
