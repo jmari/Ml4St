@@ -165,7 +165,8 @@ Class {
 		'order',
 		'dType',
 		'labelsDict',
-		'maxElementsToPrint'
+		'maxElementsToPrint',
+		'wForAxes'
 	],
 	#classInstVars : [
 		'shape',
@@ -645,7 +646,15 @@ MlArray class >> new: aShape withAll: anObject [
 
 { #category : #'instance creation' }
 MlArray class >> ones: aShape [
-	^ self new: aShape withAll: 1.0
+	^ self ones: aShape order: #F
+]
+
+{ #category : #'instance creation' }
+MlArray class >> ones: aShape order: CorF [
+	| instance |
+	instance := self new: aShape order: CorF dType: 1.0 className.
+	instance fillWith: 1.0.
+	^ instance
 ]
 
 { #category : #'instance creation' }
@@ -654,9 +663,19 @@ MlArray class >> random: aShape [
 ]
 
 { #category : #'instance creation' }
+MlArray class >> random: aShape order: CorF [
+	^ self random: aShape seed: Time now asMilliSeconds order: CorF
+]
+
+{ #category : #'instance creation' }
 MlArray class >> random: aShape seed: aSeed [
+	^ self random: aShape seed: aSeed order: #F
+]
+
+{ #category : #'instance creation' }
+MlArray class >> random: aShape seed: aSeed order: CorF [
 	| instance generator  |
-	instance := self new: aShape.
+	instance := self new: aShape order: CorF.
 	generator := Random new seed:aSeed.
 	1 to: instance size do:[:i|  instance internalArray at: i put: ((SmallInteger maxVal  atRandom: generator) asFloat  / (SmallInteger maxVal ) asFloat  ) ].
 	instance dType: #Float.
@@ -676,7 +695,15 @@ MlArray class >> randomInt: aShape [
 
 { #category : #'instance creation' }
 MlArray class >> zeros: aShape [
-	^ self new: aShape withAll: 0.0
+	^ self zeros: aShape order: #F
+]
+
+{ #category : #'instance creation' }
+MlArray class >> zeros: aShape order: CorF [
+	| instance |
+	instance := self new: aShape order: CorF dType: 0.0 className.
+	instance fillWith: 0.0.
+	^ instance
 ]
 
 { #category : #'binary operations' }
@@ -1163,14 +1190,16 @@ MlArray >> columnsDo: aTwoArgBlock [
 { #category : #enumerating }
 MlArray >> columnsDo: aTwoArgBlock copy: aBool [
 	| slice |
-	self walkWhile:[:l :s| l < self nDim ]  
-		when: [:l :s| l = self nDim and:[(s at:(self nDim -1)) = 1]]  
-		do: [:l :s| 
-			slice := (s deepCopy at: (self nDim - 1 ) put:1@(self length);yourself).
-			aTwoArgBlock
-				value: ((self slice: slice copy: aBool) reshape: {self length})
-				value: slice
+	(self shape asMlInterval by: self width * self length) do: [:row|  
+			1 to: self width do:[:column|
+				slice := (row deepCopy at: (self nDim - 1 ) put:1@(self length);
+											at: self nDim put: column;
+											yourself).
+				aTwoArgBlock
+					value: ((self slice: slice copy: aBool) reshape: {self length})
+					value: slice
 			]
+		]
 	
 ]
 
@@ -1305,7 +1334,7 @@ MlArray >> createNewSlicedInstance: indexes shape: newShape [
 	
 	newInstance := self newInstanceButShaped: newShape.
 	i := 1.
-	(indexes sort:[:a :b| a first < b first]) do:[:each|
+	indexes do:[:each|
 			end := (i + each size -1). 
 			newInstance internalArray  replaceFrom:i  to: end with: self internalArray  startingAt: each first. 
 			i:=i + each size ].
@@ -1318,7 +1347,7 @@ MlArray >> createNewSlicedReference:indexes shape: newShape [
 	| newInstance  |
 	newInstance := self newInstanceButEmpty. 
 	newInstance internalArray: self internalArray. 
-	newInstance internalArray validRanges: (indexes sort:[:a :b| a first < b first]).
+	newInstance internalArray validRanges:indexes .
 	newInstance shape: newShape.
 	^ newInstance
 
@@ -1401,16 +1430,18 @@ MlArray >> dot: aMlArray [
 	numberOfRows := self length.
 	result := self newInstanceButShaped: {((self calculateNewShape: {-1. self width}) first). aMlArray width}. 	
 	array := reshapedArray slice: {i@j. _}.
+	"rowsDo and ColumnsDo with copy flag true is faster because the 
+	 dot operation is done with native arrays"
 	self rowsDo:[:row :rslice|		
 			array columnsDo:[:column :cslice|
 				tmp := (row internalArray dot: column internalArray).
-				result at:{rowNumber. cslice last} put: tmp] copy:true.
+				result at:{rowNumber. cslice last} put: tmp] copy: true.
 			
 			((rowNumber % numberOfRows = 0) & (i + jump < reshapedArray length))
 			ifTrue:[
 				i := i + jump.
 				j := j + jump.
-				array := reshapedArray slice: {i@j. _} copy:true].
+				array := reshapedArray slice: {i@j. _} copy: true].
 			rowNumber := rowNumber + 1.
 		].
 	newShape := self shape deepCopy.
@@ -2073,6 +2104,12 @@ MlArray >> printElement: element pad:maxPad [
 						ifFalse:[ element asString ]).
 ]
 
+{ #category : #printing }
+MlArray >> printOn: aStream [
+	self printOn:aStream maxPad:5 level:1.
+	
+]
+
 { #category : #'private-printing' }
 MlArray >> printOn: aStream maxPad: maxPad level: l [
 	| printedRows totalRows currentRow |
@@ -2104,29 +2141,29 @@ MlArray >> printOn: aStream row: row pad:maxPad [
 	aStream nextPut:$[;nextPut:Character tab.
 				(row size > self maxElementsToPrint ) 
 				ifTrue:[
-					(1 to:self maxElementsToPrint / 2 ) do:[:i| 
-						aStream nextPutAll: (self printElement:(row at:i) pad:maxPad );nextPut:$,;nextPut:Character tab]
+					1 to: (self maxElementsToPrint / 2 ) do:[:i| 
+						aStream nextPutAll: (self printElement:(row at:i) pad:maxPad );
+								  nextPut:$,;
+								  nextPut:Character tab]
 				] 
-				ifFalse:[(1 to:row size ) do:[:i| 
+				ifFalse:[
+					1 to:row size do:[:i| 
 						aStream nextPutAll: (self printElement:(row at:i) pad:maxPad ).
 						i = row size ifFalse:[aStream nextPut:$,;nextPut:Character tab]]].
 				(row size > self maxElementsToPrint ) ifTrue:[
 					aStream nextPutAll:' ... ,'.
-					((row size - (self maxElementsToPrint / 2 )) to: row size) 
-					do:[:i| 
+					(row size - (self maxElementsToPrint / 2 )) to: row size do:[:i| 
 						aStream nextPutAll: (self printElement:(row at:i) pad:maxPad ).
 						i = row size ifFalse:[aStream nextPut:$,;nextPut:Character tab]].
-									].
+				].
 				aStream nextPut:$];nextPut:Character cr.
 ]
 
 { #category : #printing }
 MlArray >> printString [
-	"TODO provisional"
 	|s |
 	s := WriteStream on: String new.
-
-	self printOn:s maxPad:5 level:1.
+	self printOn:s.
 	^ s contents
 ]
 
@@ -2213,6 +2250,8 @@ MlArray >> replaceNanBy: aMlArray [
 
 { #category : #accessing }
 MlArray >> reshape: anArrayOfInt [
+	"reset weight cache"
+	wForAxes := nil.
 	self shape: ( self calculateNewShape: anArrayOfInt)
 ]
 
@@ -2263,6 +2302,8 @@ MlArray >> rowsDo: aTwoArgBlock copy: aBool [
 	| slice |
 	self nDim = 1 ifTrue:[aTwoArgBlock valueWithEnoughArguments: {self} ]
 	ifFalse:[
+	"this is faster than...(self shape asMlInterval by: self width) do: [:s| 
+		we keep recursive calls...walkWhile"
 	self walkWhile: [:l :s| l < (self nDim - 1)]  when:[:l :s| l = (self nDim - 1)]  do: [:l :s| 
 		slice := (s deepCopy at: self nDim put:1@self width;yourself).
 		aTwoArgBlock 
@@ -2335,7 +2376,8 @@ MlArray >> slice: aSliceArray copy: makeCopy [
 	
 	slice := self completeSlice: aSliceArray.
 	list := Array new: self nDim.
-	indexes := OrderedCollection new.
+	indexes := SortedCollection new.
+	indexes sortBlock:[:a :b| a first < b first].
 	startLevel := self order = #C | (self nDim ~= 2)
 		ifTrue: [ 1 ]
 		ifFalse: [ 2 ].
@@ -2590,15 +2632,33 @@ MlArray >> walkWhile: aWhileBlock when: aConditionBlock do: aBlock [
 
 ]
 
+{ #category : #'private-accessing' }
+MlArray >> weightForAxes [
+	^ wForAxes ifNil:[wForAxes := Array new: self shape size ]
+]
+
+{ #category : #'private-accessing' }
+MlArray >> weightForAxesAt: anAxis [ 
+	^ self weightForAxes at:anAxis 
+]
+
+{ #category : #'private-accessing' }
+MlArray >> weightForAxesAt: anAxis put: anInteger [
+	self weightForAxes at:anAxis put: anInteger
+]
+
 { #category : #enumerating }
 MlArray >> weightForAxis: anAxis [
 	| w |
 	"the weigth means the number of elements we have to jump in the internal vector to get next element in the same axis"
 	"In #F order, if anAxis is the last axis weight is the product of all of the inner axis length, otherwise weight is the product of all of the outer axes.
 	In #C order weight is always the product of all of the outer axes"
+
+	
 	anAxis < 1 ifTrue:[^ self size].
 	"one dimension so weight for any axis is 1"
 	self nDim = 1 ifTrue:[^ 1]. 
+	(self weightForAxesAt: anAxis) ifNotNil:[^ (self weightForAxesAt: anAxis)].
 	self order=#F ifTrue:[  
 		anAxis = (self nDim - 1) ifTrue:[^ 1]. "column dim weight is 1"
 		w := anAxis = self nDim 
@@ -2606,8 +2666,10 @@ MlArray >> weightForAxis: anAxis [
 				ifFalse:[ (anAxis +1 to: self nDim -1)  inject:1 into:[:mul :e|  mul * (self shape at:e)]].
 		]
 	ifFalse:[ 
-		anAxis = self nDim ifTrue:[^ 1]. "row dim weight is 1"
-		w:= (anAxis +1 to: self nDim) inject:1 into:[:mul :e|  mul * (self shape at:e)]].
+		anAxis = self nDim 
+		ifTrue:[^ 1]"row dim weight is 1"
+		ifFalse:[ w:= (anAxis +1 to: self nDim) inject:1 into:[:mul :e|  mul * (self shape at:e)]]].
+	self weightForAxesAt: anAxis put:w.
 	^ w
 ]
 

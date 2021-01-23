@@ -5,9 +5,10 @@ Class {
 		'start',
 		'step',
 		'stop',
-		'size'
+		'size',
+		'wForAxes'
 	],
-	#category : #'MlSt-Core-Enumeration'
+	#category : #'MlSt-Core-Enumerator'
 }
 
 { #category : #'instance creation' }
@@ -124,6 +125,13 @@ MlInterval >> at: anInteger put: anObject [
 	"Storing into an Interval is not allowed."
 
 	self error: 'you can not store into an interval'
+]
+
+{ #category : #'instance creation' }
+MlInterval >> by: aStep [
+	step := aStep.
+	"forze to recalculate size"
+	size := nil 
 ]
 
 { #category : #enumerating }
@@ -357,6 +365,21 @@ MlInterval >> storeOn: aStream [
 	aStream nextPut: $)
 ]
 
+{ #category : #'private-accessing' }
+MlInterval >> weightForAxes [
+	^ wForAxes ifNil:[wForAxes := Array new: self shape size ]
+]
+
+{ #category : #enumerating }
+MlInterval >> weightForAxesAt: anAxis [ 
+	^ self weightForAxes at:anAxis 
+]
+
+{ #category : #accessing }
+MlInterval >> weightForAxesAt: anAxis put: anInteger [
+	self weightForAxes at:anAxis put: anInteger
+]
+
 { #category : #enumerating }
 MlInterval >> weightForAxis: anAxis [
 	| w |
@@ -365,6 +388,8 @@ MlInterval >> weightForAxis: anAxis [
 	"one dimension so weight for any axis is 1"
 	self nDim = 1 ifTrue:[^ 1]. 
 	anAxis = self nDim ifTrue:[^ 1]. "row dim weight is 1"
+	(self weightForAxesAt: anAxis) ifNotNil:[^ (self weightForAxesAt: anAxis)].
 	w:= (anAxis +1 to: self nDim) inject:1 into:[:mul :e|  mul * (self shape at:e)].
+	self weightForAxesAt: anAxis put:w.
 	^ w
 ]

@@ -15,17 +15,13 @@ Class {
 SVMSparseMatrix class >> fromMlArray: aMlArray [
 	| instance  jump rowWidth  i row val columnNumber |
 	instance := self new.
-	aMlArray order = #C ifTrue:[
-		rowWidth:= aMlArray shape last.
-		jump := 1].
-	aMlArray order = #F ifTrue:[
-		jump := aMlArray weightForAxis: (aMlArray nDim).
-		rowWidth  := aMlArray shape at: aMlArray nDim].	
+	jump := aMlArray weightForAxis: (aMlArray nDim).
+	rowWidth  := aMlArray width.	
 	
 	i:=0.
 
 	1 to:jump do:[:j|
-		((j) to: (j+ aMlArray size -1) by: jump) do:[:index|
+		((j) to: (j + aMlArray size -1) by: jump) do:[:index|
 			((i \\ (rowWidth)) = 0) ifTrue:[ row:= instance add: SVMRow new].
 			val := (aMlArray flatten at: ((index -1)\\ (aMlArray size ))+1).
 			(val =0 | val isNil) ifFalse:[
