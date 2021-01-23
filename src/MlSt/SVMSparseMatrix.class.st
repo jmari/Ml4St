@@ -15,7 +15,7 @@ Class {
 SVMSparseMatrix class >> fromMlArray: aMlArray [
 	| instance  jump rowWidth  i row val columnNumber |
 	instance := self new.
-	jump := aMlArray weightForAxis: (aMlArray nDim).
+	jump := aMlArray weightOfAxis: (aMlArray nDim).
 	rowWidth  := aMlArray width.	
 	
 	i:=0.

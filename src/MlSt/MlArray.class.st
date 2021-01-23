@@ -1495,7 +1495,7 @@ MlArray >> getAddressForPoint:anArrayOfInt [
 	address := 1.
 	"transport to [1,n] => [0,n-1]"
 	transportedAddress := anArrayOfInt  - 1.
-	transportedAddress  doWithIndex:[:each :i| address := address + (each * (self weightForAxis:i))].	
+	transportedAddress  doWithIndex:[:each :i| address := address + (each * (self weightOfAxis:i))].	
 	^ address 
 ]
 
@@ -1787,8 +1787,8 @@ MlArray >> itemSize [
 MlArray >> jumpToNextBlockInAxis: axis [
 	"called only by #concatArrays:  aMlArraysCollection axis: standarAxisNumber..."
 	^ self order = #F 
-		ifTrue:[(self weightForAxis: axis) * (self shape at:axis)]
-		ifFalse:[(self weightForAxis: axis-1)].
+		ifTrue:[(self weightOfAxis: axis) * (self shape at:axis)]
+		ifFalse:[(self weightOfAxis: axis-1)].
 
 ]
 
@@ -2414,7 +2414,7 @@ MlArray >> sliceForAddress: anInteger [
 				tmpIndex := Array new: self nDim withAll:0.
 				loop := (self order =#F)  ifTrue:[{self nDim} , (1 to:(self nDim -1))] ifFalse:[1 to: self nDim ].
 				loop do:[:i|
-					blockWeight := (self weightForAxis:i).
+					blockWeight := (self weightOfAxis:i).
 					blocksize := (linearIndex / blockWeight) asInteger.
 					tmpIndex at:i put:blocksize .
 					linearIndex := linearIndex  - (blocksize * blockWeight)].
@@ -2633,22 +2633,22 @@ MlArray >> walkWhile: aWhileBlock when: aConditionBlock do: aBlock [
 ]
 
 { #category : #'private-accessing' }
-MlArray >> weightForAxes [
+MlArray >> weightOfAxes [
 	^ wForAxes ifNil:[wForAxes := Array new: self shape size ]
 ]
 
 { #category : #'private-accessing' }
-MlArray >> weightForAxesAt: anAxis [ 
-	^ self weightForAxes at:anAxis 
+MlArray >> weightOfAxesAt: anAxis [ 
+	^ self weightOfAxes at:anAxis 
 ]
 
 { #category : #'private-accessing' }
-MlArray >> weightForAxesAt: anAxis put: anInteger [
-	self weightForAxes at:anAxis put: anInteger
+MlArray >> weightOfAxesAt: anAxis put: anInteger [
+	self weightOfAxes at:anAxis put: anInteger
 ]
 
 { #category : #enumerating }
-MlArray >> weightForAxis: anAxis [
+MlArray >> weightOfAxis: anAxis [
 	| w |
 	"the weigth means the number of elements we have to jump in the internal vector to get next element in the same axis"
 	"In #F order, if anAxis is the last axis weight is the product of all of the inner axis length, otherwise weight is the product of all of the outer axes.
@@ -2658,7 +2658,7 @@ MlArray >> weightForAxis: anAxis [
 	anAxis < 1 ifTrue:[^ self size].
 	"one dimension so weight for any axis is 1"
 	self nDim = 1 ifTrue:[^ 1]. 
-	(self weightForAxesAt: anAxis) ifNotNil:[^ (self weightForAxesAt: anAxis)].
+	(self weightOfAxesAt: anAxis) ifNotNil:[^ (self weightOfAxesAt: anAxis)].
 	self order=#F ifTrue:[  
 		anAxis = (self nDim - 1) ifTrue:[^ 1]. "column dim weight is 1"
 		w := anAxis = self nDim 
@@ -2669,7 +2669,7 @@ MlArray >> weightForAxis: anAxis [
 		anAxis = self nDim 
 		ifTrue:[^ 1]"row dim weight is 1"
 		ifFalse:[ w:= (anAxis +1 to: self nDim) inject:1 into:[:mul :e|  mul * (self shape at:e)]]].
-	self weightForAxesAt: anAxis put:w.
+	self weightOfAxesAt: anAxis put:w.
 	^ w
 ]
 
