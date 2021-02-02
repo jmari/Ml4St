@@ -170,7 +170,8 @@ Class {
 	],
 	#classInstVars : [
 		'shape',
-		'plainCollection'
+		'plainCollection',
+		'dTypeDic'
 	],
 	#category : #'MlSt-Core'
 }
@@ -182,6 +183,25 @@ MlArray class >> checkClassForAllElementsIn: aCollection [
 	firstClass := aCollection first class.
 	aCollection do:[:e| e class = firstClass ifFalse:[^false]].
 	^ true
+]
+
+{ #category : #'private-accessing' }
+MlArray class >> classForType: aType [
+
+	dTypeDic ifNil:[
+		dTypeDic := { #Float->FloatArray.
+	 				  #BoxedFloat64->FloatArray.
+					  #SmallFloat64->FloatArray .
+					  #Integer ->IntegerArray.
+					  #SmallInteger -> IntegerArray .
+					  #LargeInteger -> IntegerArray .
+					  #LargeNegativeInteger -> IntegerArray.
+					  #LargePositiveInteger -> IntegerArray.
+					  #Word -> WordArray .
+					  #DoubleWord -> DoubleWordArray.
+					  #DoubleByte -> DoubleByteArray .
+					  #Byte -> ByteArray} asDictionary].
+	^ dTypeDic at:aType ifAbsent:[Array]
 ]
 
 { #category : #'binary operations' }
@@ -1136,28 +1156,13 @@ MlArray >> changeLabelsByIndexes: anArrayOfInt [
 
 	result:= Array new: anArrayOfInt size.
 	anArrayOfInt doWithIndex:[:o :i| 
-		result at:i put: 
-		(o isArray ifTrue:[ o collect:[:e| (self labelsDictAt:i) translate: e]]
-					 ifFalse:[(self labelsDictAt:i) translate: o])].
+		(self labelsDictAt:i) isEmpty 
+			ifTrue:[result at:i put: o]
+			ifFalse:[
+			result at:i put: 
+				(o isArray ifTrue:[ o collect:[:e| (self labelsDictAt:i) translate: e]]
+					 		  ifFalse:[(self labelsDictAt:i) translate: o])]].
 	^ result
-]
-
-{ #category : #'private-accessing' }
-MlArray >> classForType: aType [
-	| dTypeDic |
-	dTypeDic := { #Float->FloatArray.
-	 				  #BoxedFloat64->FloatArray.
-					  #SmallFloat64->FloatArray .
-					  #Integer ->IntegerArray.
-					  #SmallInteger -> IntegerArray .
-					  #LargeInteger -> IntegerArray .
-					  #LargeNegativeInteger -> IntegerArray.
-					  #LargePositiveInteger -> IntegerArray.
-					  #Word -> WordArray .
-					  #DoubleWord -> DoubleWordArray.
-					  #DoubleByte -> DoubleByteArray .
-					  #Byte -> ByteArray} asDictionary.
-	^ dTypeDic at:aType ifAbsent:[Array]
 ]
 
 { #category : #comparing }
@@ -1281,7 +1286,7 @@ MlArray >> confusionMatrix: aMlArray [
 MlArray >> convertTypeTo:aType [
 
 	| newArray newArrayType nv |
-	newArrayType := (self classForType: aType).
+	newArrayType := (self class classForType: aType).
 	newArray := newArrayType new: self internalArray size.
 	1 to: newArray size do:[:i|
 		nv := self adaptData:( self internalArray at:i) for:newArrayType.
@@ -1747,7 +1752,7 @@ MlArray >> internalArray: aNewArray [
 MlArray >> internalArrayOfType: aType size: size [ 	
 	| dataClass |
 	self dType:aType.
-	dataClass :=self classForType: self dType.
+	dataClass :=self class classForType: self dType.
 	self internalArray: (dataClass new: size)
 ]
 

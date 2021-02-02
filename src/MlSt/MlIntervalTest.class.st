@@ -54,6 +54,20 @@ MlIntervalTest >> testEnumeration [
 ]
 
 { #category : #tests }
+MlIntervalTest >> testEnumeration2 [
+		| i j |
+	i := { 10. 10. 10. 10 } asMlInterval.
+
+
+	j := i collect:[:e| e module].
+	self assert:j first equals:2.
+	self assert:j last equals:20.
+	self assert:j size equals: 10000.
+
+
+]
+
+{ #category : #tests }
 MlIntervalTest >> testEnumerationNegStep [
 		| i n |
 	i := { 10. 10. 10. 10 } to:{1. 1. 1. 1} by:-1 .

@@ -136,13 +136,11 @@ MlInterval >> by: aStep [
 
 { #category : #enumerating }
 MlInterval >> collect: aBlock [
-	| nextValue result |
+	|  result |
 	result := self species new: self size.
-	nextValue := start.
 	1 to: result size do:
 		[:i |
-		result at: i put: (aBlock value: nextValue).
-		nextValue := nextValue + step].
+		result at: i put: (aBlock value: (self at:i))].
 	^ result
 ]
 
@@ -294,6 +292,15 @@ MlInterval >> reverseDoWithIndex: aBlock [
 		whileTrue: [
 			aBlock value: (self at:index) value: index.
 			index := index - 1.]
+]
+
+{ #category : #enumerating }
+MlInterval >> select: aBlock [
+	|  result |
+	result := OrderedCollection new.
+	1 to: result size do:
+		[:i | (aBlock value: (self at:i)) ifTrue:[result add:(self at:i)]].
+	^ result asArray
 ]
 
 { #category : #accessing }
