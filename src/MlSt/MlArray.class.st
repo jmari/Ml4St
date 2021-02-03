@@ -807,6 +807,7 @@ MlArray >> < aNumber [
 
 { #category : #accessing }
 MlArray >> <- aMlArray [
+	"assign values to the array"
 	| mla |
 	mla := aMlArray isMlArray 
 				ifTrue:[aMlArray internalArray]
@@ -816,12 +817,13 @@ MlArray >> <- aMlArray [
 
 { #category : #piping }
 MlArray >> << aTransformer [
+	"transform using a Transformer, see Preprocessing classes"
 	^ aTransformer inverseTransform: self.
 ]
 
 { #category : #comparing }
 MlArray >> <= aNumber [
-	^ self eval:[:e| e<= aNumber]
+	^ self eval:[:e| e <= aNumber]
 ]
 
 { #category : #comparing }
@@ -833,16 +835,17 @@ MlArray >> = aMlArrayOrNumber [
 
 { #category : #comparing }
 MlArray >> > aNumber [
-	^ self eval: [:e| e> aNumber]
+	^ self eval: [:e| e > aNumber]
 ]
 
 { #category : #comparing }
 MlArray >> >= aNumber [
-	^ self eval:[:e| e>= aNumber]
+	^ self eval:[:e| e >= aNumber]
 ]
 
 { #category : #piping }
 MlArray >> >> aTransformer [
+	"transform using a Transformer, see Preprocessing classes"
 	^ aTransformer fitAndTransform: self.
 ]
 
@@ -1033,8 +1036,7 @@ MlArray >> at: anObject [
 	| address anArrayOfInt |
 	"nil returns exception"
 	anObject ifNil:[MlIndexTypeError signal].
-	"aBlock returns a boolean MlArray of execution of eval 
-	 over the internal array, we can not know the shape of the execution..."
+	"aBlock returns a boolean MlArray of execution of eval over the internal array, we can not know the shape of the execution..."
 	anObject isBlock ifTrue:[^ self eval:anObject].
 	
 	"if nDim = 1 an array is a slice"
@@ -1043,12 +1045,12 @@ MlArray >> at: anObject [
 								and:[anObject first isArray not & (anObject isNotNil)]]) 
 										ifTrue:[	{anObject}]
 										ifFalse:[ anObject ].
-	"if it is not an array, enclose in an array, "									
+	"if it is not an array, encloses it in an array, "									
 	anArrayOfInt := anArrayOfInt isArray 
 										ifTrue:[anArrayOfInt]
 										ifFalse:[	{anArrayOfInt}].
 											
-	"substitute labels by indexes"										
+	"substitutes labels by indexes"										
 	anArrayOfInt := self changeLabelsByIndexes: anArrayOfInt.
 	"if the array contain a slices we do slice"
 	(self isAnArrayOfSlices: anArrayOfInt) 
@@ -1667,10 +1669,11 @@ MlArray >> groupBy: anAssociation aggregate: aBlock storeCallbackValue: includeK
 					ifFalse:[anAssociation key].
 
 	agKeys :=  agKeys isBlock 
-					ifTrue: [agKeys]
-					ifFalse:[
+					ifTrue: [labelsForGroup add:'clause'.agKeys]
+					ifFalse:[	
 							labelsForGroup addAll:agKeys.
 							agKeys collect:[:v|(self labelsDictAt: (self nDim )) translate:v]].
+						
 	agValues := anAssociation value isInteger | (anAssociation value isString )
 					ifTrue:[{anAssociation value}]
 					ifFalse:[anAssociation value].
@@ -1837,7 +1840,7 @@ MlArray >> length [
 	^ self shape at: (self nDim - 1)
 ]
 
-{ #category : #enumerating }
+{ #category : #'unary operations' }
 MlArray >> log [
 	| nc i |
 	nc:= self internalArray log.
