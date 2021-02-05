@@ -2398,7 +2398,7 @@ MlArray >> sliceUsingBooleanFilter: aSliceArray [
 	1 to: aSliceArray size do:[:axis|
 		sliceForDim := (aSliceArray at: axis).
 		(sliceForDim isMlArray and:[sliceForDim dType = #Boolean])
-			ifTrue:[newInstance := newInstance applyBooleanFilter: sliceForDim on: axis.]
+			ifTrue:[newInstance := newInstance applyBooleanFilter: sliceForDim on: axis]
 	].
 
 	^	newInstance	
