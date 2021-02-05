@@ -314,8 +314,7 @@ MlNonContinuousVector >> isNonContinuousVector [
 MlNonContinuousVector >> isSliced [
 	| myBuffer |
 	myBuffer := self buffer.
-	[myBuffer isKindOf: MlBufferedArray  ] whileTrue:[ 
-		myBuffer := myBuffer buffer].
+	[myBuffer isKindOf: MlBufferedArray  ] whileTrue:[ myBuffer := myBuffer buffer].
 	^ self size ~= myBuffer size
 ]
 

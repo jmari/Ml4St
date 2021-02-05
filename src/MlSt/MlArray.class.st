@@ -647,8 +647,8 @@ MlArray class >> new: aShape order:CorF [
 MlArray class >> new: anIntOrArray order: CorF dType: dataType [
 	|instance size aShape |
 	aShape := anIntOrArray isNumber ifTrue:[{anIntOrArray}] ifFalse:[anIntOrArray].
-	instance := self new.
 	size := aShape inject:1 into:[:m :e| m*e].
+	instance := self new.
 	instance internalArrayOfType: dataType size:size.
 	instance shape: aShape.
 	instance order: CorF.
@@ -744,12 +744,14 @@ MlArray >> & aMlArray [
 
 { #category : #'binary operations' }
 MlArray >> * aMlArray [
+	"element by element product "
 	(aMlArray isMlArray and:[aMlArray size  > (self size )]) ifTrue:[^ aMlArray * self].
 	^ self performBinaryOp: #* on: aMlArray  
 ]
 
 { #category : #'binary operations' }
 MlArray >> ** aMlArray [
+	"element by element square"
 	^ self performBinaryOp: #** on: aMlArray  
 ]
 
@@ -802,6 +804,7 @@ MlArray >> /= aMlArray [
 
 { #category : #comparing }
 MlArray >> < aNumber [
+	"returns a boolean matrix"
 	^ self eval:[:e| e< aNumber]
 ]
 
@@ -823,11 +826,13 @@ MlArray >> << aTransformer [
 
 { #category : #comparing }
 MlArray >> <= aNumber [
+	"returns a boolean matrix"
 	^ self eval:[:e| e <= aNumber]
 ]
 
 { #category : #comparing }
 MlArray >> = aMlArrayOrNumber [
+	"returns a boolean matrix"
 	^ aMlArrayOrNumber isNumber| (aMlArrayOrNumber isKindOf:Boolean)|(aMlArrayOrNumber isString)|(aMlArrayOrNumber isNil) 
 		ifTrue:[self eval:[:e| e = aMlArrayOrNumber] ]
 		ifFalse:[self internalArray = aMlArrayOrNumber internalArray and:[self order = aMlArrayOrNumber order and:[self shape= aMlArrayOrNumber shape]] ]
@@ -835,11 +840,13 @@ MlArray >> = aMlArrayOrNumber [
 
 { #category : #comparing }
 MlArray >> > aNumber [
+	"returns a boolean matrix"
 	^ self eval: [:e| e > aNumber]
 ]
 
 { #category : #comparing }
 MlArray >> >= aNumber [
+	"returns a boolean matrix"
 	^ self eval:[:e| e >= aNumber]
 ]
 
@@ -851,7 +858,7 @@ MlArray >> >> aTransformer [
 
 { #category : #'binary operations' }
 MlArray >> \\ aMlArray [
-	"module operation and assign"
+	"module operation"
 	| newInstance |
 	newInstance := self newInstanceButEmpty.
 	^ aMlArray isMlArray   
@@ -1147,7 +1154,7 @@ MlArray >> calculateNewShape: anArrayOfInt [
 									uDim isInteger ifFalse:[MlShapeError signal].
 									anArrayOfInt replaceAll: -1 with:uDim.	]
 						ifFalse:[anArrayOfInt].
- 	newSize := newShape inject: 1 into: [ :m :e | m*e].  
+ 	newSize := newShape inject: 1 into: [ :m :e | m*e]. 
 	newSize = self internalArray size ifFalse:[MlShapeError signal].
 	^ newShape								
 ]
@@ -1196,6 +1203,9 @@ MlArray >> columnsDo: aTwoArgBlock [
 
 { #category : #enumerating }
 MlArray >> columnsDo: aTwoArgBlock copy: aBool [
+	"walks the matrix column by column, it passes two args to the block, the sliced matrix and the slice index.
+	if aBool is true it the internalArray of the sliced matrix is a copy otherwise is a reference.
+	Normally you should use copy if you are planning to operate the column (copy matrix isn't sliced) uses native operations"
 	| slice |
 	(self shape asMlInterval by: self width * self length) do: [:row|  
 			1 to: self width do:[:column|
@@ -1208,68 +1218,6 @@ MlArray >> columnsDo: aTwoArgBlock copy: aBool [
 			]
 		]
 	
-]
-
-{ #category : #'private-slicing' }
-MlArray >> completeSlice: aSliceArray [
-	" this function substitutes the _ and negative integers by its value.
-	 _@_ left _ will be replaced by 1 and right _ will be replaced by the lenght of the dimension
-	 -1@-2 negatige integers will be replaced by n + k + 1 where n is the lenght of the dimension 
-	   and k is the negative integer
-	 _ or nil means _@_                                             
-	 also a slice could be:
-	 - an array of integers
-	 - an MlArray of Booleans. will be replaced by _@_. the filter will be applied later in the slice method"
-	
-	| collectionOfSlices completeSlice sliceForDim subcollection |
-	
-	aSliceArray size = self nDim  ifFalse:[ MlSliceError signal:'The slice should be an array with ', self nDim asString,' elements'].
-	
-	"will store all the completed slices"
-	collectionOfSlices:=OrderedCollection new.
-	
-	"BLOCK DEFINITION: EXECUTED LATER"
-	completeSlice := [ :slice :i :colOfSlices|
-		|si step start end  |
-		si := slice.
-		step :=1.
-		si isInteger 
-		ifTrue:[	si < 0 
-						ifTrue:[start := end := ((self shape at:i) + si + 1)]
-						ifFalse:[ start := end :=si	]]
-		ifFalse:[	
-			si isSlice ifFalse:[ MlSliceError signal].
-			"to be sure it is not a point"
-			si:= si asSlice.
-			"remember _ is nil"
-			start := (si x notNil) ifTrue:[si x] ifFalse:[self shape at:i].
-			start < 0 ifTrue:[start := ((self shape at:i) + start +1)].
-			end := (si y notNil) ifTrue:[si y] ifFalse:[
-				si x ifNil:[1] ifNotNil:[self shape at:i]].
-			end < 0 ifTrue:[end := ((self shape at:i) + end + 1)].
-			step := si step].
-		colOfSlices add: (start to:end by:step)].
-	
-	
-	1 to: aSliceArray size do:[:dimIndex|
-		sliceForDim := (aSliceArray at: dimIndex).
-		sliceForDim isCollection &  (sliceForDim isString not ) &  (sliceForDim isSlice not)
-			ifTrue:[
-				subcollection := OrderedCollection new.
-				sliceForDim do:[:each| 
-					completeSlice value: (each ifNil:[ _@_] ifNotNil:[each]) 
-								  value:dimIndex value:subcollection].
-				collectionOfSlices add:subcollection asArray
-				]
-			ifFalse:[
-				sliceForDim isMlArray | (sliceForDim isNil)
-				ifTrue:[completeSlice value: _@_ value: dimIndex value: collectionOfSlices]
-				ifFalse:[	completeSlice value: sliceForDim value: dimIndex value: collectionOfSlices]]
-	].
-
-	^	collectionOfSlices 	
-		
-
 ]
 
 { #category : #'binary operations' }
@@ -1450,7 +1398,7 @@ MlArray >> dot: aMlArray [
 				j := j + jump.
 				array := reshapedArray slice: {i@j. _} copy: true].
 			rowNumber := rowNumber + 1.
-		].
+		] copy:true.
 	newShape := self shape deepCopy.
 	newShape at: newShape size  put: shape2 last.
 	^ result reshape: newShape
@@ -1648,9 +1596,7 @@ MlArray >> groupBy: anAssociation aggregate: aBlock storeCallbackValue: includeK
 	
 	| agKeys agValues  values aggregate  r valueRows  keyRows labelsForGroup val result groupingKey subgroupsCollection newDim |
 
-	self nDim <2 ifTrue:[MlShapeError signal: ('It should be a nD Array and it has only one Dimensions')].
-	self nDim >2 ifTrue:[
-	 
+	self nDim >2 ifTrue:[	 
 		subgroupsCollection := OrderedCollection new.
 		1 to: self shape first do:[:pos|
 				newDim := Array new:self nDim withAll:nil.
@@ -1812,20 +1758,19 @@ MlArray >> kurtosis: axis [
 
 { #category : #accessing }
 MlArray >> labelsDict [ 
-	"labels dict is a dictionary axis-->labels"
-	^ labelsDict ifNil:[ labelsDict := Dictionary new]
+	"labelsDict dict is an Array axis-->labels"
+	^ labelsDict ifNil:[ labelsDict := Array new:self nDim]
 ]
 
 { #category : #accessing }
-MlArray >> labelsDict: aSmallDictionary [ 
+MlArray >> labelsDict: anArrayOfLabelTranslators [ 
 	"labels dict is a dictionary axis-->labels"
-	labelsDict := aSmallDictionary
+	labelsDict := anArrayOfLabelTranslators
 ]
 
 { #category : #labeling }
 MlArray >> labelsDictAt: anInteger [ 
-	^ self labelsDict at: anInteger 
-	 					   ifAbsentPut:[MlLabelTranslator new]
+	^ (self labelsDict at: anInteger) ifNil:[ self labelsDict at: anInteger put:MlLabelTranslator new]
 ]
 
 { #category : #accessing }
@@ -1882,7 +1827,7 @@ MlArray >> max: axis [
 
 { #category : #printing }
 MlArray >> maxElementsToPrint [
-	^ maxElementsToPrint ifNil:[maxElementsToPrint := 10]
+	^ maxElementsToPrint ifNil:[maxElementsToPrint := 50]
 ]
 
 { #category : #printing }
@@ -2106,7 +2051,7 @@ MlArray >> performBinaryOp: op on: aMlArray withArguments:args [
 ]
 
 { #category : #'private-printing' }
-MlArray >> printElement: element pad:maxPad [
+MlArray >> printElement: element decimalPlaces:maxPad [
 	^((element isInteger|element isFloat) 
 						ifTrue:[ element printShowingDecimalPlaces: maxPad]
 						ifFalse:[ element asString ]).
@@ -2114,16 +2059,16 @@ MlArray >> printElement: element pad:maxPad [
 
 { #category : #printing }
 MlArray >> printOn: aStream [
-	self printOn:aStream maxPad:5 level:1.
+	self printOn:aStream decimalPlaces:5 level:1.
 	
 ]
 
 { #category : #'private-printing' }
-MlArray >> printOn: aStream maxPad: maxPad level: l [
+MlArray >> printOn: aStream decimalPlaces: maxPad level: l [
 	| printedRows totalRows currentRow |
 	l <= (self nDim - 1)
 		ifTrue: [ aStream nextPut: $[.
-			self printOn: aStream maxPad: maxPad level: l + 1 ]
+			self printOn: aStream decimalPlaces: maxPad level: l + 1 ]
 		ifFalse: [ printedRows := currentRow := 0.
 			totalRows := (self calculateNewShape:{-1.self width}) first.
 			self matricesDo: [ :matrix :s| 
@@ -2133,7 +2078,7 @@ MlArray >> printOn: aStream maxPad: maxPad level: l [
 							(currentRow <= (self maxElementsToPrint / 2) 
 								or:[currentRow > (totalRows - (self maxElementsToPrint / 2))])
 								ifTrue:[							
-									self printOn: aStream row: row pad: maxPad.
+									self printOn: aStream row: row decimalPlaces: maxPad.
 									printedRows := printedRows + 1].
 						
 							(currentRow = ((self maxElementsToPrint / 2) asInteger + 1))
@@ -2145,26 +2090,26 @@ MlArray >> printOn: aStream maxPad: maxPad level: l [
 ]
 
 { #category : #'private-printing' }
-MlArray >> printOn: aStream row: row pad:maxPad [
+MlArray >> printOn: aStream row: row decimalPlaces:maxPad [
 	aStream nextPut:$[;nextPut:Character tab.
-				(row size > self maxElementsToPrint ) 
+			(row size > self maxElementsToPrint ) 
 				ifTrue:[
 					1 to: (self maxElementsToPrint / 2 ) do:[:i| 
-						aStream nextPutAll: (self printElement:(row at:i) pad:maxPad );
+						aStream nextPutAll: (self printElement:(row at:i) decimalPlaces:maxPad );
 								  nextPut:$,;
 								  nextPut:Character tab]
 				] 
 				ifFalse:[
 					1 to:row size do:[:i| 
-						aStream nextPutAll: (self printElement:(row at:i) pad:maxPad ).
+						aStream nextPutAll: (self printElement:(row at:i) decimalPlaces:maxPad ).
 						i = row size ifFalse:[aStream nextPut:$,;nextPut:Character tab]]].
 				(row size > self maxElementsToPrint ) ifTrue:[
 					aStream nextPutAll:' ... ,'.
 					(row size - (self maxElementsToPrint / 2 )) to: row size do:[:i| 
-						aStream nextPutAll: (self printElement:(row at:i) pad:maxPad ).
+						aStream nextPutAll: (self printElement:(row at:i) decimalPlaces:maxPad ).
 						i = row size ifFalse:[aStream nextPut:$,;nextPut:Character tab]].
 				].
-				aStream nextPut:$];nextPut:Character cr.
+	aStream nextPut:$];nextPut:Character cr.
 ]
 
 { #category : #printing }
@@ -2256,14 +2201,14 @@ MlArray >> replaceNanBy: aMlArray [
 
 ]
 
-{ #category : #accessing }
+{ #category : #converting }
 MlArray >> reshape: anArrayOfInt [
 	"reset weight cache"
 	wForAxes := nil.
 	self shape: ( self calculateNewShape: anArrayOfInt)
 ]
 
-{ #category : #accessing }
+{ #category : #converting }
 MlArray >> reshaped: anArrayOfInt [
 	^ self newInstanceButEmpty shape: ( self calculateNewShape: anArrayOfInt);internalArray: self internalArray
 
@@ -2307,6 +2252,9 @@ MlArray >> rowsDo: aTwoArgBlock [
 
 { #category : #enumerating }
 MlArray >> rowsDo: aTwoArgBlock copy: aBool [
+	"walks the matrix row by row, it passes two args to the block, the sliced matrix and the slice index.
+	if aBool is true it the internalArray of the sliced matrix is a copy otherwise is a reference.
+	Normally you should use copy if you are planning to operate the row (copy matrix isn't sliced) uses native operations"
 	| slice |
 	self nDim = 1 ifTrue:[aTwoArgBlock valueWithEnoughArguments: {self} ]
 	ifFalse:[
@@ -2348,8 +2296,9 @@ MlArray >> shape [
 MlArray >> shape: anArrayOfInt [
 	(shape notNil and:[anArrayOfInt size = 1 & (shape size > 1)])  ifTrue:[ 
 		self labelsDict size >2 ifTrue:[
+			"this is a trick row labels when you reshape from n-dim to 1 "
 			self labelsDict at:1 put: (self labelsDict at:2). 
-			self labelsDict removeKey:2 ]].
+			self labelsDict at:2 put:nil ]].
 	shape := anArrayOfInt asArray
 ]
 
@@ -2382,7 +2331,7 @@ MlArray >> slice: aSliceArray [
 MlArray >> slice: aSliceArray copy: makeCopy [
 	| slice list indexes newShape startLevel newInstance |
 	
-	slice := self completeSlice: aSliceArray.
+	slice := MlSlice completeSlices: aSliceArray forArray:self.
 	list := Array new: self nDim.
 	indexes := SortedCollection new.
 	indexes sortBlock:[:a :b| a first < b first].
@@ -2689,6 +2638,7 @@ MlArray >> width [
 
 { #category : #'binary operations' }
 MlArray >> | aMlArray [
+	"or operation"
 	| newInstance zip |
 	(aMlArray isMlArray and:[aMlArray size  > (self size )]) ifTrue:[^ aMlArray | self].
 	newInstance := self newInstanceButEmpty.
@@ -2704,6 +2654,7 @@ MlArray >> | aMlArray [
 
 { #category : #comparing }
 MlArray >> ~= aMlArrayOrNumber [
+	"returns a boolean matrix with no equal operation"
 	^ aMlArrayOrNumber isNumber| (aMlArrayOrNumber isKindOf:Boolean)|(aMlArrayOrNumber isString)|(aMlArrayOrNumber isNil) 
 		ifTrue:[self eval:[:e| e ~= aMlArrayOrNumber] ]
 		ifFalse:[(self = aMlArrayOrNumber) not ] 

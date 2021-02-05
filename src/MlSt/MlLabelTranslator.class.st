@@ -26,6 +26,11 @@ MlLabelTranslator >> at: i put: anObject [
 	^ super at:i put: anObject asString
 ]
 
+{ #category : #copying }
+MlLabelTranslator >> deepCopy [
+	^ self shallowCopy 
+]
+
 { #category : #accessing }
 MlLabelTranslator >> slice: aSliceInOneDimension [
 	| copy |

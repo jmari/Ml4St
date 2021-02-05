@@ -87,6 +87,22 @@ MlArrayMathTest >> testDot [
 ]
 
 { #category : #tests }
+MlArrayMathTest >> testDot2 [
+
+	| a b dot r|
+	a := MlArray from: #(#(2 4) #(3 7) #(5 1)).
+	b := (MlArray from: #(1 6)) transposed. 
+	dot := a dot:b.
+	r := MlArray from: #(26 45 11).
+	self assert: dot equals:r
+	
+
+	
+
+
+]
+
+{ #category : #tests }
 MlArrayMathTest >> testMathOperations [
 
 	| a b sum oldA c zip |
