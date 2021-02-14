@@ -41,7 +41,7 @@ MlArraySlicingTest >> testSlice1DUsingEnums [
 	d := a at: {  1 to:2. 4 to:5. 7 to:9  }.
 	sol :=  MlArray from: #( 10 1 5 2 6 4 10).
 	self assert:d equals: sol.
-	d := a at: 11@_. 
+	d := a at: {11 to: a size}. 
 	sol :=  MlArray from: #( 12 2 11 2 3 6 10 11 12 20 10 11 12 56).
 	self assert:d equals: sol.	
 	d := a at: #( 1 2 3 4 5 6 8). 
