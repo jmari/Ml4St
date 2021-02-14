@@ -41,7 +41,6 @@ MlSlice class >> completeSlices: anArrayOfSlices forArray: anMlArray [
 						ifTrue:[start := end := ((anMlArray shape at:i) + si + 1)]
 						ifFalse:[ start := end :=si	]]
 		ifFalse:[	
-			si isSlice ifFalse:[ MlSliceError signal].
 			"to be sure it is not a point"
 			si:= si asSlice.
 			"remember _ is nil"

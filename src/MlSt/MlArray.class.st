@@ -2503,8 +2503,14 @@ MlArray >> transposed [
 	self order = #C ifTrue:[instance := self asFortranArray order:#C].
 	self order = #F ifTrue:[instance := self asCArray order:#F].
 	self nDim >1 
-		ifTrue:[instance shape: (self switchShapeOrder: self shape)]
-		ifFalse:[instance reshape: {instance size. 1}].
+		ifTrue:[
+			instance shape: (self switchShapeOrder: self shape).
+			instance labelsDict at:2 put:(self labelsDict first).
+			instance labelsDict at:1 put:(self labelsDict at:2).]
+		ifFalse:[
+			instance reshape: {instance size. 1}.
+			instance labelsDict:nil.
+			instance labelsDict at:2 put:(self labelsDict first).].
 	
 	^ instance
 
