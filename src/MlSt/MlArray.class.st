@@ -1377,6 +1377,9 @@ MlArray >> doWithIndex: aBlock [
 { #category : #'binary operations' }
 MlArray >> dot: aMlArray [
 	| reshapedArray array shape2 i j jump result rowNumber tmp newShape numberOfRows |
+	"dot is not like ndArray dot product, in nDim > 2 it makes the dot productc between the last two dimensions
+	one matrix by one"
+	self assert: self width = aMlArray length. 
 	shape2 := aMlArray shape deepCopy.
 	reshapedArray := aMlArray reshaped:{-1. aMlArray width}.
 	i:=1.j:= aMlArray length.
@@ -1782,7 +1785,7 @@ MlArray >> last [
 { #category : #accessing }
 MlArray >> length [
 	"returns the number of rows"
-	^ self shape at: (self nDim - 1)
+	^ self shape at: (self nDim - 1) ifAbsent:[0]
 ]
 
 { #category : #'unary operations' }

@@ -463,3 +463,13 @@ MlArraySlicingTest >> testSliceWithStepsF [
 	self assert: b equals: s.	
 
 ]
+
+{ #category : #tests }
+MlArraySlicingTest >> testWrongSlice [
+	| a b d sol |
+	a := MlArray from: #(1 2 3 4 5 6 7 8 9 10).
+	d := a at: {  1@5. 4@5. 7@9  }.
+	sol :=  MlArray from: #( 6 10).
+	self assert:d equals: sol.
+	
+]
