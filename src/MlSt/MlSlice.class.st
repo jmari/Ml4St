@@ -16,6 +16,9 @@ Class {
 { #category : #'as yet unclassified' }
 MlSlice class >> completeSlice:slice axis:i shape: shape [
 		|si step start end  |
+		"change _ by 1 or shape(i)
+		 change -n by shape(i) - n + 1
+		 returns an equivalent interval"
 		si := slice.
 		step :=1.
 		si isInteger 
@@ -48,21 +51,19 @@ MlSlice class >> completeSlices: anArrayOfSlices forArray: aMlArray [
 	 - an array of integers
 	 - an MlArray of Booleans. will be replaced by _@_. the filter will be applied later in the slice method"
 	
-	| collectionOfSlices sliceForDim subcollection |
+	| collectionOfSlices axisSlice subcollection |
 	
 	anArrayOfSlices size = aMlArray nDim  ifFalse:[ MlSliceError signal:'The slice should be an array with ', aMlArray nDim asString,' elements'].
 	
 	"will store all the completed slices"
 	collectionOfSlices:=OrderedCollection new.
-	
-	
-	
+		
 	1 to: anArrayOfSlices size do:[:dimIndex|
-		sliceForDim := (anArrayOfSlices at: dimIndex).
-		sliceForDim isCollection &  (sliceForDim isString not ) &  (sliceForDim isSlice not)
+		axisSlice := (anArrayOfSlices at: dimIndex).
+		axisSlice isCollection &  (axisSlice isString not ) &  (axisSlice isSlice not)
 			ifTrue:[
 				subcollection := OrderedCollection new.
-				sliceForDim do:[:each| 
+				axisSlice do:[:each| 
 					subcollection add: (self completeSlice:(each ifNil:[ _@_] ifNotNil:[each]) 
 								  								axis:dimIndex 
 																shape: aMlArray shape)].
@@ -70,9 +71,9 @@ MlSlice class >> completeSlices: anArrayOfSlices forArray: aMlArray [
 				]
 			ifFalse:[
 				collectionOfSlices add:
-					(sliceForDim isMlArray | (sliceForDim isNil)
+					(axisSlice isMlArray | (axisSlice isNil)
 						ifTrue: [self completeSlice: _@_ axis: dimIndex shape: aMlArray shape]
-						ifFalse:[	self completeSlice: sliceForDim axis: dimIndex shape: aMlArray shape])
+						ifFalse:[	self completeSlice: axisSlice axis: dimIndex shape: aMlArray shape])
 			]
 	].
 

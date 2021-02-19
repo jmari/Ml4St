@@ -4,3 +4,8 @@ Extension { #name : #Interval }
 Interval >> asSlice [ 
 	^ self first@self last@self increment
 ]
+
+{ #category : #'*MlSt' }
+Interval >> isSlice [
+	^ true
+]

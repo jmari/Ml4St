@@ -76,7 +76,7 @@ MlArrayMathTest >> testDot [
 	| a b dot r|
 	a := MlArray from: #(#(#(2 0 1) #(3 0 0) #(5 1 1)) #(#(1 -1 1) #(2 2 3) #(-2 -3 -1))).
 	b := MlArray from: #(#(#(1 0 1) #(1 2 1) #(1 1 0)) #(#(1 0 4) #(0 2 5) #(1 3 0))). 
-	dot := a dot:b.
+	dot := a matMul: b.
 	r := MlArray from: #(#(#(3 1 2) #(3 0 3) #(7 3 6)) #(#(2 1 -1) #(5 13 18) #(-3 -9 -23))).
 	self assert: dot equals:r
 	
@@ -92,7 +92,7 @@ MlArrayMathTest >> testDot2 [
 	| a b dot r|
 	a := MlArray from: #(#(2 4) #(3 7) #(5 1)).
 	b := (MlArray from: #(1 6)) transposed. 
-	dot := a dot:b.
+	dot := a matMul:b.
 	r := MlArray from: #(#(26) 
 								#(45) 
 								#(11)).
@@ -110,7 +110,7 @@ MlArrayMathTest >> testDot3 [
 	| a b dot r|
 	a := MlArray from: #(#(2 4) #(3 7) #(5 1)).
 	b := (MlArray from: #(1 6)). 
-	dot := a dot:b.
+	dot := a matMul:b.
 	r := MlArray from: #(#(26) 
 								#(45) 
 								#(11)).

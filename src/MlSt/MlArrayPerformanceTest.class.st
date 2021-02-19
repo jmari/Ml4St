@@ -45,7 +45,7 @@ MlArrayPerformanceTest >> testBigDot [
 	a := (MlArray random: #( 100 100)).
 	b := (MlArray random: #( 100 100)).
 	
-	t := [a dot:b.] timeToRun.
+	t := [a matMul:b.] timeToRun.
 	self assert:t <= (Duration milliSeconds:1100).
 	
 
