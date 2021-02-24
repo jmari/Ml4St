@@ -74,11 +74,11 @@ MlArrayMathTest >> testDescribe [
 MlArrayMathTest >> testDot [
 
 	| a b dot r|
-	a := MlArray from: #(#(#(2 0 1) #(3 0 0) #(5 1 1)) #(#(1 -1 1) #(2 2 3) #(-2 -3 -1))).
-	b := MlArray from: #(#(#(1 0 1) #(1 2 1) #(1 1 0)) #(#(1 0 4) #(0 2 5) #(1 3 0))). 
-	dot := a matMul: b.
-	r := MlArray from: #(#(#(3 1 2) #(3 0 3) #(7 3 6)) #(#(2 1 -1) #(5 13 18) #(-3 -9 -23))).
-	self assert: dot equals:r
+	a := MlArray from: #(#(#(6 3) #(7 4) #(6 9)) #(#(2 6) #(7 4) #(3 7))).
+	b := MlArray from: #(#(#(7 2 5 4 ) #(1 7 5 1)) #(#(4 0 9 5 ) #(8 0 9 2)) #(#(6 3 8 2 ) #(4 2 6 4))).
+	dot := a dot:b.
+
+	self assert: dot shape equals: #(2 3 3 4)
 	
 
 	
@@ -106,6 +106,58 @@ MlArrayMathTest >> testDot2 [
 
 { #category : #tests }
 MlArrayMathTest >> testDot3 [
+
+	| a b dot r|
+	a := MlArray from: #(#(2 4) #(3 7) #(5 1)).
+	b := (MlArray from: #(1 6)). 
+	dot := a matMul:b.
+	r := MlArray from: #(#(26) 
+								#(45) 
+								#(11)).
+	self assert: dot equals:r
+	
+
+	
+
+
+]
+
+{ #category : #tests }
+MlArrayMathTest >> testMatMul [
+
+	| a b dot r|
+	a := MlArray from: #(#(#(2 0 1) #(3 0 0) #(5 1 1)) #(#(1 -1 1) #(2 2 3) #(-2 -3 -1))).
+	b := MlArray from: #(#(#(1 0 1) #(1 2 1) #(1 1 0)) #(#(1 0 4) #(0 2 5) #(1 3 0))). 
+	dot := a matMul: b.
+	r := MlArray from: #(#(#(3 1 2) #(3 0 3) #(7 3 6)) #(#(2 1 -1) #(5 13 18) #(-3 -9 -23))).
+	self assert: dot equals:r
+	
+
+	
+
+
+]
+
+{ #category : #tests }
+MlArrayMathTest >> testMatMul2 [
+
+	| a b dot r|
+	a := MlArray from: #(#(2 4) #(3 7) #(5 1)).
+	b := (MlArray from: #(1 6)) transposed. 
+	dot := a matMul:b.
+	r := MlArray from: #(#(26) 
+								#(45) 
+								#(11)).
+	self assert: dot equals:r
+	
+
+	
+
+
+]
+
+{ #category : #tests }
+MlArrayMathTest >> testMatMul3 [
 
 	| a b dot r|
 	a := MlArray from: #(#(2 4) #(3 7) #(5 1)).

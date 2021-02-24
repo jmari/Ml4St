@@ -1376,34 +1376,27 @@ MlArray >> doWithIndex: aBlock [
 
 { #category : #'binary operations' }
 MlArray >> dot: aMlArray [
-	| reshapedArray array shape2 i j jump result rowNumber tmp newShape numberOfRows |
+	|  result rowNumber tmp newShape  numberOfRows |
 	"dot is not like ndArray dot product, in nDim > 2 it makes the dot productc between the last two dimensions
 	one matrix by one"
 	self assert: self width = aMlArray length. 
-	shape2 := aMlArray shape deepCopy.
-	reshapedArray := aMlArray reshaped:{-1. aMlArray width}.
-	i:=1.j:= aMlArray length.
-	jump := j.
-	rowNumber := 1.
-	numberOfRows := self length.
-	result := self newInstanceButShaped: {((self calculateNewShape: {-1. self width}) first). aMlArray width}. 	
-	array := reshapedArray slice: {i@j. _}.
+	rowNumber := 1. 
+	numberOfRows := ((self calculateNewShape:{-1. self width}) first )  *
+					    (((aMlArray calculateNewShape:{-1. aMlArray width}) first ) /aMlArray length).
+	result := self newInstanceButShaped: { numberOfRows. aMlArray width }. 	
 	"rowsDo and ColumnsDo with copy flag true is faster because the 
 	 dot operation is done with native arrays"
 	self rowsDo:[:row :rslice|		
-			array columnsDo:[:column :cslice|
+			aMlArray columnsDo:[:column :cslice|
 				tmp := (row internalArray dot: column internalArray).
-				result at:{rowNumber. cslice last} put: tmp] copy: true.
-			
-			((rowNumber % numberOfRows = 0) & (i + jump < reshapedArray length))
-			ifTrue:[
-				i := i + jump.
-				j := j + jump.
-				array := reshapedArray slice: {i@j. _} copy: true].
-			rowNumber := rowNumber + 1.
+				result at:{rowNumber. cslice last} put: tmp.
+				cslice last = aMlArray width ifTrue:[rowNumber := rowNumber + 1]
+				] copy: true.
+			"rowNumber := rowNumber + 1."
 		] copy:true.
-	newShape := self shape deepCopy.
-	newShape at: newShape size  put: shape2 last.
+	
+	newShape := ((MlZipper on:{self shape. aMlArray shape}) selectWithIndex:[:pair :i| (i < (self nDim -1) ) ]) flattened.
+	newShape := newShape , {self length} , {aMlArray width}.
 	^ result reshape: newShape
 ]
 
@@ -2241,6 +2234,7 @@ MlArray >> replaceNanBy: aMlArray [
 MlArray >> reshape: anArrayOfInt [
 	"reset weight cache"
 	wForAxes := nil.
+	self labelsDict:nil. 
 	self shape: ( self calculateNewShape: anArrayOfInt)
 ]
 

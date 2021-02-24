@@ -38,6 +38,15 @@ MlZipper >> collect: aBlock [
 	^ a asArray
 ]
 
+{ #category : #enumerating }
+MlZipper >> collectWithIndex: aBlock [ 
+	| a |
+	a := Array new: self size.
+	1 to: self size do:[:i| 
+		a at: i put:(aBlock value: (self collections collect:[:col| col at:i]) value:i)].
+	^ a asArray
+]
+
 { #category : #accessing }
 MlZipper >> collections [ 	
 	^ collections
@@ -77,6 +86,16 @@ MlZipper >> select: aBlock [
 	1 to: self size do:[:i| 
 		row := (self collections collect:[:col| col at:i]).
 		(aBlock value:row ) ifTrue:[a add: row]].
+	^ a
+]
+
+{ #category : #enumerating }
+MlZipper >> selectWithIndex: aBlock [ 
+	| a row |
+	a := OrderedCollection new.
+	1 to: self size do:[:i| 
+		row := (self collections collect:[:col| col at:i]).
+		(aBlock value:row value:i) ifTrue:[a add: row]].
 	^ a
 ]
 
