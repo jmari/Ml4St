@@ -14,7 +14,7 @@ Class {
 { #category : #'protected-abstract' }
 MlMedianImputer >> fitParameters: aMlArray [
 
-	uMatrix := aMlArray median: 0.
+	uMatrix := aMlArray median: 0 exclude:self missingValue..
 	
 ]
 

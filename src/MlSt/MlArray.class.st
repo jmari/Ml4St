@@ -1390,9 +1390,9 @@ MlArray >> dot: aMlArray [
 			aMlArray columnsDo:[:column :cslice|
 				tmp := (row internalArray dot: column internalArray).
 				result at:{rowNumber. cslice last} put: tmp.
+				"last column->next row"
 				cslice last = aMlArray width ifTrue:[rowNumber := rowNumber + 1]
 				] copy: true.
-			"rowNumber := rowNumber + 1."
 		] copy:true.
 	
 	newShape := ((MlZipper on:{self shape. aMlArray shape}) selectWithIndex:[:pair :i| (i < (self nDim -1) ) ]) flattened.
@@ -1920,6 +1920,11 @@ MlArray >> median: axis [
 ]
 
 { #category : #'reduce operations' }
+MlArray >> median: axis exclude: anElement [
+	^ self reduce: #medianExcludeElement: axis: axis arguments: {anElement} 
+]
+
+{ #category : #'reduce operations' }
 MlArray >> min [ 
 	^ self internalArray min
 ]
@@ -2082,7 +2087,9 @@ MlArray >> performBinaryOp: op on: aMlArray withArguments:args [
 { #category : #'private-printing' }
 MlArray >> printElement: element decimalPlaces:maxPad [
 	^((element isInteger|element isFloat) 
-						ifTrue:[ element printShowingDecimalPlaces: maxPad]
+						ifTrue:[ element isNaN 
+							ifFalse:[element printShowingDecimalPlaces: maxPad]
+							ifTrue:['NaN']]
 						ifFalse:[ element asString ]).
 ]
 
@@ -2233,8 +2240,15 @@ MlArray >> replaceNanBy: aMlArray [
 { #category : #converting }
 MlArray >> reshape: anArrayOfInt [
 	"reset weight cache"
+	| oldLabelsDict newShape |
 	wForAxes := nil.
-	self labelsDict:nil. 
+	oldLabelsDict := self labelsDict.
+	newShape := ( self calculateNewShape: anArrayOfInt).
+		self labelsDict:nil. 
+	self nDim to:1 do:[:i|
+		(i <= (newShape size) and:[(self shape at:i) = (newShape at:i)])
+			ifTrue:[self labelsDict at:i put: (oldLabelsDict at:i)]].
+
 	self shape: ( self calculateNewShape: anArrayOfInt)
 ]
 

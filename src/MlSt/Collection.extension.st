@@ -144,6 +144,15 @@ Collection >> median [
 ]
 
 { #category : #'*MlSt' }
+Collection >> medianExcludeElement: anElement [
+	| i |
+	(anElement isNumber and:[ anElement isNaN])  ifTrue:[^self medianNoNan].
+
+	^ (self select:[:v | v ~= anElement]) median
+		
+]
+
+{ #category : #'*MlSt' }
 Collection >> medianFrom: start to: stop [
 	| size |
 	"self should be sorted"
@@ -151,6 +160,13 @@ Collection >> medianFrom: start to: stop [
 	^ ( size even) 
 		ifTrue:[ ((self at:(start - 1 + (size / 2)))+(self at:(start+ (size / 2)))) / 2] 
 		ifFalse:[self at: (start+ (size / 2)) ]
+		
+]
+
+{ #category : #'*MlSt' }
+Collection >> medianNoNan [
+
+	^ (self select:[:v| v isNaN not]) median
 		
 ]
 

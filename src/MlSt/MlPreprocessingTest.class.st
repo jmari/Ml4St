@@ -51,6 +51,24 @@ MlPreprocessingTest >> testMeanImputer [
 ]
 
 { #category : #tests }
+MlPreprocessingTest >> testMedianImputer [
+	|a imputed imputer |
+	a := MlArray  from: {{{1. 4. 7. Float nan}. {2. Float nan. 8. 11}. {Float nan. 6. 9. 12}}} order:#F.
+	imputer := MlMedianImputer new.
+	imputer fit:a.
+	imputed := imputer transform.
+"[[[	1.00000,	4.00000,	7.00000,	(23/2)]
+[	2.00000,	5.00000,	8.00000,	11.00000]
+[	(3/2),	6.00000,	9.00000,	12.00000]
+]]]"
+	self assert: (imputed anySatisfy:[:e | e isNaN]) not. 
+	self assert: (imputed anySatisfy:[:e | e isNaN]) not. 
+	 
+
+	
+]
+
+{ #category : #tests }
 MlPreprocessingTest >> testMinMaxScaler [
 	|a scaler aScaled |
 	a := MlArray  from: {{{1.0. 2.0. 3.0}. {4.0. 5.0. 6.0}. {13.0. 8.0. 9.0}}} order:#F dType:#Float.
