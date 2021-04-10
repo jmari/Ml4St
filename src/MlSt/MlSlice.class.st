@@ -63,12 +63,13 @@ MlSlice class >> completeSlices: anArrayOfSlices forArray: aMlArray [
 		sliceOfAnAxis isCollection &  (sliceOfAnAxis isString not ) &  (sliceOfAnAxis isSlice not)
 			ifTrue:[
 				subcollection := OrderedCollection new.
-				unionOfSlices := sliceOfAnAxis first isSlice ifTrue:[self union: sliceOfAnAxis] ifFalse:[sliceOfAnAxis].
-				unionOfSlices do:[:each| 
+				sliceOfAnAxis do:[:each| 
 					subcollection add: (self completeSlice:(each ifNil:[ _@_] ifNotNil:[each]) 
 								  								axis:dimIndex 
 																shape: aMlArray shape)].
-				collectionOfSlices add:subcollection asArray
+				unionOfSlices := subcollection first isInterval 
+					ifTrue:[Interval union: subcollection] ifFalse:[sliceOfAnAxis].
+				collectionOfSlices add: unionOfSlices asArray
 				]
 			ifFalse:[
 				collectionOfSlices add:
@@ -82,30 +83,6 @@ MlSlice class >> completeSlices: anArrayOfSlices forArray: aMlArray [
 	^	collectionOfSlices 	
 ]
 
-{ #category : #'rectangle functions' }
-MlSlice class >> union: collectionOfSlices [
-	|top aStackOfSlices collectionOfSlicesSortedByFirst|
- 	aStackOfSlices := Stack new.
-	collectionOfSlicesSortedByFirst := SortedCollection new sortBlock:[:a :b| a x < (b x)].
-	collectionOfSlices do:[:each| collectionOfSlicesSortedByFirst add:each asSlice].
-	aStackOfSlices push: collectionOfSlicesSortedByFirst first.
-	collectionOfSlicesSortedByFirst allButFirstDo:[:each|
-		(aStackOfSlices top y < each x) 
-		ifTrue:[aStackOfSlices push:each ]
-		ifFalse:[ 
-			(aStackOfSlices top y < each y)
-			ifTrue:[
-				top := aStackOfSlices pop.
-				(top step % each step) = 0 
-				ifTrue:[aStackOfSlices push: (top x@each y@each step)]
-				ifFalse:[
-					(each step % top step) = 0 
-					ifTrue:[aStackOfSlices push: (top x to: each y by: top step)]
-					ifFalse:[	aStackOfSlices push: ((top , each) asSet)	] ] ] ] ].
-			
-	^ aStackOfSlices
-]
-
 { #category : #arithmetic }
 MlSlice >> + aSlice [ 
 	aSlice isSlice 
@@ -116,6 +93,16 @@ MlSlice >> + aSlice [
 { #category : #arithmetic }
 MlSlice >> - aSlice [ 
 	^ (self x - aSlice x)@(self y - aSlice y)@(self step - aSlice step)
+]
+
+{ #category : #converting }
+MlSlice >> asArray [
+	^ (self x to: self y by: self step) asArray
+]
+
+{ #category : #converting }
+MlSlice >> asInterval [
+	^ self x to: self y by: self step
 ]
 
 { #category : #converting }

@@ -29,6 +29,30 @@ MlArraySlicingTest >> testOddSlice2 [
 ]
 
 { #category : #tests }
+MlArraySlicingTest >> testOddSlice3 [
+	| a b d sol |
+	a := MlArray from: #(#(1 2 3 4 5 6 7 8 9 10) #(11 12 13 14 15 16 17 18 19 20)).
+	d := a at:_@_ at: {  1@5@2. 4@5@2. 7@9  } .
+	sol :=  MlArray from: #(#( 1 3 5 7 8 9) #( 11 13 15 17 18 19)).
+	self assert:d equals: sol.
+	self assert: d size equals: 12.
+
+	
+]
+
+{ #category : #tests }
+MlArraySlicingTest >> testOddSlice4 [
+	| a b d sol |
+	a := MlArray from: #(#(1 2 3 4 5 6 7 8 9 10) #(11 12 13 14 15 16 17 18 19 20)).
+	d := a at:_@_ at: {  1@5@2. 2@10@3. 4@10@2  } .
+	sol :=  MlArray from: #(#( 1 3 5 7 9) #( 11 13 15 17 19)).
+	self assert:d equals: sol.
+	self assert: d size equals: 10.
+
+	
+]
+
+{ #category : #tests }
 MlArraySlicingTest >> testSlice1D [
 	| a b d sol |
 	a := MlArray from: #(10 1 3 5 2  5 6 4  10 11 12 2 11 2 3 6 10 11 12 20 10 11 12 56).
