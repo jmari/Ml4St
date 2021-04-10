@@ -365,7 +365,7 @@ MlNonContinuousVector >> validRanges: anArrayOfValidIntervals [
 			newStrides add: interval last+1]
 		ifFalse:[
 			interval do:[:index|
-				newStrides last = index 
+				newStrides last =index 
 				ifTrue:[newStrides removeLast]
 				ifFalse:[newStrides add: index].
 				newStrides add: index + 1]

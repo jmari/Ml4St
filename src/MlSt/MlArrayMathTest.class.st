@@ -161,7 +161,7 @@ MlArrayMathTest >> testMatMul3 [
 
 	| a b dot r|
 	a := MlArray from: #(#(2 4) #(3 7) #(5 1)).
-	b := (MlArray from: #(1 6)). 
+	b := MlArray from: #(1 6). 
 	dot := a matMul:b.
 	r := MlArray from: #(#(26) 
 								#(45) 

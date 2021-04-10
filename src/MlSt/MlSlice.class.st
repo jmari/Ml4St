@@ -51,7 +51,7 @@ MlSlice class >> completeSlices: anArrayOfSlices forArray: aMlArray [
 	 - an array of integers
 	 - an MlArray of Booleans. will be replaced by _@_. the filter will be applied later in the slice method"
 	
-	| collectionOfSlices axisSlice subcollection |
+	| collectionOfSlices sliceOfAnAxis subcollection unionOfSlices|
 	
 	anArrayOfSlices size = aMlArray nDim  ifFalse:[ MlSliceError signal:'The slice should be an array with ', aMlArray nDim asString,' elements'].
 	
@@ -59,11 +59,12 @@ MlSlice class >> completeSlices: anArrayOfSlices forArray: aMlArray [
 	collectionOfSlices:=OrderedCollection new.
 		
 	1 to: anArrayOfSlices size do:[:dimIndex|
-		axisSlice := (anArrayOfSlices at: dimIndex).
-		axisSlice isCollection &  (axisSlice isString not ) &  (axisSlice isSlice not)
+		sliceOfAnAxis := (anArrayOfSlices at: dimIndex).
+		sliceOfAnAxis isCollection &  (sliceOfAnAxis isString not ) &  (sliceOfAnAxis isSlice not)
 			ifTrue:[
 				subcollection := OrderedCollection new.
-				axisSlice do:[:each| 
+				unionOfSlices := sliceOfAnAxis first isSlice ifTrue:[self union: sliceOfAnAxis] ifFalse:[sliceOfAnAxis].
+				unionOfSlices do:[:each| 
 					subcollection add: (self completeSlice:(each ifNil:[ _@_] ifNotNil:[each]) 
 								  								axis:dimIndex 
 																shape: aMlArray shape)].
@@ -71,9 +72,10 @@ MlSlice class >> completeSlices: anArrayOfSlices forArray: aMlArray [
 				]
 			ifFalse:[
 				collectionOfSlices add:
-					(axisSlice isMlArray | (axisSlice isNil)
+					(sliceOfAnAxis isMlArray | (sliceOfAnAxis isNil)
+					"is an MlArray of Booleans or all, so get the whole interval, boolean filter will be applied in #slice:"
 						ifTrue: [self completeSlice: _@_ axis: dimIndex shape: aMlArray shape]
-						ifFalse:[	self completeSlice: axisSlice axis: dimIndex shape: aMlArray shape])
+						ifFalse:[	self completeSlice: sliceOfAnAxis axis: dimIndex shape: aMlArray shape])
 			]
 	].
 
@@ -81,10 +83,27 @@ MlSlice class >> completeSlices: anArrayOfSlices forArray: aMlArray [
 ]
 
 { #category : #'rectangle functions' }
-MlSlice class >> intersect: collectionOfIntervals [
-	|start end coi|
-
-
+MlSlice class >> union: collectionOfSlices [
+	|top aStackOfSlices collectionOfSlicesSortedByFirst|
+ 	aStackOfSlices := Stack new.
+	collectionOfSlicesSortedByFirst := SortedCollection new sortBlock:[:a :b| a x < (b x)].
+	collectionOfSlices do:[:each| collectionOfSlicesSortedByFirst add:each asSlice].
+	aStackOfSlices push: collectionOfSlicesSortedByFirst first.
+	collectionOfSlicesSortedByFirst allButFirstDo:[:each|
+		(aStackOfSlices top y < each x) 
+		ifTrue:[aStackOfSlices push:each ]
+		ifFalse:[ 
+			(aStackOfSlices top y < each y)
+			ifTrue:[
+				top := aStackOfSlices pop.
+				(top step % each step) = 0 
+				ifTrue:[aStackOfSlices push: (top x@each y@each step)]
+				ifFalse:[
+					(each step % top step) = 0 
+					ifTrue:[aStackOfSlices push: (top x to: each y by: top step)]
+					ifFalse:[	aStackOfSlices push: ((top , each) asSet)	] ] ] ] ].
+			
+	^ aStackOfSlices
 ]
 
 { #category : #arithmetic }
