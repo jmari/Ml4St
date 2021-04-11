@@ -41,7 +41,7 @@ MlSlice class >> completeSlice:slice axis:i shape: shape [
 ]
 
 { #category : #'as yet unclassified' }
-MlSlice class >> completeSlices: anArrayOfSlices forArray: aMlArray [
+MlSlice class >> transform: anArrayOfSlices asIntervalsforArray: aMlArray [
 	" this function substitutes the _ and negative integers by its value.
 	 _@_ left _ will be replaced by 1 and right _ will be replaced by the lenght of the dimension
 	 -1@-2 negatige integers will be replaced by n + k + 1 where n is the lenght of the dimension 

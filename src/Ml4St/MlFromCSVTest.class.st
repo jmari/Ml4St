@@ -1,7 +1,7 @@
 Class {
 	#name : #MlFromCSVTest,
 	#superclass : #TestCase,
-	#category : #'Ml4St-Test-Core'
+	#category : #'Ml4St-Test-Models'
 }
 
 { #category : #tests }

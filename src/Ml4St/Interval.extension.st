@@ -2,7 +2,7 @@ Extension { #name : #Interval }
 
 { #category : #'*Ml4St' }
 Interval >> asSlice [ 
-	^ self first@self last@self increment
+	^ start@stop@step
 ]
 
 { #category : #'*Ml4St' }

@@ -1450,21 +1450,8 @@ MlArray >> getAddressForPoint:anArrayOfInt [
 	^ address 
 ]
 
-{ #category : #accessing }
-MlArray >> getAxisNumberFromStandard: anAxis [
-	"return the estandar axis number for an axis. i.e.
-	 shape #(1 2 3) axis 0 is the first, 1 rows and 2 columns
-	but the standard says axis 0 is row axis, axis 1 is column axis and 2..n are the outter next ones "
-	| data axis |
-	axis := data := (( self nDim - anAxis - 1) \\  self nDim ) + 1 .
-	axis := data = self nDim ifTrue:[self nDim -1] ifFalse:[data].
-	axis := (data = (self nDim -1)) ifTrue:[self nDim] ifFalse:[axis].
-	^ axis := axis >0 ifTrue:[axis] ifFalse:[1].
-
-]
-
 { #category : #'private-slicing' }
-MlArray >> getIntervalAdressesFor:slices level: l list: lklst indexes: indexes [ 
+MlArray >> getAdressesIntervalsOf:slices level: l list: lklst indexes: indexes [ 
 	| si ei currentSlice nextLevel |
 
 	(((l = self nDim) & (self order = #C)) | 
@@ -1497,7 +1484,7 @@ MlArray >> getIntervalAdressesFor:slices level: l list: lklst indexes: indexes [
 											((l + 2) = self nDim ) ifTrue:[ l + 2] ifFalse:[
 											((l + 1) > self nDim ) ifTrue:[ self nDim - 1] ifFalse:[l + 1]]].
 					
-					self getIntervalAdressesFor: slices  level: nextLevel list: lklst  indexes: indexes.
+					self getAdressesIntervalsOf: slices  level: nextLevel list: lklst  indexes: indexes.
 					]].
 			currentSlice isArray ifTrue:[
 					currentSlice do:[:each|
@@ -1510,11 +1497,42 @@ MlArray >> getIntervalAdressesFor:slices level: l list: lklst indexes: indexes [
 											((l + 2) = self nDim ) ifTrue:[ l + 2] ifFalse:[
 											((l + 1) > self nDim ) ifTrue:[ self nDim - 1] ifFalse:[l + 1]]].
 					
-							self getIntervalAdressesFor: slices  level: nextLevel  list: lklst  indexes: indexes.
+							self getAdressesIntervalsOf: slices  level: nextLevel  list: lklst  indexes: indexes.
 							]]]
 			]
 		
 	
+]
+
+{ #category : #'private-slicing' }
+MlArray >> getAdressesIntervalsOfSlices: slice [
+	
+	| list indexes startLevel |
+	list := Array new: self nDim.
+	indexes := SortedCollection new.
+	indexes sortBlock:[:a :b| a first < b first].
+	startLevel := self order = #C | (self nDim ~= 2)
+		ifTrue: [ 1 ]
+		ifFalse: [ 2 ].
+	self
+		getAdressesIntervalsOf: slice
+		level: startLevel
+		list: list
+		indexes: indexes.
+	^ indexes
+]
+
+{ #category : #accessing }
+MlArray >> getAxisNumberFromStandard: anAxis [
+	"return the estandar axis number for an axis. i.e.
+	 shape #(1 2 3) axis 0 is the first, 1 rows and 2 columns
+	but the standard says axis 0 is row axis, axis 1 is column axis and 2..n are the outter next ones "
+	| data axis |
+	axis := data := (( self nDim - anAxis - 1) \\  self nDim ) + 1 .
+	axis := data = self nDim ifTrue:[self nDim -1] ifFalse:[data].
+	axis := (data = (self nDim -1)) ifTrue:[self nDim] ifFalse:[axis].
+	^ axis := axis >0 ifTrue:[axis] ifFalse:[1].
+
 ]
 
 { #category : #labeling }
@@ -2373,21 +2391,11 @@ MlArray >> slice: aSliceArray [
 
 { #category : #'private-slicing' }
 MlArray >> slice: aSliceArray copy: makeCopy [
-	| slice list indexes newShape startLevel newInstance |
+	| slices indexes newShape newInstance |
 	
-	slice := MlSlice completeSlices: aSliceArray forArray:self.
-	list := Array new: self nDim.
-	indexes := SortedCollection new.
-	indexes sortBlock:[:a :b| a first < b first].
-	startLevel := self order = #C | (self nDim ~= 2)
-		ifTrue: [ 1 ]
-		ifFalse: [ 2 ].
-	self
-		getIntervalAdressesFor: slice
-		level: startLevel
-		list: list
-		indexes: indexes.
-	newShape := slice
+	slices := MlSlice transform: aSliceArray asIntervalsforArray:self.
+	indexes := self getAdressesIntervalsOfSlices: slices.
+	newShape := slices
 		collect: [ :e | 
 			e isInterval
 				ifTrue: [ "is an interval" e size ]
@@ -2397,7 +2405,7 @@ MlArray >> slice: aSliceArray copy: makeCopy [
 	newInstance := makeCopy
 		ifTrue: [ self createNewSlicedInstance: indexes shape: newShape ]
 		ifFalse: [ self createNewSlicedReference: indexes shape: newShape ].
-	newInstance sliceLabels: slice.
+	newInstance sliceLabels: slices.
 	newInstance := newInstance sliceUsingBooleanFilter: aSliceArray.
 
 	^newInstance 

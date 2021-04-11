@@ -60,9 +60,8 @@ MlArrayMathTest >> testBroadCasting [
 { #category : #tests }
 MlArrayMathTest >> testDescribe [
 
-	| a b sum oldA c describe |
+	| a describe |
 	a := MlArray random: #(3 5 10).
-	b := MlArray random: #(3 5 10). 
 
 	describe := a describe.
 	describe inspect.
