@@ -2434,13 +2434,13 @@ MlArray >> sliceForAddress: anInteger [
 ]
 
 { #category : #'private-labeling' }
-MlArray >> sliceLabels: slice [
+MlArray >> sliceLabels: slices [
 
 	| ld |
-	slice doWithIndex:[:s :i|
-		ld := (self labelsDictAt: i) slice:s.
-		self labelsDict at: i put: ld
-		]
+	slices doWithIndex:[:s :i|
+		(self labelsDictAt: i) isEmpty not ifTrue:[
+			ld := (self labelsDictAt: i) slice:s.
+			self labelsDict at: i put: ld]	] 
 ]
 
 { #category : #'private-slicing' }
