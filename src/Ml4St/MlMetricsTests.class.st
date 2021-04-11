@@ -1,7 +1,7 @@
 Class {
 	#name : #MlMetricsTests,
 	#superclass : #TestCase,
-	#category : #'Ml4St-Core-Test'
+	#category : #'Ml4St-Test-Metrics'
 }
 
 { #category : #tests }

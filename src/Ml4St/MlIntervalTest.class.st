@@ -1,7 +1,7 @@
 Class {
 	#name : #MlIntervalTest,
 	#superclass : #TestCase,
-	#category : #'Ml4St-Core-Test'
+	#category : #'Ml4St-Test-Enumerator'
 }
 
 { #category : #tests }

@@ -1,7 +1,7 @@
 Class {
 	#name : #MlPreprocessingTest,
 	#superclass : #TestCase,
-	#category : #'Ml4St-Core-Test'
+	#category : #'Ml4St-Test-Preprocessing'
 }
 
 { #category : #tests }

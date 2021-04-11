@@ -1,7 +1,7 @@
 Class {
 	#name : #MlArraySlicingTest,
 	#superclass : #TestCase,
-	#category : #'Ml4St-Core-Test'
+	#category : #'Ml4St-Test-Core'
 }
 
 { #category : #tests }
