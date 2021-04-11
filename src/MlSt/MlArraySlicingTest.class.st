@@ -5,54 +5,6 @@ Class {
 }
 
 { #category : #tests }
-MlArraySlicingTest >> testOddSlice [
-	| a b d sol |
-	a := MlArray from: #(1 2 3 4 5 6 7 8 9 10).
-	d := a at: {  1@5. 4@5. 7@9  }.
-	sol :=  MlArray from: #( 1 2 3 4 5 7 8 9).
-	self assert:d equals: sol.
-	self assert: d size equals: 8.
-
-	
-]
-
-{ #category : #tests }
-MlArraySlicingTest >> testOddSlice2 [
-	| a b d sol |
-	a := MlArray from: #(#(1 2 3 4 5 6 7 8 9 10) #(11 12 13 14 15 16 17 18 19 20)).
-	d := a at:_@_ at: {  1@5. 4@5. 7@9  } .
-	sol :=  MlArray from: #(#( 1 2 3 4 5 7 8 9) #( 11 12 13 14 15 17 18 19)).
-	self assert:d equals: sol.
-	self assert: d size equals: 16.
-
-	
-]
-
-{ #category : #tests }
-MlArraySlicingTest >> testOddSlice3 [
-	| a b d sol |
-	a := MlArray from: #(#(1 2 3 4 5 6 7 8 9 10) #(11 12 13 14 15 16 17 18 19 20)).
-	d := a at:_@_ at: {  1@5@2. 4@5@2. 7@9  } .
-	sol :=  MlArray from: #(#( 1 3 5 7 8 9) #( 11 13 15 17 18 19)).
-	self assert:d equals: sol.
-	self assert: d size equals: 12.
-
-	
-]
-
-{ #category : #tests }
-MlArraySlicingTest >> testOddSlice4 [
-	| a b d sol |
-	a := MlArray from: #(#(1 2 3 4 5 6 7 8 9 10) #(11 12 13 14 15 16 17 18 19 20)).
-	d := a at:_@_ at: {  1@5@2. 2@10@3. 4@10@2  } .
-	sol :=  MlArray from: #(#( 1 3 5 7 9) #( 11 13 15 17 19)).
-	self assert:d equals: sol.
-	self assert: d size equals: 10.
-
-	
-]
-
-{ #category : #tests }
 MlArraySlicingTest >> testSlice1D [
 	| a b d sol |
 	a := MlArray from: #(10 1 3 5 2  5 6 4  10 11 12 2 11 2 3 6 10 11 12 20 10 11 12 56).
@@ -448,6 +400,57 @@ MlArraySlicingTest >> testSliceFCopy [
 	self assert: a equals: s.
 	self assert: b equals: s2.
 	self deny:( b == a).
+]
+
+{ #category : #tests }
+MlArraySlicingTest >> testSliceUnion [
+	| a r |
+	a:= Interval union:{  3 to:5. 4 to:10. 1 to:5  }.
+	r := Stack new.
+	r push:(1 to:10).
+	self assert:a equals: r.
+
+	a:= Interval union:{  1 to:5 by: 2. 4 to:10 by:2}.
+	r := Stack new.
+	r push:{1. 3. 4. 5. 6. 8. 10}.
+	self assert:a equals: r.
+	
+]
+
+{ #category : #tests }
+MlArraySlicingTest >> testSliceUnion2 [
+	| a b d sol |
+	a := MlArray from: #(#(1 2 3 4 5 6 7 8 9 10) #(11 12 13 14 15 16 17 18 19 20)).
+	d := a at:_@_ at: {  1@5. 4@5. 7@9  } .
+	sol :=  MlArray from: #(#( 1 2 3 4 5 7 8 9) #( 11 12 13 14 15 17 18 19)).
+	self assert:d equals: sol.
+	self assert: d size equals: 16.
+
+	
+]
+
+{ #category : #tests }
+MlArraySlicingTest >> testSliceUnion3 [
+	| a b d sol |
+	a := MlArray from: #(#(1 2 3 4 5 6 7 8 9 10) #(11 12 13 14 15 16 17 18 19 20)).
+	d := a at:_@_ at: {  1@5@2. 4@5@2. 7@9  } .
+	sol :=  MlArray from: #(#( 1 3 4 5 7 8 9) #( 11 13 14 15 17 18 19)).
+	self assert:d equals: sol.
+	self assert: d size equals: 14.
+
+	
+]
+
+{ #category : #tests }
+MlArraySlicingTest >> testSliceUnion4 [
+	| a b d sol |
+	a := MlArray from: #(#(1 2 3 4 5 6 7 8 9 10) #(11 12 13 14 15 16 17 18 19 20)).
+	d := a at:_@_ at: {  1@5@2. 2@10@3. 4@10@2  } .
+	sol :=  MlArray from: #(#( 1 2 3 4 5 6 8 10) #( 11 12 13 14 15 16 18 20)).
+	self assert:d equals: sol.
+	self assert: d size equals: 16.
+
+	
 ]
 
 { #category : #tests }

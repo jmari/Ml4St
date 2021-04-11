@@ -818,7 +818,7 @@ MlArray >> <- aMlArray [
 	self internalArray replaceFrom: 1 to: self size with: mla startingAt: 1 
 ]
 
-{ #category : #piping }
+{ #category : #'piping-transformers' }
 MlArray >> << aTransformer [
 	"transform using a Transformer, see Preprocessing classes"
 	^ aTransformer inverseTransform: self.
@@ -850,7 +850,7 @@ MlArray >> >= aNumber [
 	^ self eval:[:e| e >= aNumber]
 ]
 
-{ #category : #piping }
+{ #category : #'piping-transformers' }
 MlArray >> >> aTransformer [
 	"transform using a Transformer, see Preprocessing classes"
 	^ aTransformer fitAndTransform: self.
