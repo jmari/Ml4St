@@ -1,11 +1,6 @@
 Extension { #name : #Object }
 
 { #category : #'*Ml4St' }
-Object >> asSlice [ 	
-	^ self
-]
-
-{ #category : #'*Ml4St' }
 Object >> isMlArray [	
 	^ false
 ]

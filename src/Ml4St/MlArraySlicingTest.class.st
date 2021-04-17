@@ -5,16 +5,6 @@ Class {
 }
 
 { #category : #tests }
-MlArraySlicingTest >> testArrayToSliceConversion [
-
-	self assert:#( 1...10 by 4) asSlice equals: 1@10@4.
-	self assert:#( _...10 by 4) asSlice equals: _@10@4.
-	self assert:#( 1...10) asSlice equals: 1@10. 
-	self assert:#( 1..._) asSlice equals: 1@_. 
-	self assert:#( 1 2 3 4 5) asSlice equals: #(1 2 3 4 5)
-]
-
-{ #category : #tests }
 MlArraySlicingTest >> testSlice1D [
 	| a b d sol |
 	a := MlArray from: #(10 1 3 5 2  5 6 4  10 11 12 2 11 2 3 6 10 11 12 20 10 11 12 56).
@@ -41,21 +31,6 @@ MlArraySlicingTest >> testSlice1DC [
 	self assert:d equals: sol.	
 	d := a at: #( 1 2 3 4 5 6 8). 
 	sol :=  MlArray from: #( 10 1 3 5 2 5 4) order:#C.
-	self assert:d equals: sol.		
-]
-
-{ #category : #tests }
-MlArraySlicingTest >> testSlice1DUsingArraySyntax [
-	| a b d sol |
-	a := MlArray from: #(10 1 3 5 2  5 6 4  10 11 12 2 11 2 3 6 10 11 12 20 10 11 12 56).
-	d := a at: {  #(1...2). #(4...5). #(7...9) }.
-	sol :=  MlArray from: #( 10 1 5 2 6 4 10).
-	self assert:d equals: sol.
-	d := a at: #(11..._). 
-	sol :=  MlArray from: #( 12 2 11 2 3 6 10 11 12 20 10 11 12 56).
-	self assert:d equals: sol.	
-	d := a at: #( 1 2 3 4 5 6 8). 
-	sol :=  MlArray from: #( 10 1 3 5 2 5 4).
 	self assert:d equals: sol.		
 ]
 

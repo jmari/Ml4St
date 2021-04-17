@@ -1151,11 +1151,11 @@ MlArray >> changeLabelsByIndexes: anArrayOfInt [
 	result:= Array new: anArrayOfInt size.
 	anArrayOfInt doWithIndex:[:o :i| 
 		(self labelsAt:i) isEmpty 
-			ifTrue:[result at:i put: o asSlice]
+			ifTrue:[result at:i put: o ]
 			ifFalse:[
 			result at:i put: 
-				(o asSlice isArray ifTrue:[ o collect:[:e| (self labelsAt:i) translate: e asSlice]]
-					 		  ifFalse:[(self labelsAt:i) translate: o asSlice])]].
+				(o  isArray ifTrue:[ o collect:[:e| (self labelsAt:i) translate: e ]]
+					 		  ifFalse:[(self labelsAt:i) translate: o ])]].
 	^ result
 ]
 
@@ -2099,20 +2099,18 @@ MlArray >> performBinaryOp: op on: aMlArray withArguments:args [
 
 { #category : #'private-accessing' }
 MlArray >> prepareSlice: aSlice [
-	| anArrayOfInt otherSlice|
-	"be sure first level is a slice"
-	otherSlice := aSlice asSlice.
+	| anArrayOfInt |
+
 
 	"if nDim = 1 an array is a slice"
-	anArrayOfInt := (self nDim = 1 & (otherSlice isArray)  
-								and:[otherSlice notEmpty 
-								and:[otherSlice first isArray not |
-									(otherSlice first isArray & (otherSlice first isSlice)) & (otherSlice first isNotNil)]]) 
-										ifTrue:[	{otherSlice }]
-										ifFalse:[ otherSlice ].	
+	anArrayOfInt := (self nDim = 1 & (aSlice isArray)  
+								and:[aSlice notEmpty 
+								and:[aSlice first isArray not & (aSlice first isNotNil)]]) 
+										ifTrue:[	{aSlice }]
+										ifFalse:[ aSlice ].	
 	"be sure all of its inner elements are slices"									
 	anArrayOfInt := anArrayOfInt isArray 
-										ifTrue:[anArrayOfInt collect:[:o| o asSlice]]
+										ifTrue:[anArrayOfInt]
 										ifFalse:[{anArrayOfInt}].
 
 
