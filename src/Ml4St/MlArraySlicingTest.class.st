@@ -468,11 +468,11 @@ MlArraySlicingTest >> testSliceWithBooleanCondition [
 							  		#(24 25 26) 
 							  		#(27 28 29)
 									#(30 31 32))).
-	a setLabels: #('A' 'B' 'C') onAxis:1.
+	a labelWith: #('A' 'B' 'C') axis:1.
 	
 	b := a at:{_. _. (( a at:{1. 1. _}) < 3)} .	
 	self assert: b  equals: (a at:{_. _. 1@2.}).
-	self assert: (b getLabelsOnAxis:1 ) asArray equals: #('A' 'B' ).
+	self assert: (b labelsAtStandardAxis:1 ) asArray equals: #('A' 'B' ).
 	
 
 

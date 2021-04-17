@@ -87,12 +87,14 @@ MlSlice class >> transform: anArrayOfSlices asIntervalsforArray: aMlArray [
 MlSlice >> + aSlice [ 
 	aSlice isSlice 
 		ifTrue:[^ (self x + aSlice x)@(self y + aSlice y)@(self step + aSlice step)]
-		ifFalse:[ self error:'We can not add an Integer'] 
+		ifFalse:[ self error:'you can not add an Integer'] 
 ]
 
 { #category : #arithmetic }
 MlSlice >> - aSlice [ 
-	^ (self x - aSlice x)@(self y - aSlice y)@(self step - aSlice step)
+	^ aSlice isSlice 
+		ifTrue:[(self x - aSlice x)@(self y - aSlice y)@(self step - aSlice step)]
+		ifFalse:[ self error:'you can not add an Integer'] 
 ]
 
 { #category : #converting }

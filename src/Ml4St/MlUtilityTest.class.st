@@ -47,7 +47,7 @@ MlUtilityTest >> testGiniIndex [
 							  #(true false false false ) 
 							  #(true true true true ) 
 							).
-	a setLabels:#(#pastTrend #openInterest #tradingVol #return) onAxis:1. 
+	a labelWith:#(#pastTrend #openInterest #tradingVol #return) axis:1. 
 
 	b := a gini:#pastTrend->#return.
 	self assert: (b at:2 at:1) closeTo: 16/45.

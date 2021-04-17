@@ -86,8 +86,8 @@ MlDecisionTree >> fit: aMlArray target: tMlArray sampleWeight: sw [
 						ifTrue:[aMlArray] 
 						ifFalse:[aMlArray reshaped: {-1.  aMlArray shape last} ].
 	weighedMlArray := sw ifNil:[a2DMlArray] ifNotNil:[a2DMlArray * sw].
-	features := (weighedMlArray getLabelsOnAxis:1).
-	target := (tMlArray getLabelsOnAxis:1) first.
+	features := (weighedMlArray labelsAtStandardAxis:1).
+	target := (tMlArray labelsAtStandardAxis:1) first.
 
 	self model:  
 	((criterion = #gini ) 

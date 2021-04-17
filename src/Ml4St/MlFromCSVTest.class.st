@@ -14,7 +14,7 @@ MlFromCSVTest >> testLoadCSV [
 	"we first load the column labels and then the data"
 	headers := neo readHeader.
 	titanic := MlArray from: neo upToEnd.
-	titanic setLabels: headers onAxis: 1. 
+	titanic labelWith: headers axis: 1. 
 	nilValues := titanic count:[:v | v isNil].
 	self assert: (titanic anySatisfy:[:e | e isNil]).
 	emptyStringValues := titanic count:[:v | v =''].

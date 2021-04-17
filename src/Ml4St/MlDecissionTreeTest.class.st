@@ -19,7 +19,7 @@ MlDecissionTreeTest >> testDecisionTree [
 							  #(#H9 #Windy true #Rich #Cinema )
 							  #(#H10 #Sunny false #Rich #Tennis ) 
 							).
-	a setLabels:#(#Weekend #Weather #ParentalAvaliability #Wealthy #Decision) onAxis:1. 
+	a labelWith:#(#Weekend #Weather #ParentalAvaliability #Wealthy #Decision) axis:1. 
 	b := MlDecisionTree new maxDepth:10.
 	c := b fit:(a at:{_. {#Weather. #ParentalAvaliability.  #Wealthy}}) 
 			 target: (a at:{_. #Decision}). 	
@@ -53,7 +53,7 @@ MlDecissionTreeTest >> testDecisionTreeContinuousVar [
 							  #(#H9 9.0 true #Rich #Cinema )
 							  #(#H10 10.0 false #Rich #Tennis ) 
 							).
-	a setLabels:#(#Weekend #Weather #ParentalAvaliability #Wealthy #Decision) onAxis:1. 
+	a labelWith:#(#Weekend #Weather #ParentalAvaliability #Wealthy #Decision) axis:1. 
 	b := MlDecisionTree new maxDepth:10;criterionGini.
 	c := b fit:(a at:{_. {#Weather. #ParentalAvaliability.  #Wealthy}}) 
 			 target: (a at:{_. #Decision}). 	

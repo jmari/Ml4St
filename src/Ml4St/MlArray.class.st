@@ -224,11 +224,11 @@ MlArray class >> concatArrays:  aMlArraysCollection axis: standarAxisNumber [
 		yourself) .			
 	"add labels and init dictionary of jumps"		
 	dictOfJumps := Dictionary new.	
-	(instance labelsDictAt: axis) removeAll.											
+	(instance labelsAt: axis) removeAll.											
 	aMlArraysCollection do:[:each| 
 		dictOfJumps at: each identityHash put: 1.
 		
-		(instance labelsDictAt: axis) addAll:(each labelsDictAt: axis)].
+		(instance labelsAt: axis) addAll:(each labelsAt: axis)].
 		 													
 	i:=1.
 	[i < instance size] whileTrue:[
@@ -1165,12 +1165,12 @@ MlArray >> changeLabelsByIndexes: anArrayOfInt [
 
 	result:= Array new: anArrayOfInt size.
 	anArrayOfInt doWithIndex:[:o :i| 
-		(self labelsDictAt:i) isEmpty 
+		(self labelsAt:i) isEmpty 
 			ifTrue:[result at:i put: o]
 			ifFalse:[
 			result at:i put: 
-				(o isArray ifTrue:[ o collect:[:e| (self labelsDictAt:i) translate: e]]
-					 		  ifFalse:[(self labelsDictAt:i) translate: o])]].
+				(o isArray ifTrue:[ o collect:[:e| (self labelsAt:i) translate: e]]
+					 		  ifFalse:[(self labelsAt:i) translate: o])]].
 	^ result
 ]
 
@@ -1535,15 +1535,6 @@ MlArray >> getAxisNumberFromStandard: anAxis [
 
 ]
 
-{ #category : #labeling }
-MlArray >> getLabelsOnAxis: standarAxisNumber [
-	| axis |
-	axis := self getAxisNumberFromStandard: standarAxisNumber.
-	(axis <1 | axis > self nDim) ifTrue:[ ^ MlShapeError signal:('dimension  ', axis asString,' does not exist') ].
-	
-	^ self labelsDict at: axis 
-]
-
 { #category : #utility }
 MlArray >> gini: featuresTargetAssociation [
 	"association shold be split attribute->target name (class)
@@ -1582,8 +1573,8 @@ MlArray >> gini: featuresTargetAssociation [
 				lengthVector := self class new: m shape withAll:v length.
 				mInverse := lengthVector - m.
 				giniIndex := (prob *(( m / v length)**2))+(probInverse * (( mInverse / v length)**2)).
-				giniIndex setLabels: (m getLabelsOnAxis:1) onAxis:1.			
-				(m getLabelsOnAxis:1) do:[:label| 
+				giniIndex labelWith: (m labelsAtStandardAxis:1) axis:1.			
+				(m labelsAtStandardAxis:1) do:[:label| 
 					sumDictionary at: label incrementBy: (giniIndex at:label)]]
 			  storeCallbackValue: false.
 		gini := (sumDictionary associationAt:(sumDictionary keyAtValue: sumDictionary max)).
@@ -1632,13 +1623,13 @@ MlArray >> groupBy: anAssociation aggregate: aBlock storeCallbackValue: includeK
 					ifTrue: [labelsForGroup add:'clause'.agKeys]
 					ifFalse:[	
 							labelsForGroup addAll:agKeys.
-							agKeys collect:[:v|(self labelsDictAt: (self nDim )) translate:v]].
+							agKeys collect:[:v|(self labelsAt: (self nDim )) translate:v]].
 						
 	agValues := anAssociation value isInteger | (anAssociation value isString )
 					ifTrue:[{anAssociation value}]
 					ifFalse:[anAssociation value].
 	labelsForGroup addAll:agValues.
-	agValues := agValues collect:[:v|(self labelsDictAt: (self nDim )) translate:v].
+	agValues := agValues collect:[:v|(self labelsAt: (self nDim )) translate:v].
 
 	aggregate := Dictionary new.
 	(1 to: self length) doWithIndex:[:k :i|
@@ -1660,7 +1651,7 @@ MlArray >> groupBy: anAssociation aggregate: aBlock storeCallbackValue: includeK
 		keyRows := self class from: aggregate keys order: self order dType:#Object.
 		valueRows := self class from: r  order: self order dType:#Object.	
 		result := (keyRows  concat:valueRows axis:1).
-		[result setLabels: labelsForGroup onAxis:1] on:MlShapeError do:[].
+		[result labelWith: labelsForGroup axis:1] on:MlShapeError do:[].
 	].
 	^result 
 
@@ -1770,6 +1761,30 @@ MlArray >> kurtosis: axis [
 	^ self reduce: #kurtosis axis: axis
 ]
 
+{ #category : #labeling }
+MlArray >> labelWith: anArray axis: standarAxisNumber [
+	| axis |
+	axis := self getAxisNumberFromStandard: standarAxisNumber.
+	(axis <1 | axis > self nDim) ifTrue:[ ^ MlShapeError signal:('dimension  ', axis asString,' does not exist') ].
+	(anArray size = (self shape at: axis)) ifFalse:[ ^ MlShapeError signal:('labels should have ',(self shape at: axis) asString,' elements') ].
+	
+	self labelsDict at: axis put: (MlLabelTranslator newFrom:anArray)
+]
+
+{ #category : #labeling }
+MlArray >> labelsAt: anInteger [ 
+	^ (self labelsDict at: anInteger) ifNil:[ self labelsDict at: anInteger put:MlLabelTranslator new]
+]
+
+{ #category : #labeling }
+MlArray >> labelsAtStandardAxis: standarAxisNumber [
+	| axis |
+	axis := self getAxisNumberFromStandard: standarAxisNumber.
+	(axis <1 | axis > self nDim) ifTrue:[ ^ MlShapeError signal:('dimension  ', axis asString,' does not exist') ].
+	
+	^ self labelsDict at: axis 
+]
+
 { #category : #accessing }
 MlArray >> labelsDict [ 
 	"labelsDict dict is an Array axis-->labels"
@@ -1780,11 +1795,6 @@ MlArray >> labelsDict [
 MlArray >> labelsDict: anArrayOfLabelTranslators [ 
 	"labels dict is a dictionary axis-->labels"
 	labelsDict := anArrayOfLabelTranslators
-]
-
-{ #category : #labeling }
-MlArray >> labelsDictAt: anInteger [ 
-	^ (self labelsDict at: anInteger) ifNil:[ self labelsDict at: anInteger put:MlLabelTranslator new]
 ]
 
 { #category : #accessing }
@@ -2339,16 +2349,6 @@ MlArray >> select: aBlock [
 	^i
 ]
 
-{ #category : #labeling }
-MlArray >> setLabels: anArray onAxis: standarAxisNumber [
-	| axis |
-	axis := self getAxisNumberFromStandard: standarAxisNumber.
-	(axis <1 | axis > self nDim) ifTrue:[ ^ MlShapeError signal:('dimension  ', axis asString,' does not exist') ].
-	(anArray size = (self shape at: axis)) ifFalse:[ ^ MlShapeError signal:('labels should have ',(self shape at: axis) asString,' elements') ].
-	
-	self labelsDict at: axis put: (MlLabelTranslator newFrom:anArray)
-]
-
 { #category : #accessing }
 MlArray >> shape [
 	^ shape
@@ -2438,8 +2438,8 @@ MlArray >> sliceLabels: slices [
 
 	| ld |
 	slices doWithIndex:[:s :i|
-		(self labelsDictAt: i) isEmpty not ifTrue:[
-			ld := (self labelsDictAt: i) slice:s.
+		(self labelsAt: i) isEmpty not ifTrue:[
+			ld := (self labelsAt: i) slice:s.
 			self labelsDict at: i put: ld]	] 
 ]
 
@@ -2538,7 +2538,7 @@ MlArray >> thresholdForEach [
 		categories do:[:cat|
 			unique at:(each asString) incrementBy: (cat <= each ifTrue:[1] ifFalse:[0])]].
 
-	^ (self class from:unique values  order:self order) setLabels: unique keys onAxis: 1 
+	^ (self class from:unique values  order:self order) labelWith: unique keys axis: 1 
 	
 ]
 
@@ -2583,7 +2583,7 @@ MlArray >> uniqueAndCount [
 	unique := Dictionary new.
 	self internalArray do:[:each| unique at:each incrementBy: 1 ].
 	instance := self class from: unique values  order:self order.
-	instance setLabels: unique keys onAxis:1.
+	instance labelWith: unique keys axis:1.
 	^instance
 	
 ]
