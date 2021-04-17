@@ -8,6 +8,12 @@ UndefinedObject >> @ anInteger [
 ]
 
 { #category : #'*Ml4St' }
+UndefinedObject >> isSlice [ 
+	^ true
+
+]
+
+{ #category : #'*Ml4St' }
 UndefinedObject >> to: anInteger [ 
 	
 	^  self@anInteger

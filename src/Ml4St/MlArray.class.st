@@ -1046,17 +1046,7 @@ MlArray >> at: anObject [
 	"aBlock returns a boolean MlArray of execution of eval over the internal array, we can not know the shape of the execution..."
 	anObject isBlock ifTrue:[^ self eval:anObject].
 	
-	"if nDim = 1 an array is a slice"
-	anArrayOfInt := (self nDim = 1 & (anObject isArray)  
-								and:[anObject notEmpty 
-								and:[anObject first isArray not & (anObject isNotNil)]]) 
-										ifTrue:[	{anObject}]
-										ifFalse:[ anObject ].
-	"if it is not an array, encloses it in an array, "									
-	anArrayOfInt := anArrayOfInt isArray 
-										ifTrue:[anArrayOfInt]
-										ifFalse:[	{anArrayOfInt}].
-											
+	anArrayOfInt := self prepareSlice: anObject.
 	"substitutes labels by indexes"										
 	anArrayOfInt := self changeLabelsByIndexes: anArrayOfInt.
 	"if the array contain a slices we do slice"
@@ -1105,20 +1095,16 @@ MlArray >> at: int1 at: int2 put:aValue [
 MlArray >> at: anObject put: aValue [
 	| address anArrayOfInt |
 	
+	"nil returns exception"
 	anObject ifNil:[MlIndexTypeError signal].
+	"aBlock returns a boolean MlArray of execution of eval over the internal array, we can not know the shape of the execution..."
 	" evaluates the block on internal array, if true put the value"
 	anObject isBlock ifTrue:[ 
 		(self eval:anObject) doWithIndex:[:o :i| o ifTrue:[self internalArray at:i put:aValue]].
 		^self].
-	"if nDim = 1 an array is a slice"
-	anArrayOfInt := (self nDim = 1 & (anObject isArray)  
-								and:[anObject notEmpty and:[anObject first isArray not]]) 
-										ifTrue:[	{anObject}]
-										ifFalse:[ anObject ].
-	"if it is not an array, enclose in an array, "
-	anArrayOfInt := anArrayOfInt isArray 
-										ifTrue:[anArrayOfInt]
-										ifFalse:[	{anArrayOfInt}].
+	
+	anArrayOfInt  := self prepareSlice: anObject.
+	"substitutes labels by indexes"										
 	anArrayOfInt := self changeLabelsByIndexes: anArrayOfInt.
 	(self isAnArrayOfSlices: anArrayOfInt) 
 		ifTrue:[^ (self slice: anArrayOfInt) replaceAllBy: aValue;yourself]
@@ -1162,15 +1148,14 @@ MlArray >> calculateNewShape: anArrayOfInt [
 { #category : #'private-labeling' }
 MlArray >> changeLabelsByIndexes: anArrayOfInt [
 	|result|
-
 	result:= Array new: anArrayOfInt size.
 	anArrayOfInt doWithIndex:[:o :i| 
 		(self labelsAt:i) isEmpty 
-			ifTrue:[result at:i put: o]
+			ifTrue:[result at:i put: o asSlice]
 			ifFalse:[
 			result at:i put: 
-				(o isArray ifTrue:[ o collect:[:e| (self labelsAt:i) translate: e]]
-					 		  ifFalse:[(self labelsAt:i) translate: o])]].
+				(o asSlice isArray ifTrue:[ o collect:[:e| (self labelsAt:i) translate: e asSlice]]
+					 		  ifFalse:[(self labelsAt:i) translate: o asSlice])]].
 	^ result
 ]
 
@@ -2110,6 +2095,29 @@ MlArray >> performBinaryOp: op on: aMlArray withArguments:args [
 
 	newInstance internalArray: (a perform: op withEnoughArguments: {b.  args} ) buffer .
 	^ newInstance
+]
+
+{ #category : #'private-accessing' }
+MlArray >> prepareSlice: aSlice [
+	| anArrayOfInt otherSlice|
+	"be sure first level is a slice"
+	otherSlice := aSlice asSlice.
+
+	"if nDim = 1 an array is a slice"
+	anArrayOfInt := (self nDim = 1 & (otherSlice isArray)  
+								and:[otherSlice notEmpty 
+								and:[otherSlice first isArray not |
+									(otherSlice first isArray & (otherSlice first isSlice)) & (otherSlice first isNotNil)]]) 
+										ifTrue:[	{otherSlice }]
+										ifFalse:[ otherSlice ].	
+	"be sure all of its inner elements are slices"									
+	anArrayOfInt := anArrayOfInt isArray 
+										ifTrue:[anArrayOfInt collect:[:o| o asSlice]]
+										ifFalse:[{anArrayOfInt}].
+
+
+											
+	^ anArrayOfInt
 ]
 
 { #category : #'private-printing' }

@@ -122,6 +122,25 @@ MlSlice >> isZero [
 	^ (self x = 0 )& (self y = 0 )& (self step = 0)
 ]
 
+{ #category : #printing }
+MlSlice >> printOn: aStream [
+
+	aStream 
+		nextPutAll: self x asString;
+		nextPutAll: '...';
+		nextPutAll: self y asString;
+		nextPutAll: ' by ';
+		nextPutAll: self step asString.
+]
+
+{ #category : #printing }
+MlSlice >> printString [
+	|s |
+	s := WriteStream on: String new.
+	self printOn:s.
+	^ s contents
+]
+
 { #category : #accessing }
 MlSlice >> step [ 	
 	^step ifNil:[step:=1]

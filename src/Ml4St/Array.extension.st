@@ -8,9 +8,34 @@ Array >> asMlInterval [
 ]
 
 { #category : #'*Ml4St' }
+Array >> asSlice [ 
+	(self size =  5 and:[
+		(self at:2) = #'.'  & (self at:3) = #'.' & (self at:4) = #'.'] ) ifTrue:[
+			^ ((self at:1)= #'_' ifTrue:[nil] ifFalse:[(self at:1)])
+			  @ ((self at:5)= #'_' ifTrue:[nil] ifFalse:[(self at:5)])].
+	(self size =  7 and:[
+		(self at:2) = #'.'  & (self at:3) = #'.' & (self at:4) = #'.' & (self at:6) = #by]) ifTrue:[
+			^ ((self at:1)= #'_' ifTrue:[nil] ifFalse:[(self at:1)])
+			  @ ((self at:5)= #'_' ifTrue:[nil] ifFalse:[(self at:5)])
+			  @ (self at:7) ].
+	^ self
+	
+]
+
+{ #category : #'*Ml4St' }
 Array >> isArrayOfIntegers [
 	self do:[:i| i isInteger ifFalse:[^false]].
 	^ true
+	
+]
+
+{ #category : #'*Ml4St' }
+Array >> isSlice [ 
+	^ (self size =  5 and:[
+		(self at:2) = #'.'  & (self at:3) = #'.' & (self at:4) = #'.'] ) |
+	(self size =  7 and:[
+		(self at:2) = #'.'  & (self at:3) = #'.' & (self at:4) = #'.' & (self at:6) = #by])
+
 	
 ]
 
