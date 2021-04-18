@@ -302,7 +302,7 @@ MlArray class >> from: aCollectionOrObject order: CorF dType: dType [
 	^ instance
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : #'private-helpers' }
 MlArray class >> getRShapeAndPlainCollectionOf: aCollection level:l [
 
 	(self isNotACollection:(aCollection at:1))
@@ -315,7 +315,7 @@ MlArray class >> getRShapeAndPlainCollectionOf: aCollection level:l [
 
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : #'private-helpers' }
 MlArray class >> getShapeAndPlainCollectionOf: aCollection [ 
 	|  |
 	shape := OrderedDictionary new.

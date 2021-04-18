@@ -30,34 +30,6 @@ MlArrayMathTest >> testBooleanOperations [
 ]
 
 { #category : #tests }
-MlArrayMathTest >> testBroadCasting [
-	| a b sum s |
-	a := MlArray random: #(5 1 4).
-	b := MlArray new: #(5 1 4) withAll: 4.0. 
-	sum := a + b.
-	s := MlArray from: #(#( #(4 4 4 4))
-								#(#(4 4 4 4))
-								#(#(4 4 4 4))
-								#(#(4 4 4 4))
-								#(#(4 4 4 4))
-								) dType:#Float.
-								
-	self assert:( sum - s  closeTo:a).
-	
-	a := MlArray random: #(5 2 4).
-	b := MlArray random: #(2 4). 
-
-	sum := a + b.
-	self assert: sum arrayType equals: a arrayType.
-	self deny: (sum - a closeTo:b).
-	
-	a := MlArray random: #(5 1 4).
-	b := MlArray random: #(1 4). 
-	sum := a + b.
-	self deny: (sum - a  closeTo:b).
-]
-
-{ #category : #tests }
 MlArrayMathTest >> testDescribe [
 
 	| a describe |
