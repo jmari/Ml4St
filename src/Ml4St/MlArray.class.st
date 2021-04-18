@@ -1,6 +1,6 @@
 "
 !MlArray
-MlArrays son arrays multidimensionales basados en numpy arrays diseñados para la manipulación y analisis de conjuntos de datos para el aprendizaje de máquina.  
+MlArrays  son arrays multidimensionales basados en numpy arrays diseñados para la manipulación y analisis de conjuntos de datos para el aprendizaje de máquina.  
 !!Creación y estructura interna de MLArrays.
 MlArrays es un objeto que implementa arrays multidimensionales sobre un array lineal definido en la clase ${class:MlNonContinuousVector}$  
 MlArray puede crearse de numerosas maneras, por ejemplo, partiendo de una colección existente:
