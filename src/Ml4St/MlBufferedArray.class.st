@@ -68,7 +68,7 @@ MlBufferedArray >> byteSize [
 	^ self buffer byteSize
 ]
 
-{ #category : #'*MlSt' }
+{ #category : #encoders }
 MlBufferedArray >> decode: anArrayOfEncoders [ 
 	| i |
 	i := 0.
@@ -78,7 +78,7 @@ MlBufferedArray >> decode: anArrayOfEncoders [
 		
 ]
 
-{ #category : #'*MlSt' }
+{ #category : #encoders }
 MlBufferedArray >> describe [
 	|describeResult |
 	"It is done one by one...all except mean and variance not in one pass"
@@ -98,7 +98,7 @@ MlBufferedArray >> describe [
 		
 ]
 
-{ #category : #'*MlSt' }
+{ #category : #encoders }
 MlBufferedArray >> encode: anArrayOfEncoders [ 
 	| i |
 	i := 0.
@@ -108,7 +108,7 @@ MlBufferedArray >> encode: anArrayOfEncoders [
 		
 ]
 
-{ #category : #'*MlSt' }
+{ #category : #encoders }
 MlBufferedArray >> oneHotDecode: anArrayOfEncoders [ 
 	| i |
 	i := 0.
@@ -118,7 +118,7 @@ MlBufferedArray >> oneHotDecode: anArrayOfEncoders [
 		
 ]
 
-{ #category : #'*MlSt' }
+{ #category : #encoders }
 MlBufferedArray >> oneHotEncode: anArrayOfEncoders [ 
 	| i |
 	i := 0.
@@ -139,7 +139,7 @@ MlBufferedArray >> size: anObject [
 	size := anObject
 ]
 
-{ #category : #'*MlSt' }
+{ #category : #encoders }
 MlBufferedArray >> summary [ 
 	| summary |
 	self size = 0 ifTrue:[^ MlDescribeResult new].
