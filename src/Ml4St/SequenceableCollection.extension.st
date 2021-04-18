@@ -32,8 +32,8 @@ SequenceableCollection >> asPlainArray [
 
 { #category : #'*Ml4St' }
 SequenceableCollection >> buildEncoder [ 
-	| i encoder |
-	i := 0.
+	|  encoder |
+
 	encoder := MlEncoder new..
 	self do:[:e| encoder add:e ].
 	^ encoder
@@ -42,8 +42,8 @@ SequenceableCollection >> buildEncoder [
 { #category : #'*Ml4St' }
 SequenceableCollection >> confusionMatrix: aCollection [
 	"self should be predicted values and aCollection should be the real values, each float is a label"
-	| sumTotal confusionMatrix |
-	sumTotal := 0.
+	|  confusionMatrix |
+
 	confusionMatrix := MlConfusionMatrix new.		
 	1 to:self size do:[:i|
 		confusionMatrix at: (self at:i ) at:(aCollection at:i) incrementBy:1].
@@ -145,7 +145,7 @@ SequenceableCollection >> median [
 
 { #category : #'*Ml4St' }
 SequenceableCollection >> medianExcludeElement: anElement [
-	| i |
+	
 	(anElement isNumber and:[ anElement isNaN])  ifTrue:[^self medianNoNan].
 
 	^ (self select:[:v | v ~= anElement]) median
@@ -154,12 +154,12 @@ SequenceableCollection >> medianExcludeElement: anElement [
 
 { #category : #'*Ml4St' }
 SequenceableCollection >> medianFrom: start to: stop [
-	| size |
+	| blockSize |
 	"self should be sorted"
-	size := stop - start + 1.
-	^ ( size even) 
-		ifTrue:[ ((self at:(start - 1 + (size / 2)))+(self at:(start+ (size / 2)))) / 2] 
-		ifFalse:[self at: (start+ (size / 2)) ]
+	blockSize := stop - start + 1.
+	^ ( blockSize even) 
+		ifTrue:[ ((self at:(start - 1 + (blockSize / 2)))+(self at:(start+ (blockSize / 2)))) / 2] 
+		ifFalse:[self at: (start+ (blockSize / 2)) ]
 		
 ]
 
