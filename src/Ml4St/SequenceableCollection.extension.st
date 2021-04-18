@@ -1,7 +1,7 @@
-Extension { #name : #Collection }
+Extension { #name : #SequenceableCollection }
 
 { #category : #'*Ml4St' }
-Collection >> accuracy: aCollection [
+SequenceableCollection >> accuracy: aCollection [
 	"self and aCollection should be a collection of floats, each float is a label"
 	| sumTotal |
 	sumTotal := 0.
@@ -12,12 +12,12 @@ Collection >> accuracy: aCollection [
 ]
 
 { #category : #'*Ml4St' }
-Collection >> asMlArray [
+SequenceableCollection >> asMlArray [
 	^ MlArray from: self
 ]
 
 { #category : #'*Ml4St' }
-Collection >> asPlainArray [
+SequenceableCollection >> asPlainArray [
 	"converts a collection of collections (normally columns of rows) to an array one by the other"
 	
 	| collection |
@@ -31,7 +31,7 @@ Collection >> asPlainArray [
 ]
 
 { #category : #'*Ml4St' }
-Collection >> buildEncoder [ 
+SequenceableCollection >> buildEncoder [ 
 	| i encoder |
 	i := 0.
 	encoder := MlEncoder new..
@@ -40,7 +40,7 @@ Collection >> buildEncoder [
 ]
 
 { #category : #'*Ml4St' }
-Collection >> confusionMatrix: aCollection [
+SequenceableCollection >> confusionMatrix: aCollection [
 	"self should be predicted values and aCollection should be the real values, each float is a label"
 	| sumTotal confusionMatrix |
 	sumTotal := 0.
@@ -52,7 +52,7 @@ Collection >> confusionMatrix: aCollection [
 ]
 
 { #category : #'*Ml4St' }
-Collection >> differentiate: step times: times [
+SequenceableCollection >> differentiate: step times: times [
 	| dest source |
 	dest:= self class new:self size.
 	source := self.
@@ -66,7 +66,7 @@ Collection >> differentiate: step times: times [
 ]
 
 { #category : #'*Ml4St' }
-Collection >> dot: anArray [
+SequenceableCollection >> dot: anArray [
 	| sum |
 	sum := 0.
 	1 to:self size do:[:i| sum := sum + ((self at:i) * (anArray at:i))].
@@ -75,7 +75,7 @@ Collection >> dot: anArray [
 ]
 
 { #category : #'*Ml4St' }
-Collection >> kurtosis [
+SequenceableCollection >> kurtosis [
 	| meanAndStd  kurtosis n m4|
 	n:= self size.
 	meanAndStd := self meanAndStd.
@@ -86,13 +86,13 @@ Collection >> kurtosis [
 ]
 
 { #category : #'*Ml4St' }
-Collection >> mean [
+SequenceableCollection >> mean [
 	^ self sum / self size 
 		
 ]
 
 { #category : #'*Ml4St' }
-Collection >> meanAndStd [
+SequenceableCollection >> meanAndStd [
 	| k ex2 ex |
 	self size < 2 ifTrue:[^ 0.0].
 	k := self at:1.	
@@ -105,7 +105,7 @@ Collection >> meanAndStd [
 ]
 
 { #category : #'*Ml4St' }
-Collection >> meanAndVariance [
+SequenceableCollection >> meanAndVariance [
 	| k ex2 ex |
 	self size < 2 ifTrue:[^ 0.0].
 	k := self at:1.	
@@ -118,7 +118,7 @@ Collection >> meanAndVariance [
 ]
 
 { #category : #'*Ml4St' }
-Collection >> meanExcludeElement: anElement [
+SequenceableCollection >> meanExcludeElement: anElement [
 	| i |
 	(anElement isNumber and:[ anElement isNaN])  ifTrue:[^self meanNoNan].
 	i := 0.
@@ -127,7 +127,7 @@ Collection >> meanExcludeElement: anElement [
 ]
 
 { #category : #'*Ml4St' }
-Collection >> meanNoNan [
+SequenceableCollection >> meanNoNan [
 	| i |
 
 	i := 0.
@@ -136,7 +136,7 @@ Collection >> meanNoNan [
 ]
 
 { #category : #'*Ml4St' }
-Collection >> median [
+SequenceableCollection >> median [
 	|ss|
 	ss := self sorted. 
 	^ ss medianFrom:1 to: ss size
@@ -144,7 +144,7 @@ Collection >> median [
 ]
 
 { #category : #'*Ml4St' }
-Collection >> medianExcludeElement: anElement [
+SequenceableCollection >> medianExcludeElement: anElement [
 	| i |
 	(anElement isNumber and:[ anElement isNaN])  ifTrue:[^self medianNoNan].
 
@@ -153,7 +153,7 @@ Collection >> medianExcludeElement: anElement [
 ]
 
 { #category : #'*Ml4St' }
-Collection >> medianFrom: start to: stop [
+SequenceableCollection >> medianFrom: start to: stop [
 	| size |
 	"self should be sorted"
 	size := stop - start + 1.
@@ -164,14 +164,14 @@ Collection >> medianFrom: start to: stop [
 ]
 
 { #category : #'*Ml4St' }
-Collection >> medianNoNan [
+SequenceableCollection >> medianNoNan [
 
 	^ (self select:[:v| v isNaN not]) median
 		
 ]
 
 { #category : #'*Ml4St' }
-Collection >> mode [ 
+SequenceableCollection >> mode [ 
 	| mode |
 	mode := Dictionary new.
 	self do:[:e| (e isNumber and:[ e isNaN]) ifFalse:[ mode at:e incrementBy:1] ].
@@ -179,7 +179,7 @@ Collection >> mode [
 ]
 
 { #category : #'*Ml4St' }
-Collection >> modeExcludeElement: anElement [ 
+SequenceableCollection >> modeExcludeElement: anElement [ 
 	| mode |
 	(anElement isNumber and:[ anElement isNaN]) ifTrue:[^self mode].
 	mode := Dictionary new.
@@ -188,7 +188,7 @@ Collection >> modeExcludeElement: anElement [
 ]
 
 { #category : #'*Ml4St' }
-Collection >> module [
+SequenceableCollection >> module [
 	^ (self inject:0 into:[:sum :e| (e * e ) + sum ]) sqrt
 
 	
@@ -196,7 +196,7 @@ Collection >> module [
 ]
 
 { #category : #'*Ml4St' }
-Collection >> mse: aCollection [
+SequenceableCollection >> mse: aCollection [
 	| y v delta totalError sumY sumV sumYY sumVV sumVY mse scc |
 	sumY := 0.0. sumV:= 0.0. sumYY := 0.0. sumVV := 0.0. sumVY := 0.0. totalError := 0.
 	self size do:[:i|
@@ -219,7 +219,7 @@ Collection >> mse: aCollection [
 ]
 
 { #category : #'*Ml4St' }
-Collection >> quartiles [
+SequenceableCollection >> quartiles [
 	|ss median firstQ secQ |
 	ss := self sorted. 
 	(self size even) 
@@ -239,7 +239,7 @@ Collection >> quartiles [
 ]
 
 { #category : #'*Ml4St' }
-Collection >> replaceAllBy: aCollectionOrNum [
+SequenceableCollection >> replaceAllBy: aCollectionOrNum [
 	aCollectionOrNum isNumber 
 	ifTrue:[1 to:self size do:[:i| self at:i put: aCollectionOrNum]]
 	ifFalse:[	1 to:self size do:[:i|self at:i put:(aCollectionOrNum at:i)]]
@@ -247,7 +247,7 @@ Collection >> replaceAllBy: aCollectionOrNum [
 ]
 
 { #category : #'*Ml4St' }
-Collection >> replaceBy: anArrayOfValues element: anElement [
+SequenceableCollection >> replaceBy: anArrayOfValues element: anElement [
 	| i |
 	"anArrayOfValues has the same lenght than me, it is usually a broadcasted array of modes,means,..."
 	(anElement isNumber and:[ anElement isNaN])  ifTrue:[^self replaceNanBy:anArrayOfValues ].
@@ -259,14 +259,14 @@ Collection >> replaceBy: anArrayOfValues element: anElement [
 ]
 
 { #category : #'*Ml4St' }
-Collection >> replaceNanBy: anArrayOfValues [
+SequenceableCollection >> replaceNanBy: anArrayOfValues [
 
 	^ self doWithIndex:[:e :i | (e isNumber and:[ e isNaN])  
 			ifTrue:[self at:i put:(anArrayOfValues at:i)]]
 ]
 
 { #category : #'*Ml4St' }
-Collection >> skewness [ 
+SequenceableCollection >> skewness [ 
 	| meanAndStd m3 skewness n |
 	n := self size.
 	meanAndStd := self meanAndStd.
@@ -277,14 +277,14 @@ Collection >> skewness [
 ]
 
 { #category : #'*Ml4St' }
-Collection >> stdDev [
+SequenceableCollection >> stdDev [
 	^ self variance sqrt
 	 
 		
 ]
 
 { #category : #'*Ml4St' }
-Collection >> variance [
+SequenceableCollection >> variance [
 	| k ex2 ex |
 	self size < 2 ifTrue:[^ 0.0].
 	k := self at:1.	
