@@ -6,15 +6,14 @@ Class {
 
 { #category : #tests }
 MlNCTest >> testInstantiate [
-	|instance strides|
+	|instance strides s|
 	
 	strides := MlInt64Array new:4.
 	strides at:1 put: 1.
 	strides at:2 put: 4.
 	strides at:3 put: 4.
 	strides at:4 put: 10.
-	
-	instance := LibNCV newNCVector: 20 strides: strides stridesSize: strides size.
+	instance := LibNCV newNCVector: 20 strides: strides getHandle stridesSize: strides size.
 	self assert:instance size equals: 11.
 	self assert:instance realSize equals: 20.
 
