@@ -1159,6 +1159,26 @@ MlArray >> changeLabelsByIndexes: anArrayOfInt [
 	^ result
 ]
 
+{ #category : #'private-accessing' }
+MlArray >> classForType: aType [
+	| dTypeDic |
+	dTypeDic := { #Float->FloatArray.
+	 				  #BoxedFloat64->FloatArray.
+					  #SmallFloat64->FloatArray .
+					  #Integer ->IntegerArray.
+					  #SmallInteger -> IntegerArray .
+					  #LargeInteger -> IntegerArray .
+					  #LargeNegativeInteger -> IntegerArray.
+					  #LargePositiveInteger -> IntegerArray.
+					  #Word -> WordArray .
+					  #DoubleWord -> DoubleWordArray.
+					  #DoubleByte -> DoubleByteArray .
+					  #Byte -> ByteArray.
+					  #UFFIFloat->MlFloatArray.
+					  #UFFIInteger->MlInt64Array} asDictionary.
+	^ dTypeDic at:aType ifAbsent:[Array]
+]
+
 { #category : #comparing }
 MlArray >> closeTo: aMlArrayOrNumber [
 	^ self closeTo: aMlArrayOrNumber precision: 0.0001
