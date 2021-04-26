@@ -5,8 +5,49 @@ Class {
 }
 
 { #category : #tests }
+MlNCTest >> testAtAtPut [
+	|vector strides value|
+	strides := MlInt64Array new:4.
+	strides at:1 put: 1.
+	strides at:2 put: 4.
+	strides at:3 put: 6.
+	strides at:4 put: 7.
+
+	vector := LibNCV newNCVector: 20 strides: strides getHandle stridesSize: strides size.
+	1 to: vector size do:[:i|
+		value := LibNCV vector:vector at:i put: i asFloat.
+		self assert:value closeTo: i asFloat].
+	1 to: vector size do:[:i|
+		value := LibNCV vector:vector at:i.
+		self assert:value closeTo: i asFloat].
+	
+	
+	
+
+]
+
+{ #category : #tests }
+MlNCTest >> testFakeAt [
+	|vector strides values|
+	strides := MlInt64Array new:4.
+	strides at:1 put: 3.
+	strides at:2 put: 4.
+	strides at:3 put: 6.
+	strides at:4 put: 7.
+	values := OrderedCollection new.
+	vector := LibNCV newNCVector: 10 strides: strides getHandle stridesSize: strides size.
+	1 to: vector size do:[:i|
+		values add: (LibNCV vector:vector fakeAt:i)].
+	self assert:values asArray equals: {0. 1. 3. 4. 6. 7. 8. 9.}
+	
+	
+	
+
+]
+
+{ #category : #tests }
 MlNCTest >> testInstantiate [
-	|instance strides s|
+	|instance strides|
 	
 	strides := MlInt64Array new:4.
 	strides at:1 put: 1.
