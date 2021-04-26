@@ -25,13 +25,18 @@ LibNCV class >> newNCVector: size strides: strides stridesSize: stridesSize [
 { #category : #accessing }
 LibNCV class >> vector: ncVector at:pos [ 
 	"q coño pasa"
-	^ self ffiCall: #(float at(NCFloatVector * ncVector, uint64 pos)) library: LibNCV 
+	^ self ffiCall: #(float at(NCFloatVector ncVector, uint64 pos)) library: LibNCV 
 ]
 
 { #category : #accessing }
 LibNCV class >> vector: ncVector at:pos put: aFloat [
 	""
 	^ self ffiCall: #(float atPut(NCFloatVector *ncVector, uint64 pos, float aFloat)) library: LibNCV 
+]
+
+{ #category : #accessing }
+LibNCV class >> vector: aNCVector dot: otherNCVector [ 
+	^ self ffiCall: #(float dot( NCFloatVector  *aNCVector, NCFloatVector  *aNCVector otherNCVector)) library: LibNCV 
 ]
 
 { #category : #accessing }
