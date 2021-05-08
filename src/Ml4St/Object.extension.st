@@ -6,6 +6,11 @@ Object >> isMlArray [
 ]
 
 { #category : #'*Ml4St' }
+Object >> isMlBufferedArray [
+	^ false
+]
+
+{ #category : #'*Ml4St' }
 Object >> isMlFloatArray [
 	^ false
 ]
@@ -33,5 +38,10 @@ Object >> isNonContinuousVector [
 
 { #category : #'*Ml4St' }
 Object >> isSlice [ 	
+	^ false
+]
+
+{ #category : #'*Ml4St' }
+Object >> supportsNativeSlicing [
 	^ false
 ]

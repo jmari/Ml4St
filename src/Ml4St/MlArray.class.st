@@ -1174,8 +1174,8 @@ MlArray >> classForType: aType [
 					  #DoubleWord -> DoubleWordArray.
 					  #DoubleByte -> DoubleByteArray .
 					  #Byte -> ByteArray.
-					  #UFFIFloat->MlFloatArray.
-					  #UFFIInteger->MlIntArray} asDictionary.
+					  #UFFIFloat->MlNativeFloatArray.
+					  #UFFIInteger->MlNativeIntArray} asDictionary.
 	^ dTypeDic at:aType ifAbsent:[Array]
 ]
 

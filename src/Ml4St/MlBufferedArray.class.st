@@ -108,6 +108,11 @@ MlBufferedArray >> encode: anArrayOfEncoders [
 		
 ]
 
+{ #category : #testing }
+MlBufferedArray >> isMlBufferedArray [
+	^ true
+]
+
 { #category : #encoders }
 MlBufferedArray >> oneHotDecode: anArrayOfEncoders [ 
 	| i |

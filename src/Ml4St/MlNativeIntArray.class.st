@@ -1,20 +1,21 @@
 Class {
-	#name : #MlIntArray,
-	#superclass : #MlNCArray,
+	#name : #MlNativeIntArray,
+	#superclass : #MlNativeNCVector,
+	#type : #variable,
 	#category : #'Ml4St-FFI-libNCVector'
 }
 
 { #category : #'instance creation' }
-MlIntArray class >> new: size [ 
+MlNativeIntArray class >> new: size [ 
 	^ self ffiClass externalNewType: #uint64 size:size.
 ]
 
 { #category : #testing }
-MlIntArray >> isMlIntArray [
+MlNativeIntArray >> isMlIntArray [
 	^ true
 ]
 
 { #category : #accessing }
-MlIntArray >> libClass [ 
+MlNativeIntArray >> libClass [ 
 	^ LibIntNCV	
 ]

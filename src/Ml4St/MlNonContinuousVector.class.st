@@ -36,7 +36,7 @@ MlNonContinuousVector class >> new: size [
 	myClass := Array.
 	hisBuffer := thisContext sender at:1.
 
-	[hisBuffer isKindOf: MlBufferedArray  ] whileTrue:[ 
+	[hisBuffer isMlBufferedArray  ] whileTrue:[ 
 		hisBuffer := hisBuffer buffer.
 		myClass := hisBuffer species].
 
@@ -50,8 +50,9 @@ MlNonContinuousVector class >> new: size [
 { #category : #'instance creation' }
 MlNonContinuousVector class >> newFromArray: bufferObject [
 	| instance |
-
-	instance := self basicNew.
+	instance := bufferObject isMlFloatArray | bufferObject isMlIntArray  
+		ifTrue:[ MlNativeNCVector new:bufferObject size]
+		ifFalse:[	MlNonContinuousNNVector basicNew].
 	instance initialize.
 	instance buffer: bufferObject .
 	instance validRanges:{1 to: bufferObject size}.
@@ -201,20 +202,12 @@ MlNonContinuousVector >> argSortBy: aBlock [
 
 { #category : #accessing }
 MlNonContinuousVector >> at: aPos [
-	^ self buffer at: (self fakeAt: aPos)
-
-	
-	
-		 
+	self subclassResponsibility 
 ]
 
 { #category : #accessing }
-MlNonContinuousVector >> at: aPos put: aValue [
-	^ self buffer at: (self fakeAt: aPos) put:aValue
-
-	
-	
-		 
+MlNonContinuousVector >> at: aPos put: aVal [
+	self subclassResponsibility 
 ]
 
 { #category : #'sorting and filtering' }
@@ -239,12 +232,6 @@ MlNonContinuousVector >> bubbleSort: conditionBlock [
 		"returns the indexes"
 		sortedIndexes
 	 ]
-]
-
-{ #category : #enumerating }
-MlNonContinuousVector >> do: aBlock [ 
-	"Evaluate aBlock with each of the receiver's elements as the argument."
-	1 to: self size do:[:i| aBlock value: (self at: i)]
 ]
 
 { #category : #'accumulator ops' }
@@ -336,9 +323,7 @@ MlNonContinuousVector >> strides [
 
 { #category : #accessing }
 MlNonContinuousVector >> strides: aCollectionOfStrides [
-	"strides := FFIArray externalNewType: #uint size:aCollectionOfStrides size.
-	strides autoRelease.
-	aCollectionOfStrides doWithIndex:[:e :i| strides at:i put:e]"
+
 	strides := aCollectionOfStrides asArray
 ]
 

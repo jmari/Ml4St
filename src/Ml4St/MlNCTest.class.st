@@ -7,7 +7,7 @@ Class {
 { #category : #tests }
 MlNCTest >> testAtAtPut [
 	|vector strides value|
-	strides := MlIntArray new:4.
+	strides := MlNativeIntArray new:4.
 	strides at:1 put: 1.
 	strides at:2 put: 4.
 	strides at:3 put: 6.
@@ -29,7 +29,7 @@ MlNCTest >> testAtAtPut [
 { #category : #tests }
 MlNCTest >> testDot [
 	|vector strides value vector2 r|
-	strides := MlIntArray new:4.
+	strides := MlNativeIntArray new:4.
 	"This should be from 0 to size C format"
 	strides at:1 put: 1.
 	strides at:2 put: 4.
@@ -59,7 +59,7 @@ MlNCTest >> testDot [
 { #category : #tests }
 MlNCTest >> testFakeAt [
 	|vector strides values|
-	strides := MlIntArray new:4.
+	strides := MlNativeIntArray new:4.
 	strides at:1 put: 3.
 	strides at:2 put: 4.
 	strides at:3 put: 6.
@@ -78,7 +78,7 @@ MlNCTest >> testFakeAt [
 { #category : #tests }
 MlNCTest >> testFakeAt2 [
 	|vector strides vals|
-	strides := MlIntArray new:4.
+	strides := MlNativeIntArray new:4.
 	strides at:1 put: 1.
 	strides at:2 put: 3.
 	strides at:3 put: 10.
@@ -102,7 +102,7 @@ MlNCTest >> testFakeAt2 [
 MlNCTest >> testInstantiate [
 	|instance strides|
 	
-	strides := MlIntArray new:4.
+	strides := MlNativeIntArray new:4.
 	strides at:1 put: 1.
 	strides at:2 put: 4.
 	strides at:3 put: 4.
@@ -116,7 +116,7 @@ MlNCTest >> testInstantiate [
 { #category : #tests }
 MlNCTest >> testVirtualSize [
 	|s strides|
-	strides := MlIntArray new:4.
+	strides := MlNativeIntArray new:4.
 	strides at:1 put: 1.
 	strides at:2 put: 4.
 	strides at:3 put: 4.
