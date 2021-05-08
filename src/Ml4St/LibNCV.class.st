@@ -5,43 +5,34 @@ Class {
 }
 
 { #category : #accessing }
-LibNCV class >> at:pos [
-	"q coño pasa"
-	^ self ffiCall: #(int at(int *aPos, int pos)) library: LibNCV 
-]
-
-{ #category : #accessing }
 LibNCV class >> calculateVirtualSize:size strides: strides stridesSize: strSize [
 	"q coño pasa"
-	^ self ffiCall: #(int64  calculateVirtualSize(int64  size, int64  *strides, int64  strSize)) library: LibNCV 
+	^ self ffiCall: #(int64  calculateVirtualSize(int64  size, int64  *strides, int64  strSize)) library: LibFloatNCV 
 ]
 
-{ #category : #accessing }
-LibNCV class >> newNCVector: size strides: strides stridesSize: stridesSize [ 
-	""
-	^ self ffiCall: #(NCFloatVector * newNCFloatVector(ulonglong size, ulonglong *strides, ulonglong stridesSize)) library: LibNCV 
+{ #category : #floatVector }
+LibNCV class >> newVector: size strides: strides stridesSize: stridesSize [ 
+	self subclassResponsibility 
 ]
 
-{ #category : #accessing }
+{ #category : #floatVector }
 LibNCV class >> vector: ncVector at:pos [ 
-	"q coño pasa"
-	^ self ffiCall: #(float at(NCFloatVector ncVector, uint64 pos)) library: LibNCV 
+	self subclassResponsibility 
 ]
 
-{ #category : #accessing }
-LibNCV class >> vector: ncVector at:pos put: aFloat [
-	""
-	^ self ffiCall: #(float atPut(NCFloatVector *ncVector, uint64 pos, float aFloat)) library: LibNCV 
+{ #category : #floatVector }
+LibNCV class >> vector: ncVector at:pos put:aValue [
+	self subclassResponsibility 
 ]
 
-{ #category : #accessing }
+{ #category : #floatVector }
 LibNCV class >> vector: aNCVector dot: otherNCVector [ 
-	^ self ffiCall: #(float dot( NCFloatVector  *aNCVector, NCFloatVector  *aNCVector otherNCVector)) library: LibNCV 
+	self subclassResponsibility 
 ]
 
 { #category : #accessing }
 LibNCV class >> vector: aNCVector fakeAt: aPos [ 
-	^ self ffiCall: #(uint64 fakeAt( NCFloatVector  *aNCVector, uint64 aPos)) library: LibNCV 
+	^ self ffiCall: #(uint64 fakeAt( NCFloatVector  *aNCVector, uint64 aPos)) library: LibFloatNCV 
 ]
 
 { #category : #'accessing platform' }

@@ -1,10 +1,20 @@
 Class {
 	#name : #MlFloatArray,
-	#superclass : #FFIArray,
+	#superclass : #MlNCArray,
 	#category : #'Ml4St-FFI-libNCVector'
 }
 
 { #category : #'instance creation' }
 MlFloatArray class >> new: size [ 
-	^ super externalNewType: #float size:size.
+	^ self ffiClass externalNewType: #float size:size.
+]
+
+{ #category : #testing }
+MlFloatArray >> isMlFloatArray [
+	^ true
+]
+
+{ #category : #accessing }
+MlFloatArray >> libClass [ 
+	^ LibFloatNCV	
 ]

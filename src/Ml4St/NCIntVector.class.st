@@ -1,5 +1,5 @@
 Class {
-	#name : #NCFloatVector,
+	#name : #NCIntVector,
 	#superclass : #FFIStructure,
 	#classVars : [
 		'OFFSET_LASTPOS',
@@ -13,86 +13,85 @@ Class {
 }
 
 { #category : #'field definition' }
-NCFloatVector class >> fieldsDesc [
+NCIntVector class >> fieldsDesc [
 	^ #(
 		uint64 * strides;
 		uint64 stridesSize;
 		uint64 realSize;	       
 		uint64 size;
 		uint64  *lastPos;
-		float *values; 
+		int *values; 
 		)
 ]
 
 { #category : #'accessing structure variables' }
-NCFloatVector >> lastPos [
+NCIntVector >> lastPos [
 	"This method was automatically generated"
 	^ExternalData fromHandle: (handle pointerAt: OFFSET_LASTPOS) type: ExternalType unsignedLongLong asPointerType
 ]
 
 { #category : #'accessing structure variables' }
-NCFloatVector >> lastPos: anObject [
+NCIntVector >> lastPos: anObject [
 	"This method was automatically generated"
 	handle pointerAt: OFFSET_LASTPOS put: anObject getHandle.
 ]
 
 { #category : #'accessing structure variables' }
-NCFloatVector >> realSize [
+NCIntVector >> realSize [
 	"This method was automatically generated"
 	^handle unsignedLongLongAt: OFFSET_REALSIZE
 ]
 
 { #category : #'accessing structure variables' }
-NCFloatVector >> realSize: anObject [
+NCIntVector >> realSize: anObject [
 	"This method was automatically generated"
 	handle unsignedLongLongAt: OFFSET_REALSIZE put: anObject
 ]
 
 { #category : #'accessing structure variables' }
-NCFloatVector >> size [
+NCIntVector >> size [
 	"This method was automatically generated"
 	^handle unsignedLongLongAt: OFFSET_SIZE
 ]
 
 { #category : #'accessing structure variables' }
-NCFloatVector >> size: anObject [
+NCIntVector >> size: anObject [
 	"This method was automatically generated"
 	handle unsignedLongLongAt: OFFSET_SIZE put: anObject
 ]
 
 { #category : #'accessing structure variables' }
-NCFloatVector >> strides [
+NCIntVector >> strides [
 	"This method was automatically generated"
 	^ExternalData fromHandle: (handle pointerAt: OFFSET_STRIDES) type: ExternalType unsignedLongLong asPointerType
 ]
 
 { #category : #'accessing structure variables' }
-NCFloatVector >> strides: anObject [
+NCIntVector >> strides: anObject [
 	"This method was automatically generated"
 	handle pointerAt: OFFSET_STRIDES put: anObject getHandle.
-
 ]
 
 { #category : #'accessing structure variables' }
-NCFloatVector >> stridesSize [
+NCIntVector >> stridesSize [
 	"This method was automatically generated"
 	^handle unsignedLongLongAt: OFFSET_STRIDESSIZE
 ]
 
 { #category : #'accessing structure variables' }
-NCFloatVector >> stridesSize: anObject [
+NCIntVector >> stridesSize: anObject [
 	"This method was automatically generated"
 	handle unsignedLongLongAt: OFFSET_STRIDESSIZE put: anObject
 ]
 
 { #category : #'accessing structure variables' }
-NCFloatVector >> values [
+NCIntVector >> values [
 	"This method was automatically generated"
-	^ExternalData fromHandle: (handle pointerAt: OFFSET_VALUES) type: ExternalType float asPointerType
+	^ExternalData fromHandle: (handle pointerAt: OFFSET_VALUES) type: ExternalType long asPointerType
 ]
 
 { #category : #'accessing structure variables' }
-NCFloatVector >> values: anObject [
+NCIntVector >> values: anObject [
 	"This method was automatically generated"
 	handle pointerAt: OFFSET_VALUES put: anObject getHandle.
 ]

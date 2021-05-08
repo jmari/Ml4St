@@ -28,7 +28,9 @@ MlNonContinuousVector class >> new: size [
 	from a slice operation.
 	Normally this constructor is called by the 2on arg in a bynary operation so that
 	thisContext sender at:1 shoud be that argument. the class of the buffer for the new 
-	instance will be the same class"
+	instance will be the same class
+	DO NOT USE TO INITIALIZE INSTANCES"
+	
 	| instance hisBuffer myClass |
 	
 	myClass := Array.

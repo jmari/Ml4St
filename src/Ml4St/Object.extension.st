@@ -6,6 +6,16 @@ Object >> isMlArray [
 ]
 
 { #category : #'*Ml4St' }
+Object >> isMlFloatArray [
+	^ false
+]
+
+{ #category : #'*Ml4St' }
+Object >> isMlIntArray [
+	^ false
+]
+
+{ #category : #'*Ml4St' }
 Object >> isMlInterval [
 
 	^ false
