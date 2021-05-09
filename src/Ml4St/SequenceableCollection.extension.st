@@ -31,6 +31,16 @@ SequenceableCollection >> asPlainArray [
 ]
 
 { #category : #'*Ml4St' }
+SequenceableCollection >> asUInt64Array [
+
+	| instance |
+	"I'm used to pass strides array to the C world, so each position sould be -1"
+	instance := FFIArray externalNewType: #uint64 size: self size.
+	self doWithIndex: [:v :i| instance at:i put:(v-1)].
+	^ instance 
+]
+
+{ #category : #'*Ml4St' }
 SequenceableCollection >> buildEncoder [ 
 	|  encoder |
 

@@ -27,6 +27,16 @@ MlNCTest >> testAtAtPut [
 ]
 
 { #category : #tests }
+MlNCTest >> testCreateMlArray [
+	| tmp |
+	tmp :=MlArray from: { 1. 2. 3. 4 } dType: #UFFIFloat. 
+	tmp inspect
+	
+	
+
+]
+
+{ #category : #tests }
 MlNCTest >> testDot [
 	|vector strides value vector2 r|
 	strides := MlNativeIntArray new:4.

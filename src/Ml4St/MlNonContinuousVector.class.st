@@ -51,9 +51,9 @@ MlNonContinuousVector class >> new: size [
 MlNonContinuousVector class >> newFromArray: bufferObject [
 	| instance |
 	instance := bufferObject isMlFloatArray | bufferObject isMlIntArray  
-		ifTrue:[ MlNativeNCVector new:bufferObject size]
-		ifFalse:[	MlNonContinuousNNVector basicNew].
-	instance initialize.
+		ifTrue:[ bufferObject]
+		ifFalse:[	MlNonContinuousNNVector basicNew initialize].
+
 	instance buffer: bufferObject .
 	instance validRanges:{1 to: bufferObject size}.
 	^ instance

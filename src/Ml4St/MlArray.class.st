@@ -188,8 +188,7 @@ MlArray class >> checkClassForAllElementsIn: aCollection [
 { #category : #'private-accessing' }
 MlArray class >> classForType: aType [
 
-	dTypeDic ifNil:[
-		dTypeDic := { #Float->FloatArray.
+	dTypeDic := { #Float->FloatArray.
 	 				  #BoxedFloat64->FloatArray.
 					  #SmallFloat64->FloatArray .
 					  #Integer ->IntegerArray.
@@ -200,7 +199,9 @@ MlArray class >> classForType: aType [
 					  #Word -> WordArray .
 					  #DoubleWord -> DoubleWordArray.
 					  #DoubleByte -> DoubleByteArray .
-					  #Byte -> ByteArray} asDictionary].
+					  #Byte -> ByteArray.
+					  #UFFIFloat->MlNativeFloatArray.
+					  #UFFIInteger->MlNativeIntArray} asDictionary.
 	^ dTypeDic at:aType ifAbsent:[Array]
 ]
 
@@ -1157,26 +1158,6 @@ MlArray >> changeLabelsByIndexes: anArrayOfInt [
 				(o  isArray ifTrue:[ o collect:[:e| (self labelsAt:i) translate: e ]]
 					 		  ifFalse:[(self labelsAt:i) translate: o ])]].
 	^ result
-]
-
-{ #category : #'private-accessing' }
-MlArray >> classForType: aType [
-	| dTypeDic |
-	dTypeDic := { #Float->FloatArray.
-	 				  #BoxedFloat64->FloatArray.
-					  #SmallFloat64->FloatArray .
-					  #Integer ->IntegerArray.
-					  #SmallInteger -> IntegerArray .
-					  #LargeInteger -> IntegerArray .
-					  #LargeNegativeInteger -> IntegerArray.
-					  #LargePositiveInteger -> IntegerArray.
-					  #Word -> WordArray .
-					  #DoubleWord -> DoubleWordArray.
-					  #DoubleByte -> DoubleByteArray .
-					  #Byte -> ByteArray.
-					  #UFFIFloat->MlNativeFloatArray.
-					  #UFFIInteger->MlNativeIntArray} asDictionary.
-	^ dTypeDic at:aType ifAbsent:[Array]
 ]
 
 { #category : #comparing }
