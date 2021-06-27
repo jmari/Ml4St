@@ -57,13 +57,13 @@ MlNCTest >> testDot [
 		value := LibFloatNCV vector:vector2 at:i put: i asFloat.
 		r add:value
 		].
-
+	"strides are 1@4 6@7"
 	vector2 strides: strides getHandle.
 	vector2 stridesSize:strides size.
 	vector2 size: (LibFloatNCV calculateVirtualSize: vector2 size strides: strides getHandle stridesSize: strides size).
 		
 	value := LibFloatNCV vector:vector dot:vector2.
-	self assert:value equals: ({ 1. 2. 3. 4. 5. 6} dot:{ 1. 5. 6. 8. 9. 10. }) 
+	self assert:value equals: ({1. 2. 3. 4. 5. 6} dot: {4. 5. 7. 8. 9. 10.}) 
 ]
 
 { #category : #tests }
@@ -148,6 +148,28 @@ MlNCTest >> testWeightOfAxis [
 
 	1 to: shape size do:[:axis|
 		w := LibFloatNCV weightOfAxis: axis shape: shape getHandle ndim: shape size order:$F.
+		Transcript show: axis asString.
+		self assert: (array weightOfAxis: axis) equals:w] 
+	
+	
+	
+
+]
+
+{ #category : #tests }
+MlNCTest >> testWeightOfAxisC [
+	|array shape  w shape2 |
+	shape := MlNativeIntArray new:4.
+	shape at:1 put: 1.
+	shape at:2 put: 2.
+	shape at:3 put: 3.
+	shape at:4 put: 4.
+	
+	shape2 := {1. 2. 3. 4.}.
+	array := MlArray new: shape2 order:#C.
+
+	1 to: shape size do:[:axis|
+		w := LibFloatNCV weightOfAxis: axis shape: shape getHandle ndim: shape size order:$C.
 		Transcript show: axis asString.
 		self assert: (array weightOfAxis: axis) equals:w] 
 	
