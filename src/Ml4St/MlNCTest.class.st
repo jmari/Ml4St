@@ -78,7 +78,8 @@ MlNCTest >> testFakeAt [
 	vector := LibFloatNCV newVector: 10 strides: strides getHandle stridesSize: strides size.
 	1 to: vector size do:[:i|
 		values add: (LibFloatNCV vector:vector fakeAt:i)].
-	self assert:values asArray equals: {1. 2. 4. 5. 7. 8. 9. 10.}
+	"slice in C is 2@3 5@6"
+	self assert:values asArray equals: {0. 1. 3. 4. 6. 7. 8. 9.}
 	
 	
 	
@@ -100,12 +101,8 @@ MlNCTest >> testFakeAt2 [
 	vector size: (LibFloatNCV calculateVirtualSize: vector size strides: strides getHandle stridesSize: strides size).
 	1 to: vector size do:[:i|
 		vals add: (LibFloatNCV vector:vector fakeAt:i)].
-	self assert: vals asArray equals: {3. 4. 5. 6. 7. 8. 9.}.
-	
-	
-	
-	
-
+	"strides are 0@2 9@10 so..."
+	self assert: vals asArray equals: {2. 3. 4. 5. 6. 7. 8.}.
 ]
 
 { #category : #tests }
@@ -133,6 +130,25 @@ MlNCTest >> testVirtualSize [
 	strides at:4 put: 10.
 	s := LibFloatNCV calculateVirtualSize:20 strides: strides getHandle stridesSize: strides size.
 	self assert: s equals: 11.
+	
+
+]
+
+{ #category : #tests }
+MlNCTest >> testWeightOfAxis [
+	|array shape  w|
+	shape := MlNativeIntArray new:4.
+	shape at:1 put: 1.
+	shape at:2 put: 2.
+	shape at:3 put: 3.
+	"shape := {1. 2. 3.}"
+	array := MlArray new: shape order:$F.
+
+	1 to: shape size do:[:axis|
+		w := LibFloatNCV weightOfAxis: axis shape: shape getHandle ndim: shape size order:$F.
+		self assert: (array weightOfAxis: axis) equals:w] 
+	
+	
 	
 
 ]

@@ -24,5 +24,5 @@ LibIntNCV class >> vector: ncVector at:pos put: anInteger [
 
 { #category : #floatVector }
 LibIntNCV class >> vector: aNCVector dot: otherNCVector [ 
-	^ self ffiCall: #(int64 dot( NCFloatVector  *aNCVector, NCFloatVector  *otherNCVector)) library: LibFloatNCV 
+	^ self ffiCall: #(int64 dot( NCIntVector  *aNCVector, NCIntVector  *otherNCVector)) library: LibFloatNCV 
 ]

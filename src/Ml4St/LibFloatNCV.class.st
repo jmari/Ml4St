@@ -26,3 +26,8 @@ LibFloatNCV class >> vector: ncVector at:pos put: aFloat [
 LibFloatNCV class >> vector: aNCVector dot: otherNCVector [ 
 	^ self ffiCall: #(float dot( NCFloatVector  *aNCVector, NCFloatVector  *otherNCVector)) library: LibFloatNCV 
 ]
+
+{ #category : #floatVector }
+LibFloatNCV class >> weightOfAxis: anAxis shape: shape ndim: nDim order:order [
+	^ self ffiCall: #(uint64 weightOfAxis( int anAxis, uint64 *shape, int nDim, char order)) library: LibFloatNCV 
+]

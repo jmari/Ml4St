@@ -56,7 +56,7 @@ MlNativeNCVector >> size [
 
 { #category : #accessing }
 MlNativeNCVector >> strides: stridesArray [
-	self halt.
+	
 	instance strides: stridesArray asUInt64Array. 
 	instance stridesSize: stridesArray size.
 	instance size: (self libClass calculateVirtualSize: instance realSize 
