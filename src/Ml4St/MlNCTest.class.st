@@ -136,16 +136,19 @@ MlNCTest >> testVirtualSize [
 
 { #category : #tests }
 MlNCTest >> testWeightOfAxis [
-	|array shape  w|
+	|array shape  w shape2 |
 	shape := MlNativeIntArray new:4.
 	shape at:1 put: 1.
 	shape at:2 put: 2.
 	shape at:3 put: 3.
-	"shape := {1. 2. 3.}"
-	array := MlArray new: shape order:$F.
+	shape at:4 put: 4.
+	
+	shape2 := {1. 2. 3. 4.}.
+	array := MlArray new: shape2 order:#F.
 
 	1 to: shape size do:[:axis|
 		w := LibFloatNCV weightOfAxis: axis shape: shape getHandle ndim: shape size order:$F.
+		Transcript show: axis asString.
 		self assert: (array weightOfAxis: axis) equals:w] 
 	
 	
