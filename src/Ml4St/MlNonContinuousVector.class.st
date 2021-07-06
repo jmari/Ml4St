@@ -311,7 +311,7 @@ MlNonContinuousVector >> isSliced [
 MlNonContinuousVector >> replaceFrom: start to: stop with: replacement startingAt: repStart [ 
 
 	(self isSliced not & replacement isSliced not)
-	ifTrue:[self buffer replaceFrom: start to: stop with: replacement buffer startingAt: repStart ]
+	ifTrue:[ self buffer replaceFrom: start to: stop with: replacement buffer startingAt: repStart ]
 	ifFalse:[ super replaceFrom: start to: stop with: replacement startingAt: repStart]
 
 ]

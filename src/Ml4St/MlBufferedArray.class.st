@@ -113,6 +113,17 @@ MlBufferedArray >> isMlBufferedArray [
 	^ true
 ]
 
+{ #category : #'as yet unclassified' }
+MlBufferedArray >> median [
+	|ss|
+	"we need that becouse sorted should return a copy but in a FloatArray fails to return a copy and it changes itself
+	 so when the array is not sliced we should copy to an array"
+	ss := self isSliced 
+			ifTrue:[ self sorted ]
+			ifFalse:[ self buffer asArray sorted ]. 
+	^ ss medianFrom:1 to: ss size
+]
+
 { #category : #encoders }
 MlBufferedArray >> oneHotDecode: anArrayOfEncoders [ 
 	| i |

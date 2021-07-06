@@ -85,6 +85,11 @@ SequenceableCollection >> dot: anArray [
 ]
 
 { #category : #'*Ml4St' }
+SequenceableCollection >> isSliced [
+	^ false
+]
+
+{ #category : #'*Ml4St' }
 SequenceableCollection >> kurtosis [
 	| meanAndStd  kurtosis n m4|
 	n:= self size.

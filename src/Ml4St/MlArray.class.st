@@ -936,6 +936,7 @@ MlArray >> adaptToNumber: rcvr andSend: selector [
 
 { #category : #converting }
 MlArray >> addDimension [
+	wForAxes := nil.
 	self shape: ({1} , self shape) 
 
 
@@ -967,7 +968,7 @@ MlArray >> applyBooleanFilter: aBooleanMlArray on: axis [
 	
 	instance shape at:axis put:( (self shape at:axis) * ratio).
 	
-	instance labelsDict at:axis put: ((labelsDict at:axis) applyBooleanFilter: aBooleanMlArray internalArray).
+	instance labelsDict at:axis put: ((self labelsDict at:axis) applyBooleanFilter: aBooleanMlArray internalArray).
 				
 	^ instance 
 ]
@@ -1513,11 +1514,24 @@ MlArray >> getAxisNumberFromStandard: anAxis [
 	"return the estandar axis number for an axis. i.e.
 	 shape #(1 2 3) axis 0 is the first, 1 rows and 2 columns
 	but the standard says axis 0 is row axis, axis 1 is column axis and 2..n are the outter next ones "
-	| data axis |
-	axis := data := (( self nDim - anAxis - 1) \\  self nDim ) + 1 .
-	axis := data = self nDim ifTrue:[self nDim -1] ifFalse:[data].
-	axis := (data = (self nDim -1)) ifTrue:[self nDim] ifFalse:[axis].
-	^ axis := axis >0 ifTrue:[axis] ifFalse:[1].
+	self nDim = 1 ifTrue:[ ^ 1 ].
+	anAxis = 0 ifTrue:[ ^ self nDim -1 ].
+	anAxis = 1 ifTrue:[ ^ self nDim ].
+	^ self nDim - anAxis.
+
+
+]
+
+{ #category : #accessing }
+MlArray >> getAxisToFoldFromStandard: anAxis [
+	"return the estandar axis number for an axis. i.e.
+	 shape #(1 2 3) axis 0 is the first, 1 rows and 2 columns
+	but the standard says axis 0 is row axis, axis 1 is column axis and 2..n are the outter next ones "
+	| axis |
+	axis := self nDim - anAxis.
+	axis < 0 ifTrue:[ axis := self width + 1 - axis].
+	^ axis
+
 
 ]
 
@@ -1716,6 +1730,16 @@ MlArray >> isMlArray [
 	^ true
 ]
 
+{ #category : #testing }
+MlArray >> isMultidimensional [
+	^ self nDim >  1 
+]
+
+{ #category : #testing }
+MlArray >> isOneDimensional [
+	^ self nDim >= 1 
+]
+
 { #category : #'private-converting' }
 MlArray >> isShapeOf: aMlArray concatenableAlongAxis: axis [ 
 	self nDim = aMlArray nDim ifFalse:[^false].
@@ -1774,7 +1798,14 @@ MlArray >> labelsAtStandardAxis: standarAxisNumber [
 { #category : #accessing }
 MlArray >> labelsDict [ 
 	"labelsDict dict is an Array axis-->labels"
-	^ labelsDict ifNil:[ labelsDict := Array new:self nDim]
+	| newLabelDict |
+	labelsDict ifNil:[ labelsDict := Array new:self nDim].
+	labelsDict size = self nDim ifFalse:[
+		newLabelDict :=  Array new: self nDim.
+		1 to: (self nDim min: labelsDict size) do:[ :i | newLabelDict at:i put: (labelsDict at:i) ].
+		labelsDict := newLabelDict.
+		].
+	^ labelsDict
 ]
 
 { #category : #accessing }
@@ -2218,10 +2249,8 @@ MlArray >> reduce: aSymbol axis: anAxis arguments: args [
 	aClass is the  "
 	| axis results newShape instance realAxis|
 	realAxis := self getAxisNumberFromStandard: anAxis.
-	axis := self nDim - anAxis.
-	axis < 0 ifTrue:[ axis := self width + 1 - axis].
+	axis := self getAxisToFoldFromStandard: anAxis. 
 	(axis > self nDim)|( axis < 1 )ifTrue:[ MlShapeError signal:'Axis is higher than nDim']. 
-
 	"the operation 'aSymbol' should reduce the collection to 1, i.e. mean, std..."
 	results := OrderedCollection new.
 
@@ -2278,8 +2307,9 @@ MlArray >> reshape: anArrayOfInt [
 	| oldLabelsDict newShape |
 	wForAxes := nil.
 	oldLabelsDict := self labelsDict.
+	labelsDict := nil. 
 	newShape := ( self calculateNewShape: anArrayOfInt).
-		self labelsDict:nil. 
+
 	self nDim to:1 do:[:i|
 		(i <= (newShape size) and:[(self shape at:i) = (newShape at:i)])
 			ifTrue:[self labelsDict at:i put: (oldLabelsDict at:i)]].
@@ -2363,6 +2393,7 @@ MlArray >> shape [
 
 { #category : #'private-accessing' }
 MlArray >> shape: anArrayOfInt [
+
 	(shape notNil and:[anArrayOfInt size = 1 & (shape size > 1)])  ifTrue:[ 
 		self labelsDict size >2 ifTrue:[
 			"this is a trick row labels when you reshape from n-dim to 1 "
@@ -2392,7 +2423,7 @@ MlArray >> slice: aSliceArray [
 	#{1@2. 2@_. 3@4} points in the right array shoud be great or equal to le left side.
 	# n@_ means from n to the end of the dimension.
 	# _@m means from the start to the end of the dimension"
-	^self slice: aSliceArray copy: false	
+	^ self slice: aSliceArray copy: false	
 
 ]
 
@@ -2656,7 +2687,14 @@ MlArray >> walkWhile: aWhileBlock when: aConditionBlock do: aBlock [
 
 { #category : #'private-accessing' }
 MlArray >> weightOfAxes [
-	^ wForAxes ifNil:[wForAxes := Array new: self shape size ]
+	| newWForAxes |
+	wForAxes ifNil:[wForAxes := Array new: self nDim ].
+	wForAxes size = self nDim ifFalse:[
+		newWForAxes :=  Array new: self nDim.
+		1 to: (self nDim min: wForAxes size) do:[ :i | newWForAxes at:i put: (wForAxes at:i) ].
+		wForAxes := newWForAxes.
+		].
+	^ wForAxes
 ]
 
 { #category : #'private-accessing' }
@@ -2666,6 +2704,7 @@ MlArray >> weightOfAxesAt: anAxis [
 
 { #category : #'private-accessing' }
 MlArray >> weightOfAxesAt: anAxis put: anInteger [
+	
 	self weightOfAxes at:anAxis put: anInteger
 ]
 

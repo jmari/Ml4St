@@ -35,23 +35,19 @@ MlArrayBroadcastTest >> testBroadCasting [
 { #category : #tests }
 MlArrayBroadcastTest >> testDotBroadcasting [
 
-	| a b dot r|
+	| a b dot|
 	a := MlArray from:  #( #(#(2 0 1) 
 									#(3 0 0) 
 									#(5 1 1)) 
 								#( #(1 -1 1) 
 								   #(2 2 3) 
 								   #(-2 -3 -1))).
-	b := MlArray from: #(#(1 0 0) 
+	b := MlArray from: #(#(
+							   #(1 0 0) 
 								#(0 1 0)
-								#(0 0 1)). 
+								#(0 0 1))). 
 	dot := a dot: b.
-	self assert: dot equals: a
-	
-
-	
-
-
+	self assert: dot  equals: (a reshaped:#(2 1 3 3))
 ]
 
 { #category : #tests }

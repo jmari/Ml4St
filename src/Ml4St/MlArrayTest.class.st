@@ -134,7 +134,7 @@ MlArrayTest >> testConcatenation [
 	self assert: c shape equals:#(12).
 	self assert: c internalArray buffer equals:#(1 2 3 4 5 6 7 8 9 10 11 12) asIntegerArray.
 	
-	" this concatenation only works in C order, in F order can not be done"
+
 	a := MlArray  from: {{{1. 2. 3}. {4. 5. 6}}. {{7. 8. 9}.{10. 11. 12}}} order:#C.
 	b := MlArray  from: {{(1 to:3). (4 to:6)}} order:#C .
 	c := a concat: b axis:2.
@@ -360,9 +360,12 @@ MlArrayTest >> testMetrics [
 	self assert:(a stdDev:0) equals:(MlArray from:{{1.0. 1.0. 1.0}} order:#C dType:#Float). 
 	self assert:(a variance:0) equals:(MlArray from:{{1.0. 1.0. 1.0}} order:#C dType:#Float). 
 
-	a := MlArray  from: {{{1.0. 2.0. 3.0}. {4.0. 5.0. 6.0}. {7.0. 8.0. 9.0}}} order:#C dType:#Object.
+	a := MlArray from: {{{1.0. 2.0. 3.0}. {4.0. 5.0. 6.0}. {7.0. 8.0. 9.0}}} order:#C dType:#Object.
 	self assert:(a meanAndStd:0) size equals:3. 
 
+	a := MlArray from: {{10.0. 7.0. 4.0}. {3.0. 2.0. 1.0}} order:#F dType:#Float.
+
+	self assert:(a median) equals: 3.5. 
 ]
 
 { #category : #tests }
@@ -389,5 +392,25 @@ MlArrayTest >> testSplit [
 	a := MlArray  from: {{{1. 2. 3}. {4. 5. 6}. {7. 8. 9}}}.
 	b := a split: 2 axis:0.
 	self assert: b size equals:2.
+	
+]
+
+{ #category : #tests }
+MlArrayTest >> testStandardAxisNumber [
+
+	| a result |
+	a := MlArray  from: {{{{1. 2. 3}. {4. 5. 6}. {7. 8. 9}}}}.
+	result := {3. 4. 2. 1}.
+	(0 to: (a nDim - 1)) do:[ :axis | self assert: (a getAxisNumberFromStandard: axis ) equals: (result at: axis + 1) ]  
+	
+]
+
+{ #category : #tests }
+MlArrayTest >> testStandardAxisToFold [
+
+	| a result |
+	a := MlArray  from: {{{{1. 2. 3}. {4. 5. 6}. {7. 8. 9}}}}.
+	result := {4. 3. 2. 1}.
+	(0 to: (a nDim - 1)) do:[ :axis | self assert: (a getAxisToFoldFromStandard: axis ) equals: (result at: axis + 1) ]  
 	
 ]

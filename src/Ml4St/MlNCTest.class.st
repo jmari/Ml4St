@@ -1,7 +1,7 @@
 Class {
 	#name : #MlNCTest,
 	#superclass : #TestCase,
-	#category : #'Ml4St-FFI-LibNCVector-Test'
+	#category : #'Ml4St-Test-FFI-LibNCVector'
 }
 
 { #category : #tests }
@@ -45,7 +45,7 @@ MlNCTest >> testDot [
 	strides at:2 put: 4.
 	strides at:3 put: 6.
 	strides at:4 put: 7.
-	r := OrderedCollection new.
+
 	
 	vector := LibFloatNCV newVector: 10 strides: strides getHandle stridesSize: strides size.
 	1 to: vector size do:[:i|
@@ -55,7 +55,6 @@ MlNCTest >> testDot [
 	vector2 := LibFloatNCV newVector: 10 strides: nil stridesSize: 0.
 	1 to: vector2 size do:[:i|
 		value := LibFloatNCV vector:vector2 at:i put: i asFloat.
-		r add:value
 		].
 	"strides are 1@4 6@7"
 	vector2 strides: strides getHandle.
