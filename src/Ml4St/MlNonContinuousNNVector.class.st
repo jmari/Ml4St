@@ -1,3 +1,6 @@
+"
+NOT IMPLEMENTED YET NEW FEATURE
+"
 Class {
 	#name : #MlNonContinuousNNVector,
 	#superclass : #MlNonContinuousVector,

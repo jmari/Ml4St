@@ -1147,6 +1147,11 @@ MlArray >> calculateNewShape: anArrayOfInt [
 	^ newShape								
 ]
 
+{ #category : #'binary operations' }
+MlArray >> cartesianProduct: aMlArray [
+	^ self join: aMlArray by: [:a :b | true ]
+]
+
 { #category : #'private-labeling' }
 MlArray >> changeLabelsByIndexes: anArrayOfInt [
 	|result|
@@ -1364,7 +1369,7 @@ MlArray >> doWithIndex: aBlock [
 { #category : #'binary operations' }
 MlArray >> dot: aMlArray [
 	|  result rowNumber tmp newShape  numberOfRows |
-	"dot is not like ndArray dot product, in nDim > 2 it makes the dot productc between the last two dimensions
+	"dot is not like ndArray dot product, in nDim > 2 it makes the dot product between the last two dimensions
 	one matrix by one"
 	self assert: self width = aMlArray length. 
 	rowNumber := 1. 
@@ -1752,6 +1757,30 @@ MlArray >> itemSize [
 	^ self internalArray byteSize / (self internalArray buffer size)
 ]
 
+{ #category : #'binary operations' }
+MlArray >> join: aMlArray by: aBlock [
+	|  result newShape  numberOfRows numberOfColumns aMlArraysCollection |
+	"relational product between to arrays, keep result if aBlock A, B is true"
+
+	numberOfRows := ((self calculateNewShape:{-1. self width}) first )  *
+					    ((aMlArray calculateNewShape:{-1. aMlArray width}) first ).	
+	numberOfColumns := self width + aMlArray width. 
+
+	aMlArraysCollection := OrderedCollection new.
+	self rowsDo:[:row1 :rslice1|		
+			aMlArray rowsDo:[:row2 :rslice2|		
+						(aBlock value:row1 value:row2) ifTrue:[aMlArraysCollection add: (row1 , row2) addDimension].
+						] 
+		].
+	
+	result := self class concatArrays:  aMlArraysCollection axis: 0.
+	newShape := self shape deepCopy.
+	newShape at: (self nDim) put: (self width + aMlArray width).
+	self nDim >1 ifTrue:[ newShape at: (self nDim - 1) put: (self length * aMlArray length) ].
+	self nDim >2 ifTrue:[ newShape at: (self nDim - 2) put: -1 ].
+	^ result reshape: newShape
+]
+
 { #category : #'private-slicing' }
 MlArray >> jumpToNextBlockInAxis: axis [
 	"called only by #concatArrays:  aMlArraysCollection axis: standarAxisNumber..."
@@ -1845,7 +1874,7 @@ MlArray >> log: base [
 { #category : #'binary operations' }
 MlArray >> matMul: aMlArray [
 	| reshapedArray array shape2 i j jump result rowNumber tmp newShape numberOfRows |
-	"dot is not like ndArray dot product, in nDim > 2 it makes the dot productc between the last two dimensions
+	"dot is not like ndArray dot product, in nDim > 2 it makes the dot producct between the last two dimensions
 	one matrix by one"
 	self assert: self width = aMlArray length. 
 	shape2 := aMlArray shape deepCopy.

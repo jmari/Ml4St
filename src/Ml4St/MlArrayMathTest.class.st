@@ -138,3 +138,55 @@ MlArrayMathTest >> testMathOperations [
 	
 	
 ]
+
+{ #category : #tests }
+MlArrayMathTest >> testProduct [
+
+	| a b product r|
+	a := MlArray from: #(#(2 4) #(3 7) #(5 1)).
+	b := (MlArray from: #(#(1 2) #(3 4))). 
+	product := a cartesianProduct:b.
+	r := MlArray from: #(#(2 4 1 2)
+								#(2 4 3 4) 
+								#(3 7 1 2)
+								#(3 7 3 4) 
+								#(5 1 1 2)
+								#(5 1 3 4)).
+	self assert: product equals:r
+	
+
+	
+
+
+]
+
+{ #category : #tests }
+MlArrayMathTest >> testProductMoreThan2D [
+
+	| a b product r|
+	a := MlArray from: #(#(#(2 4) #(3 7)) #(#(5 1) #(4 7))).
+	b := MlArray from: #(#(#(1 2) #(3 4)) #(#(5 6) #(7 8))). 
+	product := a cartesianProduct:b.
+	r := MlArray from: #(#(#(2 4 1 2)
+								#(2 4 3 4) 
+								#(2 4 5 6)
+								#(2 4 7 8))  
+								#(#(3 7 1 2)
+								#(3 7 3 4) 
+								#(3 7 5 6)
+								#(3 7 7 8))  
+								#(#(5 1 1 2)
+								#(5 1 3 4)
+								#(5 1 5 6)
+								#(5 1 7 8))
+								#(#(4 7 1 2)
+								#(4 7 3 4)
+								#(4 7 5 6)
+								#(4 7 7 8))  ).
+	self assert: product equals:r
+	
+
+	
+
+
+]
