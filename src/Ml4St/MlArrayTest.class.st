@@ -233,8 +233,8 @@ MlArrayTest >> testGrouping [
 	c := MlArray from:{ {1. 7. 9 }. {2. 8. 9 } }.
 	self assert: b equals:c.
 
-	b := a groupBy:[:row| (row at:1) > 1 ] ->{2. 3} aggregate:[:k :v| v sum:0].
-	c := MlArray from:{ {	'[ :row | (row at: 1) > 1 ] not'. 7. 9 }. {'[ :row | (row at: 1) > 1 ]'. 8. 9 } . }.
+	b := a groupBy:[ :row | (row at: 1) > 1 ] ->{2. 3} aggregate:[:k :v| v sum:0].
+	c := MlArray from:{ {'[ :row | (row at: 1) > 1 ] not'. 7. 9 }. {'[ :row | (row at: 1) > 1 ]'. 8. 9 }.  }.
 	self assert: b equals:c.	
 ]
 
@@ -244,10 +244,10 @@ MlArrayTest >> testGroupingNDim [
 	| a b c |
 	a := MlArray  from: {{{1. 2. 3}. {1. 5. 6}. {2. 8. 9}}. {{4. 2. 3}. {4. 5. 6}. {5. 8. 9}}}.
 	b := a groupBy: 1->{2. 3} aggregate:[:k :v| v sum:0].
-	c := MlArray from:{ {1. 7. 9 }. {2. 8. 9 }. {4. 7. 9 }. {5. 8. 9 }  }.
+	c := MlArray from:{ {1. 7. 9 }. {2. 8. 9 }. {5. 8. 9 }. {4. 7. 9 } }.
 	self assert: b equals:c.
 
-	b := a groupBy:[:row| (row at:1) > 1 ] ->{2. 3} aggregate:[:k :v| v sum:0].
+	b := a groupBy:[ :row | (row at: 1) > 1 ] ->{2. 3} aggregate:[:k :v| v sum:0].
 	c := MlArray from:{ {	'[ :row | (row at: 1) > 1 ] not'. 7. 9 }. 
 							  {'[ :row | (row at: 1) > 1 ]'. 8. 9 } .
 							  {'[ :row | (row at: 1) > 1 ]'. 15. 18 } .  }.
@@ -382,7 +382,7 @@ MlArrayTest >> testShape [
 	b := a reshaped:#(-1).
 	self assert: a shape equals:#(3 2 1).
 	self assert: b shape equals:#(6).
-	b inspect
+
 ]
 
 { #category : #tests }

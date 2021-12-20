@@ -587,6 +587,11 @@ MlArray class >> gtSlicingExamples3D [
 
 ]
 
+{ #category : #initialization }
+MlArray class >> initialize [
+	Smalltalk at:'_' put: nil
+]
+
 { #category : #'instance creation' }
 MlArray class >> initializeFromFStyle: instance shape: aShape plainCollection: aPlainCollection [
 	|  jump i |
@@ -1130,18 +1135,19 @@ MlArray >> byteSize [
 ]
 
 { #category : #accessing }
-MlArray >> calculateNewShape: anArrayOfInt [
-	| newSize nr1 newShape |
-	nr1 := (anArrayOfInt count:[:e| e = -1]).
+MlArray >> calculateNewShape: anArrayOfIntegers [
+	| newSize nr1 newShape tmpArrayOfInt|
+	tmpArrayOfInt := anArrayOfIntegers copy.
+	nr1 := (tmpArrayOfInt count:[:e| e = -1]).
 	nr1 > 1 ifTrue:[MlShapeError signal:'Only one dimension could be -1' ]. 
 	
 	newShape := (nr1 = 1) 
 						ifTrue:[ |uDim|
 									uDim := (self internalArray size / 
-										(anArrayOfInt inject:1 into:[:m :e| e = -1 ifTrue:[m] ifFalse:[m*e]])).
+										(tmpArrayOfInt inject:1 into:[:m :e| e = -1 ifTrue:[m] ifFalse:[m*e]])).
 									uDim isInteger ifFalse:[MlShapeError signal].
-									anArrayOfInt replaceAll: -1 with:uDim.	]
-						ifFalse:[anArrayOfInt].
+									tmpArrayOfInt replaceAll: -1 with:uDim.	]
+						ifFalse:[tmpArrayOfInt].
  	newSize := newShape inject: 1 into: [ :m :e | m*e]. 
 	newSize = self internalArray size ifFalse:[MlShapeError signal].
 	^ newShape								

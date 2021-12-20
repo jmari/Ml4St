@@ -46,6 +46,11 @@ LNParameter class >> finalizeResourceData:  handle [
 	handle beNull
 ]
 
+{ #category : #initialization }
+LNParameter class >> initialize [ 
+	LNSolverType initialize
+]
+
 { #category : #'accessing structure variables' }
 LNParameter >> C [
 	"This method was automatically generated"

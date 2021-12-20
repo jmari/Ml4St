@@ -12,11 +12,11 @@ MlArrayPerformanceTest >> testArraysConcat [
 	a := MlArray random: #(100 100 100).
 	b := MlArray random: #(100 100 100).
 
+	t := [a concat: b axis:0 ] timeToRun.
+	self assert:t <= (Duration milliSeconds:1000).
 	t := [a concat: b axis:1 ] timeToRun.
 	self assert:t <= (Duration milliSeconds:1000).
 	t := [a concat: b axis:2 ] timeToRun.
-	self assert:t <= (Duration milliSeconds:1000).
-	t := [a concat: b axis:3 ] timeToRun.
 	self assert:t <= (Duration milliSeconds:1000).
 	
 	

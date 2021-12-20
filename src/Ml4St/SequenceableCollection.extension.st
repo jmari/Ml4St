@@ -174,7 +174,7 @@ SequenceableCollection >> medianFrom: start to: stop [
 	blockSize := stop - start + 1.
 	^ ( blockSize even) 
 		ifTrue:[ ((self at:(start - 1 + (blockSize / 2)))+(self at:(start+ (blockSize / 2)))) / 2] 
-		ifFalse:[self at: (start+ (blockSize / 2)) ]
+		ifFalse:[self at: (start+ (blockSize / 2)) asInteger ]
 		
 ]
 
