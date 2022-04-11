@@ -29,11 +29,11 @@ Interval class >> union: collectionOfSlices [
 								ifTrue:[aStackOfSlices push: (top first to:each last by:each increment)]
 								ifFalse:[(each increment % top increment) = 0 
 												ifTrue:[aStackOfSlices push: (top first to: each last by: top increment)]
-												ifFalse:[	aStackOfSlices push: ((top , each) asSet asArray)	 ]
+												ifFalse:[	aStackOfSlices push: ((top , each) asSet asArray sort)	 ]
 												]
 								]
 					].
-				(top isInterval not or:[(top includes: each first) not])  ifTrue:[	aStackOfSlices push: ((top , each) asSet asArray)	 ] ]
+				(top isInterval not or:[(top includes: each first) not])  ifTrue:[	aStackOfSlices push: ((top , each) asSet asArray sort)	 ] ]
 			ifFalse:[
 				top := aStackOfSlices pop.
 				top isInterval ifTrue:[
@@ -42,11 +42,11 @@ Interval class >> union: collectionOfSlices [
 								ifTrue:[aStackOfSlices push: (top first to:top last by:each increment)]
 								ifFalse:[(each increment % top increment) = 0 
 												ifTrue:[aStackOfSlices push: (top first to: top last by: top increment)]
-												ifFalse:[	aStackOfSlices push: ((top , each) asSet asArray)	 ]
+												ifFalse:[	aStackOfSlices push: ((top , each) asSet asArray sort)	 ]
 												]
 								]
 					].
-				(top isInterval not or:[(top includes: each first) not])  ifTrue:[	aStackOfSlices push: ((top , each) asSet asArray)	 ]
+				(top isInterval not or:[(top includes: each first) not])  ifTrue:[	aStackOfSlices push: ((top , each) asSet asArray sort)	 ]
 				]	
 			] 
 		].

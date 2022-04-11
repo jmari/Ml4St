@@ -1765,7 +1765,17 @@ MlArray >> itemSize [
 
 { #category : #'binary operations' }
 MlArray >> join: aMlArray by: aBlock [
-	|  result newShape  numberOfRows numberOfColumns aMlArraysCollection |
+	^ self join: aMlArray by: aBlock collect: [ :row | row ]
+]
+
+{ #category : #'binary operations' }
+MlArray >> join: aMlArray by: aBlock collect: aOneRowArgBlock [
+	^ self join: aMlArray by: aBlock collect: aOneRowArgBlock ifNoOneSatisfies:[:row | nil ]
+]
+
+{ #category : #'binary operations' }
+MlArray >> join: aMlArray by: aBlock collect: aOneRowArgBlock ifNoOneSatisfies: aOneArgBlock [
+	|  anySatisfy result newShape  numberOfRows numberOfColumns aMlArraysCollection resp |
 	"relational product between to arrays, keep result if aBlock A, B is true"
 
 	numberOfRows := ((self calculateNewShape:{-1. self width}) first )  *
@@ -1773,11 +1783,17 @@ MlArray >> join: aMlArray by: aBlock [
 	numberOfColumns := self width + aMlArray width. 
 
 	aMlArraysCollection := OrderedCollection new.
-	self rowsDo:[:row1 :rslice1|		
+	self rowsDo:[:row1 :rslice1|	
+			anySatisfy := false.	
 			aMlArray rowsDo:[:row2 :rslice2|		
-						(aBlock value:row1 value:row2) ifTrue:[aMlArraysCollection add: (row1 , row2) addDimension].
-						] 
-		].
+						(aBlock value:row1 value:row2) ifTrue:[
+							aMlArraysCollection add: (aOneRowArgBlock value:(row1 , row2)) addDimension].
+							anySatisfy := true.
+						]. 
+			anySatisfy ifFalse:[
+				resp:=(aOneRowArgBlock value:
+							(row1 , (MlArray new: aMlArray width  withAll:nil))). 
+				resp ifNotNil:[ aMlArraysCollection add: resp addDimension ] ] ].
 	
 	result := self class concatArrays:  aMlArraysCollection axis: 0.
 	newShape := self shape deepCopy.
